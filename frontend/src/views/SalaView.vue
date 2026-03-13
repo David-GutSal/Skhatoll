@@ -36,13 +36,13 @@ methods:{
 
 crearSala(){
 
-console.log("Crear sala pendiente")
+this.$router.push("/lobby")
 
 },
 
 irUnirse(){
 
-console.log("Ir a unirse a sala")
+this.$router.push("/lobby")
 
 }
 

@@ -6,8 +6,7 @@ import ReglasPersonajesView from '../views/ReglasPersonajesView.vue'
 import ContactoView from '../views/ContactoView.vue' /* Esta es provisional. Quizás hay algo mejor para poner aquí*/
 
 
-import LobbyCreadorView from '../views/LobbyCreadorView.vue'
-import LobbyJugadorView from '../views/LobbyJugadorView.vue'
+import LobbyView from '../views/LobbyView.vue'
 import CargaRolView from '../views/CargaRolView.vue'
 import NarradorView from '../views/NarradorView.vue'
 import JugadorView from '../views/JugadorView.vue'
@@ -36,15 +35,11 @@ const routes = [
   },
 
   {
-    path: '/lobby-creador',
-    name: 'lobbyCreador',
-    component: LobbyCreadorView
+    path: '/lobby',
+    name: 'lobby',
+    component: LobbyView
   },
-  {
-    path: '/lobby-jugador',
-    name: 'lobbyJugador',
-    component: LobbyJugadorView
-  },
+
   {
     path: '/carga-rol',
     name: 'cargaRol',

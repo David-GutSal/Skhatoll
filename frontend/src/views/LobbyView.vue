@@ -1,4 +1,7 @@
 <template>
+  <!--Para ver la página antes de convertirla para back hay que poner este enlace: http://localhost:5173/lobby?modo=creador--
+  Si ahora se pulsa en esta vista y se le da a Iniciar partida, tras esperar 5 segundos te redirige a la pantalla de carga-->
+  <!--Para ver la página antes de convertirla para back hay que poner este enlace: http://localhost:5173/lobby?modo=jugador-->
   <div class="contenedor-lobby">
 
     <div class="grid-lobby">
@@ -82,7 +85,9 @@ export default {
   },
   methods: {
     iniciarPartida() {
-      console.log("Iniciar partida");
+      setTimeout(() => {
+  this.$router.push({ name: 'cargaRol' })
+}, 3000)
     },
     unirseSala() {
       this.mensajeUnion = true;

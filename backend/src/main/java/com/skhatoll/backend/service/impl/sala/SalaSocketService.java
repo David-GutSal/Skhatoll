@@ -1,6 +1,5 @@
 package com.skhatoll.backend.service.impl.sala;
 
-import com.skhatoll.backend.service.interfaces.sala.ISalaSocketService;
 import com.skhatoll.backend.dto.sala.JugadorDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;

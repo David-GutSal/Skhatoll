@@ -5,7 +5,6 @@ import com.skhatoll.backend.dto.partida.MuerteConfirmadaDto;
 import com.skhatoll.backend.dto.partida.ResultadoVotacionDto;
 import com.skhatoll.backend.dto.partida.VotoDto;
 import com.skhatoll.backend.entities.Sala;
-import com.skhatoll.backend.service.interfaces.partida.IPartidaSocketService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;

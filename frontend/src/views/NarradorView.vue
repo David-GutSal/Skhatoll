@@ -1,160 +1,173 @@
+Para poder esta vista poner este enlace: http://localhost:5173/narrador
+
 <template>
 
-<div class="contenedor-narrador" :class="fase.toLowerCase()">
+<div class="contenedor-narrador" :class="{noche: !esDia}">
 
+  <div class="cabecera">
 
-<div class="barra-superior">
+    <div class="narrador-box">
+      Narrador: {{gameState.narrador}}
+    </div>
 
-<div class="panel-narrador">
-Narrador: {{ narrador }}
-</div>
+    <IndicadorDiaNoche
+      :esDia="esDia"
+      @cambiarFase="cambiarFase"
+    />
 
-<div class="selector-fase">
+  </div>
 
-<div class="icono-fase luna" @click="cambiarNoche">
-<i class="fa-solid fa-moon"></i>
-</div>
+  <PanelControlNarrador
+    :esDia="esDia"
+    :hayAlcalde="hayAlcalde"
+    @votarLinchamiento="iniciarVotacionLinchamiento"
+    @votarAlcalde="iniciarVotacionAlcalde"
+    @finalizarVotacion="finalizarVotacion"
+    @eventos="iniciarEventos"
+  />
 
-<div class="icono-fase sol" @click="cambiarDia">
-<i class="fa-solid fa-sun"></i>
-</div>
-
-</div>
-
-</div>
-
-<div class="panel-botones">
-
-<button v-if="fase==='DIA'" class="boton">
-Iniciar votación
-</button>
-
-<button v-if="fase==='DIA'" class="boton">
-Elegir alcalde
-</button>
-
-<button v-if="fase==='NOCHE'" class="boton boton-noche">
-Iniciar eventos
-</button>
-
-</div>
-
-<div class="mesa-jugadores">
-
-<div
-v-for="jugador in jugadores"
-:key="jugador.id"
-class="carta-jugador"
-:class="estadoClase(jugador)"
-@click="seleccionarJugador(jugador)"
->
-
-<img
-class="imagen-rol"
-src="@/assets/imgs/bruja.jpg"
-/>
-
-<div class="info-jugador">
-
-<p><strong>Jugador:</strong> {{ jugador.nombre }}</p>
-
-<p><strong>Rol:</strong> {{ jugador.rol }}</p>
-
-</div>
-
-<div class="iconos-estado">
-
-<span v-if="jugador.alcalde">👑</span>
-
-<span v-if="!jugador.vivo">💀</span>
-
-<span v-if="jugador.objetivo">🎯</span>
-
-</div>
-
-</div>
-
-</div>
+  <MesaJugadores
+    :jugadores="gameState.jugadores"
+    :esDia="esDia"
+    @seleccionarJugador="activarTurnoJugador"
+  />
 
 </div>
 
 </template>
 
-
 <script>
 
-export default{
+import { gameState, MODO_SIMULACION } from "@/store/gameState"
+import { enviarEvento } from "@/services/websocketService"
 
-name:"NarradorView",
+import IndicadorDiaNoche from "@/components/juego/IndicadorDiaNoche.vue"
+import PanelControlNarrador from "@/components/juego/PanelControlNarrador.vue"
+import MesaJugadores from "@/components/juego/MesaJugadores.vue"
+
+export default {
+
+components:{
+IndicadorDiaNoche,
+PanelControlNarrador,
+MesaJugadores
+},
 
 data(){
-
 return{
 
-fase:"DIA",
+gameState,
 
-narrador:"Maestro de ceremonias",
+esDia:true,
 
-jugadores:[
+}
+},
 
-{id:1,nombre:"Jugador1",rol:"Bruja",vivo:true,alcalde:false,objetivo:false},
+computed:{
 
-{id:2,nombre:"Jugador2",rol:"Lobo",vivo:true,alcalde:false,objetivo:false},
-
-{id:3,nombre:"Jugador3",rol:"Aldeano",vivo:true,alcalde:true,objetivo:false},
-
-{id:4,nombre:"Jugador4",rol:"Aldeano",vivo:true,alcalde:false,objetivo:false},
-
-{id:5,nombre:"Jugador5",rol:"Vidente",vivo:true,alcalde:false,objetivo:false},
-
-{id:6,nombre:"Jugador6",rol:"Aldeano",vivo:true,alcalde:false,objetivo:false},
-
-{id:7,nombre:"Jugador7",rol:"Lobo",vivo:true,alcalde:false,objetivo:false},
-
-{id:8,nombre:"Jugador8",rol:"Cazador",vivo:true,alcalde:false,objetivo:false}
-
-]
-
+hayAlcalde(){
+return this.gameState.jugadores.some(j=>j.alcalde)
 }
 
 },
 
 methods:{
 
+cambiarFase(fase){
 
-cambiarDia(){
+this.esDia = fase==="dia"
 
-this.fase="DIA"
+/*
+WEBSOCKET BACKEND
 
-},
+envía cambio de fase a todos los jugadores
 
-cambiarNoche(){
+payload ejemplo
 
-this.fase="NOCHE"
+{
+ tipo:"FASE",
+ fase:"DIA"
+}
+*/
 
-},
-
-
-estadoClase(jugador){
-
-return{
-
-muerto:!jugador.vivo,
-
-alcalde:jugador.alcalde,
-
-objetivo:jugador.objetivo
-
+if(!MODO_SIMULACION){
+enviarEvento("FASE",{fase})
 }
 
 },
 
+iniciarVotacionLinchamiento(){
 
-seleccionarJugador(jugador){
+/*
+BACKEND
+habilita votaciones de linchamiento
+*/
 
-this.jugadores.forEach(j=>j.objetivo=false)
+if(!MODO_SIMULACION){
+enviarEvento("VOTACION_LINCHAMIENTO")
+}
 
-jugador.objetivo=true
+},
+
+iniciarVotacionAlcalde(){
+
+if(this.hayAlcalde)return
+
+/*
+BACKEND
+habilita votaciones alcalde
+*/
+
+if(!MODO_SIMULACION){
+enviarEvento("VOTACION_ALCALDE")
+}
+
+},
+
+finalizarVotacion(){
+
+/*
+BACKEND
+calcula ganador
+*/
+
+if(!MODO_SIMULACION){
+enviarEvento("FINALIZAR_VOTACION")
+}
+
+},
+
+iniciarEventos(){
+
+/*
+BACKEND
+inicia fase eventos nocturnos
+*/
+
+if(!MODO_SIMULACION){
+enviarEvento("INICIAR_EVENTOS")
+}
+
+},
+
+activarTurnoJugador(jugador){
+
+/*
+BACKEND
+
+envía turno a jugador
+
+ejemplo payload
+
+{
+tipo:"TURNO_JUGADOR",
+jugador:"Jugador5"
+}
+*/
+
+if(!MODO_SIMULACION){
+enviarEvento("TURNO_JUGADOR",{jugador:jugador.nombre})
+}
 
 }
 
@@ -164,223 +177,49 @@ jugador.objetivo=true
 
 </script>
 
-
 <style scoped>
-
 
 .contenedor-narrador{
 
 min-height:100vh;
-padding:30px;
-color:white;
+padding:20px;
 
-}
-
-.contenedor-narrador.dia{
-
-background-image:url('@/assets/imgs/fondo.jpg');
+background-image:url("@/assets/imgs/fondo.png");
 background-size:cover;
 
 }
 
 .contenedor-narrador.noche{
 
-background-image:url('@/assets/imgs/fondonoche.png');
-background-size:cover;
+background-image:url("@/assets/imgs/fondonoche.png");
 
 }
 
-.barra-superior{
+.cabecera{
 
 display:flex;
 justify-content:space-between;
 align-items:center;
-margin-bottom:30px;
+flex-wrap: wrap;
+gap: 15px;
+margin-bottom:20px;
 
 }
 
-.panel-narrador{
-
-background:#1f1f1f;
-padding:10px 20px;
-
-}
-
-.selector-fase{
-
-display:flex;
-gap:20px;
-
-}
-
-.icono-fase{
-
-width:60px;
-height:60px;
-display:flex;
-align-items:center;
-justify-content:center;
-border-radius:50%;
-font-size:24px;
-cursor:pointer;
-
-}
-
-.luna{
+.narrador-box{
 
 background:black;
-color:white;
+color:red;
 
-}
-
-.sol{
-
-background:white;
-color:black;
-
-}
-
-.panel-botones{
-
-display:flex;
-justify-content:center;
-gap:20px;
-margin-bottom:30px;
-
-}
-
-.boton{
-
-background:black;
-color:white;
-border:none;
 padding:12px 20px;
-cursor:pointer;
+
+font-weight:bold;
 
 }
 
-.boton-noche{
-
-background:#8b0000;
-
-}
-
-.mesa-jugadores{
-
-display:grid;
-
-grid-template-columns:repeat(4,1fr);
-
-gap:25px;
-
-max-width:1100px;
-
-margin:auto;
-
-padding:30px;
-
-}
-
-.contenedor-narrador.dia .mesa-jugadores{
+.noche .narrador-box{
 
 background:white;
-border:4px solid #111;
-
-}
-
-
-.contenedor-narrador.noche .mesa-jugadores{
-
-background:#8b0000;
-border:4px solid white;
-
-}
-
-.carta-jugador{
-
-background:#1f1f1f;
-padding:20px;
-display:flex;
-align-items:center;
-gap:20px;
-position:relative;
-cursor:pointer;
-
-}
-
-.imagen-rol{
-
-width:80px;
-height:80px;
-object-fit:cover;
-
-}
-
-.info-jugador{
-
-font-size:16px;
-
-}
-
-.iconos-estado{
-
-position:absolute;
-top:5px;
-right:10px;
-font-size:20px;
-
-}
-
-.muerto{
-
-background:#555;
-opacity:0.6;
-
-}
-
-
-.alcalde{
-
-border:3px solid gold;
-
-}
-
-
-.objetivo{
-
-border:3px solid red;
-
-}
-
-@media (max-width:1200px){
-
-.carta-jugador{
-
-flex-direction:column;
-text-align:center;
-
-}
-
-}
-
-
-@media (max-width:900px){
-
-.mesa-jugadores{
-
-grid-template-columns:repeat(2,1fr);
-
-}
-
-}
-
-@media (max-width:500px){
-
-.mesa-jugadores{
-
-grid-template-columns:1fr;
-
-}
 
 }
 

@@ -1,48 +1,36 @@
 <template>
+  <div class="zona">
+    <PoderLobo
+      v-if="miRol === 'Lobo' && esMiTurno"
+      :jugadorSeleccionado="jugadorSeleccionado"
+      @devorar="$emit('devorar')"
+    />
 
-<div class="zona">
-
-<PoderLobo
-v-if="miRol==='LOBO' && esMiTurno"
-:jugadorSeleccionado="jugadorSeleccionado"
-@devorar="$emit('devorar')"
-/>
-
-<PoderVidente
-v-if="miRol==='Vidente' && esMiTurno"
-:jugadorSeleccionado="jugadorSeleccionado"
-@premonicion="$emit('premonicion')"
-/>
-
-</div>
-
+    <PoderVidente
+      v-if="miRol === 'Vidente' && esMiTurno"
+      :jugadorSeleccionado="jugadorSeleccionado"
+      @premonicion="$emit('premonicion')"
+    />
+  </div>
 </template>
 
 <script>
+import PoderLobo from './poderes/PoderLobo.vue'
+import PoderVidente from './poderes/PoderVidente.vue'
 
-import PoderLobo from "./poderes/PoderLobo.vue"
-import PoderVidente from "./poderes/PoderVidente.vue"
+export default {
+  props: ['miRol', 'jugadorSeleccionado', 'esMiTurno'],
 
-export default{
-
-props:["miRol","jugadorSeleccionado","esMiTurno"],
-
-components:{
-PoderLobo,
-PoderVidente
+  components: {
+    PoderLobo,
+    PoderVidente,
+  },
 }
-
-}
-
 </script>
 
 <style scoped>
-
-.zona{
-
-display:flex;
-justify-content:center;
-
+.zona {
+  display: flex;
+  justify-content: center;
 }
-
 </style>

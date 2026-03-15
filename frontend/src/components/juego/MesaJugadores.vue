@@ -1,78 +1,55 @@
 <template>
-
-<div class="mesa" :class="{noche:!esDia}">
-
-<CartaJugador
-
-v-for="j in jugadores"
-:key="j.id"
-:jugador="j"
-:esDia="esDia"
-@seleccionar="$emit('seleccionarJugador',j)"
-
-/>
-
-</div>
-
+  <div class="mesa" :class="{ noche: !esDia }">
+    <CartaJugador
+      v-for="j in jugadores"
+      :key="j.id"
+      :jugador="j"
+      :esDia="esDia"
+      @seleccionar="$emit('seleccionarJugador', j)"
+    />
+  </div>
 </template>
 
 <script>
+import CartaJugador from './CartaJugador.vue'
 
-import CartaJugador from "./CartaJugador.vue"
+export default {
+  components: { CartaJugador },
 
-export default{
-
-components:{CartaJugador},
-
-props:[
-"jugadores",
-"esDia"
-]
-
+  props: ['jugadores', 'esDia'],
 }
-
 </script>
 
 <style scoped>
+.mesa {
+  display: grid;
 
-.mesa{
+  grid-template-columns: repeat(5, 1fr);
 
-display:grid;
+  gap: 20px;
 
-grid-template-columns:repeat(5,1fr);
+  padding: 20px;
 
-gap:20px;
+  background: black;
 
-padding:20px;
+  border: 5px solid white;
 
-background:black;
-
-border:5px solid white;
-
-justify-items:center;
-
+  justify-items: center;
 }
 
-.mesa.noche{
-
-background:red;
-
+.mesa.noche {
+  background: red;
 }
 
-@media(max-width:900px){
-
-.mesa{
-grid-template-columns:repeat(3,1fr);
+@media (max-width: 900px) {
+  .mesa {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
+@media (max-width: 500px) {
+  .mesa {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
-
-@media(max-width:500px){
-
-.mesa{
-grid-template-columns:repeat(2,1fr);
-}
-
-}
-
 </style>

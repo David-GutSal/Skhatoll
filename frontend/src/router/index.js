@@ -5,7 +5,6 @@ import SalaView from '../views/SalaView.vue'
 import ReglasPersonajesView from '../views/ReglasPersonajesView.vue'
 import ContactoView from '../views/ContactoView.vue' /* Esta es provisional. Quizás hay algo mejor para poner aquí*/
 
-
 import LobbyView from '../views/LobbyView.vue'
 import CargaRolView from '../views/CargaRolView.vue'
 import NarradorView from '../views/NarradorView.vue'
@@ -16,55 +15,55 @@ const routes = [
   {
     path: '/',
     name: 'inicio',
-    component: InicioView
+    component: InicioView,
   },
   {
     path: '/sala',
     name: 'sala',
-    component: SalaView
+    component: SalaView,
   },
   {
     path: '/reglas',
     name: 'reglas',
-    component: ReglasPersonajesView
+    component: ReglasPersonajesView,
   },
   {
     path: '/contacto',
     name: 'contacto',
-    component: ContactoView
+    component: ContactoView,
   },
 
   {
     path: '/lobby',
     name: 'lobby',
-    component: LobbyView
+    component: LobbyView,
   },
 
   {
     path: '/carga-rol',
     name: 'cargaRol',
-    component: CargaRolView
+    component: CargaRolView,
   },
   {
     path: '/narrador',
     name: 'narrador',
-    component: NarradorView
+    component: NarradorView,
   },
   {
     path: '/jugador',
     name: 'jugador',
-    component: JugadorView
+    component: JugadorView,
   },
   {
     path: '/resultados',
     name: 'resultados',
-    component: ResultadosView
-  }
+    component: ResultadosView,
+  },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 })
 
 export default router

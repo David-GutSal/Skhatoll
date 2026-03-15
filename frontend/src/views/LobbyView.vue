@@ -1,30 +1,22 @@
 <template>
-  <!--Para ver la página antes de convertirla para back hay que poner este enlace: http://localhost:5173/lobby?modo=creador--
-  Si ahora se pulsa en esta vista y se le da a Iniciar partida, tras esperar 5 segundos te redirige a la pantalla de carga-->
-  <!--Para ver la página antes de convertirla para back hay que poner este enlace: http://localhost:5173/lobby?modo=jugador-->
   <div class="contenedor-lobby">
-
     <div class="grid-lobby">
-
       <div class="panel-izquierdo">
-
         <h2 v-if="esCreador">Código sala</h2>
         <h2 v-else>Introduce aquí el código de la sala</h2>
 
+        <input v-if="esCreador" class="input-codigo" :value="codigoSala" readonly />
+
         <input
+          v-else
           class="input-codigo"
-          v-model="codigoSala"
-          :readonly="esCreador"
+          v-model="inputCodigo"
+          placeholder="Escribe el código de sala"
         />
-
         <div class="botones">
-          <button v-if="esCreador" class="boton" @click="iniciarPartida">
-            Iniciar partida
-          </button>
+          <button v-if="esCreador" class="boton" @click="iniciarPartida">Iniciar partida</button>
 
-          <button v-if="!esCreador" class="boton" @click="unirseSala">
-            Unirse
-          </button>
+          <button v-if="!esCreador" class="boton" @click="handleUnirse">Unirse</button>
 
           <button v-if="!esCreador" class="boton-salir" @click="salirSala">
             Salir de la partida
@@ -32,19 +24,22 @@
         </div>
 
         <p v-if="mensajeUnion" class="mensaje">
-          ¡Te has unido a la partida!<br>
+          ¡Te has unido a la partida!<br />
           Ten paciencia y espera al resto de jugadores
         </p>
-
       </div>
 
       <div class="panel-jugadores">
-
         <h2>Jugadores en sala</h2>
         <ul>
-          <li v-for="jugador in jugadores" :key="jugador.id">
+          <li v-for="jugador in jugadores" :key="jugador.idUsuario">
             <label v-if="esCreador">
-              <input type="radio" name="narrador" :checked="jugador.esNarrador">
+              <input
+                type="radio"
+                name="narrador"
+                :checked="jugador.esNarrador"
+                @change="asignarNarrador(jugador.idUsuario)"
+              />
               {{ jugador.nombre }}
             </label>
             <span v-else>
@@ -56,48 +51,106 @@
         <p v-if="esCreador" class="mensaje">
           Puedes seleccionar a otro jugador como narrador o serlo tú mismo
         </p>
-
       </div>
-
     </div>
   </div>
 </template>
 
 <script>
+import axiosInstance from '@/plugins/axios'
+import { Client } from '@stomp/stompjs'
+import SockJS from 'sockjs-client'
+import { mapGetters, mapActions } from 'vuex'
 export default {
-  name: "LobbyView",
   data() {
     return {
-      esCreador: false,          // cambia según URL
-      codigoSala: "PR0F3 4PRU3B4N0S",  // para simular diseño, luego API reemplaza
+      inputCodigo: '',
       mensajeUnion: false,
-      jugadores: [
-        { id: 1, nombre: "Jugador1", esNarrador: true },
-        { id: 2, nombre: "Jugador2", esNarrador: false },
-        { id: 3, nombre: "Jugador3", esNarrador: false }
-      ]
-    };
+      stompClient: null,
+    }
+  },
+  computed: {
+    ...mapGetters('sala', ['codigoSala', 'esCreador', 'jugadores']),
   },
   created() {
-
-    const modo = this.$route.query.modo;
-    this.esCreador = modo === "creador";
+    if (this.esCreador) {
+      this.cargarJugadores()
+      this.conectarWebSocket()
+    }
   },
   methods: {
-    iniciarPartida() {
-      setTimeout(() => {
-  this.$router.push({ name: 'cargaRol' })
-}, 3000)
+    ...mapActions('sala', ['unirse', 'setJugadores', 'salir']),
+    async cargarJugadores() {
+      try {
+        const res = await axiosInstance.get(`/salas/${this.codigoSala}/jugadores`)
+        this.setJugadores(res.data)
+      } catch (error) {
+        alert('Error al cargar jugadores')
+      }
     },
-    unirseSala() {
-      this.mensajeUnion = true;
-      console.log("Te has unido a la sala");
+    async iniciarPartida() {
+      try {
+        await axiosInstance.post(`/salas/${this.codigoSala}/iniciar`)
+      } catch (error) {
+        alert(error.response?.status === 409 ? 'No hay suficientes jugadores' : 'Error al iniciar')
+      }
+    },
+    async asignarNarrador(idUsuario) {
+      try {
+        await axiosInstance.put(`/salas/${this.codigoSala}/narrador`, { idUsuario })
+      } catch (error) {
+        alert('Error al asignar narrador')
+      }
+    },
+    async handleUnirse() {
+      try {
+        await axiosInstance.post('/salas/unirse', { codigoSala: this.inputCodigo })
+        this.unirse(this.inputCodigo)
+        this.mensajeUnion = true
+        await this.cargarJugadores()
+        this.conectarWebSocket()
+      } catch (error) {
+        alert(
+          error.response?.status === 409
+            ? 'Ya estás en esta sala o está llena'
+            : 'Sala no encontrada',
+        )
+      }
     },
     salirSala() {
-      console.log("Salir de la sala");
-    }
-  }
-};
+      this.salir()
+      this.$router.push({ name: 'sala' })
+    },
+    conectarWebSocket() {
+      const token = this.$store.getters['auth/token']
+      const cliente = new Client({
+        webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+        connectHeaders: { Authorization: `Bearer ${token}` },
+      })
+      cliente.onConnect = () => {
+        cliente.subscribe(`/topic/sala/${this.codigoSala}`, (msg) => {
+          const payload = JSON.parse(msg.body)
+          if (payload.tipo === 'JUGADOR_UNIDO') this.setJugadores(payload.jugadores)
+        })
+        cliente.subscribe(`/topic/sala/${this.codigoSala}/inicio`, () => {
+          this.$router.push({ name: 'cargaRol' })
+        })
+        cliente.subscribe(`/user/queue/rol`, (msg) => {
+          const payload = JSON.parse(msg.body)
+          if (payload.tipo === 'ROL_ASIGNADO') {
+            this.$store.dispatch('sala/setRol', {
+              nombreRol: payload.nombreRol,
+              descripcionRol: payload.descripcionRol,
+              bando: payload.bando,
+            })
+          }
+        })
+      }
+      cliente.activate()
+      this.stompClient = cliente
+    },
+  },
+}
 </script>
 
 <style scoped>
@@ -174,9 +227,9 @@ li {
   font-size: 14px;
 }
 
-@media(max-width:768px){
-  .grid-lobby{
-    grid-template-columns:1fr;
+@media (max-width: 768px) {
+  .grid-lobby {
+    grid-template-columns: 1fr;
   }
 }
 </style>

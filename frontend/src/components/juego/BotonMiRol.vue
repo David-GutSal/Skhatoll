@@ -1,53 +1,31 @@
 <template>
-
-<div class="mirol">
-
-<button @click="mostrarRol">
-
-Mi Rol
-
-</button>
-
-</div>
-
+  <div class="mirol">
+    <button @click="mostrarRol">Mi Rol</button>
+  </div>
 </template>
 
 <script>
+export default {
+  props: ['miRol'],
 
-export default{
-
-props:["miRol"],
-
-methods:{
-
-mostrarRol(){
-
-alert("Tu rol es: "+this.miRol)
-
+  methods: {
+    mostrarRol() {
+      alert('Tu rol es: ' + this.miRol)
+    },
+  },
 }
-
-}
-
-}
-
 </script>
 
 <style scoped>
-
-.mirol{
-
-display:flex;
-justify-content:center;
-
+.mirol {
+  display: flex;
+  justify-content: center;
 }
 
-button{
+button {
+  background: black;
+  color: white;
 
-background:black;
-color:white;
-
-padding:10px 20px;
-
+  padding: 10px 20px;
 }
-
 </style>

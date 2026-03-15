@@ -7,7 +7,11 @@ import './assets/styles/main.css'
 
 const app = createApp(App)
 
-app.config.globalProperties.$axios = axiosInstance
+axiosInstance.interceptors.request.use((config) => {
+  const token = store.getters['auth/token']
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
 
 app.use(router)
 app.use(store)

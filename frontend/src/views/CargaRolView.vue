@@ -1,14 +1,16 @@
 <template>
   <div class="contenedor-carga">
-    <div class="tarjeta-rol">
-      <!-- Plantilla por defecto para luego cambiarla -->
-      <img class="imagen-personaje" :src="imagenUrl" alt="Bruja" />
-
+    <div class="tarjeta-rol" v-if="nombreRol">
+      <img class="imagen-personaje" :src="imagenUrl" alt="rol" />
       <div class="info-rol">
         <h2>Tu rol es: {{ nombreRol }}</h2>
         <p class="descripcion">{{ descripcionRol }}</p>
         <p class="bando">Bando: {{ bando }}</p>
       </div>
+    </div>
+
+    <div v-else class="esperando">
+      <p>Asignando rol...</p>
     </div>
 
     <p class="mensaje-espera">Espera a que el narrador inicie la partida...</p>
@@ -22,28 +24,20 @@
 </template>
 
 <script>
-// Para ver esta página antes de prepararla para backend hayq ue usar este enlace: http://localhost:5173/carga-rol
 
-// =============================
-// IMPORTS PARA BACKEND (WEBSOCKET)
-// =============================
-// DESCOMENTAR CUANDO SE CONECTE CON SPRING BOOT
+import { Client } from '@stomp/stompjs'
+import SockJS from 'sockjs-client'
 
-// import { Client } from "@stomp/stompjs"
-// import SockJS from 'sockjs-client'
-
-// Plantilla
 import BrujaImg from '@/assets/imgs/bruja.jpg'
-
+import { mapActions } from 'vuex'
 export default {
   name: 'CargaRolView',
   data() {
     return {
-      nombreRol: 'BRUJA',
-      descripcionRol:
-        'La Bruja puede salvar a un jugador por la noche o envenenar a otro. Usa tu habilidad sabiamente.',
-      bando: 'BUENO',
-      imagenUrl: BrujaImg,
+      nombreRol: '',
+      descripcionRol: '',
+      bando: '',
+      imagenUrl: null,
       frases: [
         'Cuando las barbas de tu vecino veas cortar pon las tuyas a remojar ',
         'El lobo ya no come la carne que quiere, sino la que puede',
@@ -51,108 +45,79 @@ export default {
         'Las apariencias engañan, la criatura más dulce puede ser la más diabólica',
       ],
       fraseActual: 0,
-
-      // =============================
-      // VARIABLES WEBSOCKET (BACKEND)
-      // =============================
-
-      // stompClient: null,
-      // codigoSala: '', // Se puede tomar de localStorage o de ruta
-      // token: '', // Token de autenticación
+      stompClient: null,
     }
   },
 
   created() {
-
-    // =============================
-    // ROTACIÓN DE FRASES (FRONTEND)
-    // =============================
-
+    const esCreador = this.$store.getters['sala/esCreador']
+    if (esCreador) {
+      this.$router.push({ name: 'narrador' })
+      return
+    }
     setInterval(() => {
       this.fraseActual = (this.fraseActual + 1) % this.frases.length
     }, 8000)
 
-    // =============================
-    // DATOS LOCALES PARA PRUEBAS
-    // =============================
-
-    // this.codigoSala = localStorage.getItem('codigoSala') || ''
-    // this.token = localStorage.getItem('token') || ''
-
-    // =============================
-    // CONEXIÓN WEBSOCKET (BACKEND)
-    // =============================
-
-    // this.conectarWebSocket()
-  },
-
-  methods: {
-
-    // ====================================
-    // MÉTODO PARA BACKEND CON WEBSOCKET
-    // ====================================
-    // DESCOMENTAR CUANDO EL BACKEND ESTÉ LISTO
-
-    /*
-    conectarWebSocket() {
-
-      const socket = new SockJS('http://localhost:8080/ws') // URL del backend
-
-      this.stompClient = new Client({
-
-        webSocketFactory: () => socket,
-        connectHeaders: { Authorization: `Bearer ${this.token}` },
-        debug: str => console.log(str),
-        reconnectDelay: 5000
-
-      });
-
-      this.stompClient.onConnect = frame => {
-
-        this.stompClient.subscribe(`/user/queue/rol`, message => {
-
-          const payload = JSON.parse(message.body);
-
-          if (payload.tipo === 'ROL_ASIGNADO') {
-
-            this.nombreRol = payload.nombreRol;
-            this.descripcionRol = payload.descripcionRol;
-            this.bando = payload.bando;
-
-            // Imagen según el rol (por ahora ejemplo)
-            // Puedes mapear nombreRol -> ruta imagen local
-            this.imagenUrl = this.getImagenPorRol(payload.nombreRol)
-
-            // Redirigir automáticamente según el rol
-            if (payload.nombreRol.toUpperCase() === 'NARRADOR') {
-              this.$router.push('/narrador')
-            } else {
-              this.$router.push('/jugador')
-            }
-
+    const nombreRol = this.$store.getters['sala/miRol']
+    if (nombreRol) {
+      this.nombreRol = nombreRol
+      this.descripcionRol = this.$store.getters['sala/miRolDescripcion']
+      this.bando = this.$store.getters['sala/miBando']
+      this.imagenUrl = this.getImagenPorRol(nombreRol)
+      setTimeout(() => this.$router.push({ name: 'jugador' }), 5000)
+    } else {
+      const unwatch = this.$watch(
+        () => this.$store.getters['sala/miRol'],
+        (nuevoRol) => {
+          if (nuevoRol) {
+            this.nombreRol = nuevoRol
+            this.descripcionRol = this.$store.getters['sala/miRolDescripcion']
+            this.bando = this.$store.getters['sala/miBando']
+            this.imagenUrl = this.getImagenPorRol(nuevoRol)
+            setTimeout(() => this.$router.push({ name: 'jugador' }), 5000)
+            unwatch()
           }
-
-        });
-
-      };
-
-      this.stompClient.onStompError = frame => {
-        console.error("Error STOMP:", frame.headers["message"]);
-      };
-
-      this.stompClient.activate();
-
-    },
-    */
-
-    getImagenPorRol(nombreRol) {
-      // Mapeo de ejemplo, luego usar imágenes locales
-      const map = {
-        BRUJA: BrujaImg,
-        LOBO: BrujaImg,
-        ALCALDE: BrujaImg,
+        },
+      )
+    }
+  },
+  methods: {
+    ...mapActions('sala', ['setRol']),
+    conectarWebSocket() {
+      const token = this.$store.getters['auth/token']
+      const codigoSala = this.$store.getters['sala/codigoSala']
+      const socket = new SockJS('http://localhost:8080/ws')
+      this.stompClient = new Client({
+        webSocketFactory: () => socket,
+        connectHeaders: { Authorization: `Bearer ${token}` },
+        reconnectDelay: 5000,
+      })
+      this.stompClient.onConnect = () => {
+        this.stompClient.subscribe('/user/queue/rol', (message) => {
+          const payload = JSON.parse(message.body)
+          if (payload.tipo === 'ROL_ASIGNADO') {
+            this.nombreRol = payload.nombreRol
+            this.descripcionRol = payload.descripcionRol
+            this.bando = payload.bando
+            this.imagenUrl = this.getImagenPorRol(payload.nombreRol)
+            this.setRol({
+              nombreRol: payload.nombreRol,
+              descripcionRol: payload.descripcionRol,
+              bando: payload.bando,
+            })
+            setTimeout(() => this.$router.push({ name: 'jugador' }), 5000)
+          }
+        })
       }
-      return map[nombreRol] || BrujaImg
+      this.stompClient.onStompError = (frame) => {
+        console.error('Error STOMP:', frame.headers['message'])
+      }
+      this.stompClient.activate()
+    },
+    getImagenPorRol(nombreRol) {
+      const map = { BRUJA: BrujaImg, LOBO: BrujaImg }
+      return map[nombreRol.toUpperCase()] || BrujaImg
     },
   },
 }

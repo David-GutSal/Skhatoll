@@ -1,10 +1,7 @@
 <template>
-  <div id="app">
-    <TopBar/>
-    <Header/>
-    <Navbar/>
-    <router-view/>
-  </div>
+    <main class="contenido">
+      <h1>Contenido aquí</h1>
+    </main>
 </template>
 
 <script>
@@ -13,19 +10,24 @@ import Header from "@/components/layout/Header.vue"
 import Navbar from "@/components/layout/Navbar.vue"
 
 export default {
-  name: "App",
-  components: { TopBar, Header, Navbar }
+  name:"InicioView",
+  components:{
+    TopBar,
+    Header,
+    Navbar
+  }
 }
 </script>
 
-<style>
-#app {
-  display: grid;
+<style scoped>
+.pagina{
+  display:grid;
   grid-template-rows: auto auto auto 1fr;
-  min-height: 100vh;
+  min-height:100vh;
 }
 
-#app > router-view {
-  padding: 20px;
+.contenido{
+  padding:40px;
+  text-align:center;
 }
 </style>

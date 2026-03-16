@@ -219,8 +219,8 @@ O puedes registrar una cuenta nueva desde la pantalla de inicio.
 
 1. **Crear sala** — uno de los usuarios entra en *Sala de juegos* y pulsa *Crear sala*. Se generará un código único de sala
 2. **Unirse** — el resto de usuarios pulsan *Unirse a sala* e introducen el código generado
-3. **Asignar narrador** — el creador de la sala selecciona a un jugador de la lista como narrador
-4. **Iniciar partida** — el narrador pulsa *Comenzar partida* y a cada jugador se le asigna un rol en secreto
+3. **Asignar narrador** — el creador de la sala selecciona a un jugador de la lista como narrador. Por ahora solo el que crea la sala se seleccionara como narrador.
+4. **Iniciar partida** — el creador de la sala pulsa *Comenzar partida* y a cada jugador se le asigna un rol en secreto.
 5. **Durante la partida:**
    - Los jugadores disponen de un botón **Mi Rol** para consultar su personaje en cualquier momento
    - El **sol** y la **luna** en la pantalla del narrador son el botón para cambiar entre el día y la noche
@@ -228,7 +228,7 @@ O puedes registrar una cuenta nueva desde la pantalla de inicio.
 
 #### Variables
 ```
-Estaran junto al enlace de entrega del proyecto, debido a seguridad de git
+Estaran junto al enlace de entrega del proyecto o un comentario, debido a seguridad de git.
 ```
 
 _Posibles errores:_

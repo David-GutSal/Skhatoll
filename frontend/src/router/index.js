@@ -2,8 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import InicioView from '../views/InicioView.vue'
 import SalaView from '../views/SalaView.vue'
-import ReglasPersonajesView from '../views/ReglasPersonajesView.vue'
-import ContactoView from '../views/ContactoView.vue' /* Esta es provisional. Quizás hay algo mejor para poner aquí*/
+import ReglasView from '../views/ReglasView.vue'
+import PersonajesView from '../views/PersonajesView.vue'
 
 import LobbyView from '../views/LobbyView.vue'
 import CargaRolView from '../views/CargaRolView.vue'
@@ -25,12 +25,12 @@ const routes = [
   {
     path: '/reglas',
     name: 'reglas',
-    component: ReglasPersonajesView,
+    component: ReglasView,
   },
   {
-    path: '/contacto',
-    name: 'contacto',
-    component: ContactoView,
+    path: '/personajes',
+    name: 'personajes',
+    component: PersonajesView,
   },
 
   {

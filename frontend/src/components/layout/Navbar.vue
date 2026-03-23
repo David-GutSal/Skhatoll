@@ -71,7 +71,7 @@ export default {
   width: 100%;
 }
  
-@media (max-width: 600px) {
+@media (max-width: 690px) {
   .navbar {
     flex-direction: column;
     gap: 14px;

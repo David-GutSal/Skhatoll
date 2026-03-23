@@ -19,6 +19,15 @@ export default {
 </script>
 
 <style>
+
+body {
+  font-family: 'Raleway', Arial, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Cinzel', Arial, sans-serif;
+}
+
 #app {
   display: grid;
   grid-template-rows: auto auto auto 1fr;

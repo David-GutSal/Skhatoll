@@ -13,6 +13,6 @@ export default {
 <style scoped>
 .header img{
   width:100%;
-
+   display: block;
 }
 </style>

@@ -346,7 +346,7 @@ export default {
   gap: 5px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 690px) {
   .topbar {
     padding: 14px 20px;
     flex-direction: column;

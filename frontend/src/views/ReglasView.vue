@@ -1,5 +1,5 @@
 <template>
   <div class="container mt-5">
-    <h1>Reglas y personajes</h1>
+    <h1>REGLAS Y JUEGOS</h1>
   </div>
 </template>

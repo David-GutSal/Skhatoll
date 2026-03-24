@@ -43,7 +43,7 @@ export default {
   justify-content: center;
   align-items: center;
 
-  min-height: 70vh;
+  min-height: 900vh;
 }
 
 .caja-sala {

@@ -60,13 +60,13 @@ h1, h2, h3, h4, h5, h6 {
 .sticky-topbar {
   position: sticky;
   top: 0;
-  z-index: 101;
+  z-index: 102;
 }
 
 .sticky-navbar {
   position: sticky;
   top: 95px;
-  z-index: 102;
+  z-index: 101;
 }
 
 .sticky-navbar.scrolled {

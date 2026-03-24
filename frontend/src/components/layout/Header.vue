@@ -1,6 +1,6 @@
 <template>
   <div class="header">
-    <img src="@/assets/imgs/imagen-provisional.png" alt="cabecera">
+    <img src="@/assets/imgs/imagen-header.jpg" alt="cabecera pueblo ">
   </div>
 </template>
 
@@ -13,6 +13,6 @@ export default {
 <style scoped>
 .header img{
   width:100%;
-  height:auto;
+
 }
 </style>

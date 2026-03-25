@@ -120,35 +120,60 @@ export default {
 }
 
 .subtitulo {
-  color: #ccc;
+  color: #ffffff;
   font-family: 'Raleway', Arial, sans-serif;
-  font-size: 1rem;
+  font-size: 1.5rem;
   font-style: italic;
   letter-spacing: 0.05em;
   margin: 24px 0 0 0;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1185px) {
   .caja-sala {
-    width: 90%;
+    width: 70%;
+    padding: 24px 16px;
+    
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 765px) {
   .caja-sala {
-    padding: 24px 16px;
-  }
-  .titulo {
-    font-size: 1.4rem;
+    width: 85%;
+    
   }
   .botones-sala {
     flex-direction: column;
-    gap: 16px;
   }
+}
+
+@media (max-width: 615px) {
+  .caja-sala {
+    width: 95%;
+    padding: 20px 12px;
+  }
+
+  .botones-sala {
+  gap: 20px;
+  padding: 15px;
+  }
+}
+
+@media (max-width: 420px) {
+  .caja-sala {
+    width: 100%;
+    padding: 20px 12px;
+  }
+
+  .botones-sala {
+  gap: 10px;
+  padding: 10px;
+  }
+
   .boton-sala {
-    padding: 14px 24px;
-    font-size: 0.95rem;
-    width: 80%;
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: 500;
   }
+
 }
 </style>

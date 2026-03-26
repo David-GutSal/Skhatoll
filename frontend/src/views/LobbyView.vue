@@ -327,7 +327,7 @@ export default {
   width: 100%;
   border-radius: 50px;
   overflow: hidden;
-  border: 6px solid #e4ba03;
+  border: 5px solid #e4ba03;
   background: white;
 }
 
@@ -358,7 +358,7 @@ export default {
 }
 
 .boton-copiar:hover {
-  background: #6a0000;
+  background: #580000;
 }
 
 .subtitulo-caja {
@@ -457,10 +457,11 @@ export default {
 }
 
 .input-jugador {
+  margin: 15px auto;
   width: 100%;
   box-sizing: border-box;
   background: white;
-  border: 3px solid #a30000;
+  border: 5px solid #a30000;
   border-radius: 50px;
   font-size: 1.2rem;
   font-family: 'Raleway', Arial, sans-serif;
@@ -488,7 +489,7 @@ export default {
 }
 
 .boton-unirse {
-  background: #8b0000;
+  background: #a30000;
   color: white;
   border: none;
   padding: 13px 28px;
@@ -504,7 +505,7 @@ export default {
 }
 
 .boton-unirse:hover {
-  background: #a30000;
+  background: #640000;
 }
 .boton-unirse:active {
   transform: scale(0.95);

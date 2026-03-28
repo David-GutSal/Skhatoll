@@ -1,9 +1,6 @@
 package com.skhatoll.backend.service.impl.sala;
 
-import com.skhatoll.backend.dto.sala.AsignarNarradorRequest;
-import com.skhatoll.backend.dto.sala.CrearSalaResponse;
-import com.skhatoll.backend.dto.sala.JugadorDto;
-import com.skhatoll.backend.dto.sala.UnirseRequest;
+import com.skhatoll.backend.dto.sala.*;
 import com.skhatoll.backend.entities.Rol;
 import com.skhatoll.backend.entities.Sala;
 import com.skhatoll.backend.entities.SalaUsuario;
@@ -237,5 +234,30 @@ public class SalaService implements ISalaService {
         } while (salaRepository.existsByCodigoSala(codigo));
 
         return codigo;
+    }
+
+    public List<JugadorRolDto> getJugadoresConRol(String codigoSala) {
+        Usuario solicitante = getUsuarioAutenticado();
+
+        Sala sala = salaRepository.findByCodigoSala(codigoSala)
+                .orElseThrow(() -> new IllegalArgumentException("Sala no encontrada"));
+
+        // Solo el narrador puede ver los roles
+        if (!sala.getNarrador().getIdUsuario().equals(solicitante.getIdUsuario())) {
+            throw new IllegalStateException("Solo el narrador puede ver los roles");
+        }
+
+        return salaUsuarioRepository.findBySala_IdSala(sala.getIdSala())
+                .stream()
+                .filter(su -> !su.getUsuario().getIdUsuario()
+                        .equals(sala.getNarrador().getIdUsuario()))
+                .map(su -> new JugadorRolDto(
+                        su.getUsuario().getIdUsuario(),
+                        su.getUsuario().getNombre(),
+                        su.getUsuario().getCodigoUuid(),
+                        su.getEstaVivo(),
+                        su.getRol() != null ? su.getRol().getNombre() : "Sin rol",
+                        su.getRol() != null ? su.getRol().getBando().name() : ""))
+                .toList();
     }
 }

@@ -1,9 +1,6 @@
 package com.skhatoll.backend.controller;
 
-import com.skhatoll.backend.dto.sala.AsignarNarradorRequest;
-import com.skhatoll.backend.dto.sala.CrearSalaResponse;
-import com.skhatoll.backend.dto.sala.JugadorDto;
-import com.skhatoll.backend.dto.sala.UnirseRequest;
+import com.skhatoll.backend.dto.sala.*;
 import com.skhatoll.backend.service.interfaces.sala.ISalaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -95,6 +92,20 @@ public class SalaController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
+    }
+
+    // GET /salas/{codigo}/roles
+    // Solo accesible para el narrador
+    @GetMapping("/{codigo}/roles")
+    public ResponseEntity<?> getJugadoresConRol(@PathVariable String codigo) {
+        try {
+            List<JugadorRolDto> jugadores = salaService.getJugadoresConRol(codigo);
+            return ResponseEntity.ok(jugadores);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
     }
 }

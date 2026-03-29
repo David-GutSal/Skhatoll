@@ -4,7 +4,8 @@ export default {
   state: () => ({
     codigoSala: null,
     esCreador: false,
-    jugadores: [],
+    jugadores: [],          // lista básica — todos los jugadores
+    jugadoresConRol: [],    // lista con roles — solo visible para el narrador
     miRol: null,
     miRolDescripcion: null,
     miBando: null,
@@ -21,6 +22,9 @@ export default {
     SET_JUGADORES(state, jugadores) {
       state.jugadores = jugadores
     },
+    SET_JUGADORES_CON_ROL(state, jugadores) {
+      state.jugadoresConRol = jugadores
+    },
     SET_ROL(state, { nombreRol, descripcionRol, bando }) {
       state.miRol = nombreRol
       state.miRolDescripcion = descripcionRol
@@ -30,37 +34,51 @@ export default {
       state.fase = fase
     },
     MARCAR_MUERTO(state, nombreJugador) {
-      const jugador = state.jugadores.find((j) => j.nombre === nombreJugador)
-      if (jugador) jugador.estaVivo = false
+      // Actualiza en ambas listas
+      const j1 = state.jugadores.find((j) => j.nombre === nombreJugador)
+      if (j1) j1.estaVivo = false
+      const j2 = state.jugadoresConRol.find((j) => j.nombre === nombreJugador)
+      if (j2) j2.estaVivo = false
     },
     ACTUALIZAR_VOTOS(state, votos) {
-      // Resetear votos
-      state.jugadores.forEach((j) => (j.votos = 0))
-      
-      if (Array.isArray(votos)) {
-        votos.forEach((v) => {
-          const objetivo = state.jugadores.find((j) => j.nombre === v.nombreObjetivo)
-          if (objetivo) objetivo.votos = (objetivo.votos || 0) + 1
-        })
-      } else {
-        Object.keys(votos).forEach((nombre) => {
-          const jugador = state.jugadores.find((j) => j.nombre === nombre)
-          if (jugador) jugador.votos = votos[nombre]
-        })
+      const actualizar = (lista) => {
+        lista.forEach((j) => (j.votos = 0))
+        if (Array.isArray(votos)) {
+          votos.forEach((v) => {
+            const obj = lista.find((j) => j.nombre === v.nombreObjetivo)
+            if (obj) obj.votos = (obj.votos || 0) + 1
+          })
+        } else {
+          Object.keys(votos).forEach((nombre) => {
+            const obj = lista.find((j) => j.nombre === nombre)
+            if (obj) obj.votos = votos[nombre]
+          })
+        }
       }
+      actualizar(state.jugadores)
+      actualizar(state.jugadoresConRol)
     },
     DESIGNAR_ALCALDE(state, nombreJugador) {
-      state.jugadores.forEach((j) => (j.alcalde = false))
-      const jugador = state.jugadores.find((j) => j.nombre === nombreJugador)
-      if (jugador) jugador.alcalde = true
+      const actualizar = (lista) => {
+        lista.forEach((j) => (j.alcalde = false))
+        const j = lista.find((j) => j.nombre === nombreJugador)
+        if (j) j.alcalde = true
+      }
+      actualizar(state.jugadores)
+      actualizar(state.jugadoresConRol)
     },
     TURNO_NOCTURNO(state, nombreJugador) {
-      state.jugadores.forEach((j) => (j.esTurno = false))
-      const jugador = state.jugadores.find((j) => j.nombre === nombreJugador)
-      if (jugador) jugador.esTurno = true
+      const actualizar = (lista) => {
+        lista.forEach((j) => (j.esTurno = false))
+        const j = lista.find((j) => j.nombre === nombreJugador)
+        if (j) j.esTurno = true
+      }
+      actualizar(state.jugadores)
+      actualizar(state.jugadoresConRol)
     },
     REINICIAR_VOTOS(state) {
       state.jugadores.forEach((j) => (j.votos = 0))
+      state.jugadoresConRol.forEach((j) => (j.votos = 0))
     },
     SET_RESULTADO(state, { bandoGanador, mensaje }) {
       state.bandoGanador = bandoGanador
@@ -70,6 +88,7 @@ export default {
       state.codigoSala = null
       state.esCreador = false
       state.jugadores = []
+      state.jugadoresConRol = []
       state.miRol = null
       state.miRolDescripcion = null
       state.miBando = null
@@ -86,6 +105,9 @@ export default {
     },
     setJugadores({ commit }, jugadores) {
       commit('SET_JUGADORES', jugadores)
+    },
+    setJugadoresConRol({ commit }, jugadores) {
+      commit('SET_JUGADORES_CON_ROL', jugadores)
     },
     setRol({ commit }, rol) {
       commit('SET_ROL', rol)
@@ -121,6 +143,7 @@ export default {
     codigoSala:       (state) => state.codigoSala,
     esCreador:        (state) => state.esCreador,
     jugadores:        (state) => state.jugadores,
+    jugadoresConRol:  (state) => state.jugadoresConRol,
     miRol:            (state) => state.miRol,
     miRolDescripcion: (state) => state.miRolDescripcion,
     miBando:          (state) => state.miBando,

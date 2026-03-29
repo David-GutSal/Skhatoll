@@ -10,6 +10,7 @@ import CargaRolView from '../views/CargaRolView.vue'
 import NarradorView from '../views/NarradorView.vue'
 import JugadorView from '../views/JugadorView.vue'
 import ResultadosView from '../views/ResultadosView.vue'
+import EsperaNarradorView from '../views/EsperaNarradorView.vue'
 
 const routes = [
   {
@@ -44,16 +45,25 @@ const routes = [
     name: 'cargaRol',
     component: CargaRolView,
   },
+
+  {
+    path: '/espera-narrador',
+    name: 'esperaNarrador',
+    component: EsperaNarradorView,
+  },
+
   {
     path: '/narrador',
     name: 'narrador',
     component: NarradorView,
   },
+
   {
     path: '/jugador',
     name: 'jugador',
     component: JugadorView,
   },
+  
   {
     path: '/resultados',
     name: 'resultados',

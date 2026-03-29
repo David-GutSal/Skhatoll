@@ -1,44 +1,44 @@
-import { gameState } from '../store/gameState'
+// Ahora usa GameEvents que centraliza todo en Vuex
+import { GameEvents } from '@/store/GameEvents'
 
 export function enviarEvento(tipo, data) {
-  // plantilla envío backend
+  // plantilla envío backend — pendiente de implementar con stompClient
   /*
-stompClient.send(
-"/app/evento",
-{},
-JSON.stringify({
-tipo,
-...data
-})
-)
-*/
+  stompClient.send(
+    "/app/evento",
+    {},
+    JSON.stringify({ tipo, ...data })
+  )
+  */
 }
 
 export function procesarEvento(payload) {
   switch (payload.tipo) {
     case 'FASE':
-      gameState.fase = payload.fase
-
+      GameEvents.cambiarFase(payload.fase)
       break
 
     case 'VOTACION':
-      Object.keys(payload.votos).forEach((nombre) => {
-        const jugador = gameState.jugadores.find((j) => j.nombre === nombre)
-
-        if (jugador) {
-          jugador.votos = payload.votos[nombre]
-        }
-      })
-
+      GameEvents.procesarVotacion(payload.votos)
       break
 
     case 'MUERTE':
-      const muerto = gameState.jugadores.find((j) => j.nombre === payload.jugador)
-
-      if (muerto) {
-        muerto.vivo = false
-      }
-
+      GameEvents.marcarMuerto(payload.jugador)
       break
+
+    case 'ALCALDE':
+      GameEvents.designarAlcalde(payload.jugador)
+      break
+
+    case 'TURNO':
+      GameEvents.turnoNocturno(payload.jugador)
+      break
+
+    case 'REINICIAR_VOTOS':
+      GameEvents.reiniciarVotos()
+      break
+
+    default:
+      console.warn('Evento desconocido:', payload.tipo)
   }
 }

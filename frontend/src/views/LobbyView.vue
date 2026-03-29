@@ -3,9 +3,7 @@
     <h1 class="titulo-lobby">Sala de Juegos</h1>
 
     <div class="grid-lobby">
-
       <div class="lado-izquierdo">
-
         <template v-if="esCreador">
           <div class="caja-panel">
             <div class="overlay">
@@ -98,8 +96,11 @@
             </div>
           </div>
         </template>
+        <!-- Indicador del narrador, pendiente de arreglar que desaparezca en el tablero -->
+        <div class="narrador-indicador" v-if="nombreNarrador">
+          <i class="fa-solid fa-book-open-reader"></i> Narrador: {{ nombreNarrador }}
+        </div>
       </div>
-
       <ListaJugadores
         :jugadores="jugadores"
         :modoCreador="esCreador"
@@ -183,7 +184,8 @@ export default {
       try {
         await axiosInstance.post(`/salas/${this.codigoSala}/iniciar`)
       } catch (error) {
-        alert(error.response?.status === 409 ? 'No hay suficientes jugadores' : 'Error al iniciar')
+        console.log('Mensaje backend:', error.response?.data)
+        alert(error.response?.data || 'Error al iniciar')
       }
     },
 
@@ -465,6 +467,7 @@ export default {
   border-radius: 50px;
   font-size: 1.2rem;
   font-family: 'Raleway', Arial, sans-serif;
+  font-weight: bolder;
   color: #111;
   padding: 14px 24px;
   text-align: center;
@@ -532,6 +535,20 @@ export default {
 }
 .boton-salir-jugador:active {
   transform: scale(0.95);
+}
+
+.narrador-indicador {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #cc0000;
+  font-family: 'Cinzel', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 10px 14px;
+  background: #1f1f1f;
+  border-radius: 8px;
+  border-left: 4px solid #8b0000;
 }
 
 .mensaje-union {

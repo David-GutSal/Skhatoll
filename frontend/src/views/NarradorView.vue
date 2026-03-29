@@ -1,8 +1,10 @@
 <template>
   <div class="contenedor-narrador" :class="{ noche: !esDia }">
-    <div class="cabecera">
-      <div class="narrador-box">Narrador: {{ nombre }}</div>
 
+    <div class="cabecera">
+      <div class="narrador-box">
+        <i class="fa-solid fa-book-open-reader"></i> Narrador: {{ nombre }}
+      </div>
       <IndicadorDiaNoche :esDia="esDia" @cambiarFase="cambiarFase" />
     </div>
 
@@ -15,11 +17,14 @@
       @eventos="iniciarEventos"
     />
 
+    <!-- El narrador ve la mesa con roles visibles -->
     <MesaJugadores
-      :jugadores="jugadores"
+      :jugadores="jugadoresConRol"
       :esDia="esDia"
+      :modoNarrador="true"
       @seleccionarJugador="activarTurnoJugador"
     />
+
   </div>
 </template>
 
@@ -33,6 +38,8 @@ import PanelControlNarrador from '@/components/juego/PanelControlNarrador.vue'
 import MesaJugadores from '@/components/juego/MesaJugadores.vue'
 
 export default {
+  name: 'NarradorView',
+
   components: {
     IndicadorDiaNoche,
     PanelControlNarrador,
@@ -49,16 +56,28 @@ export default {
 
   computed: {
     ...mapGetters('auth', ['nombre']),
-    ...mapGetters('sala', ['codigoSala', 'jugadores']),
+    ...mapGetters('sala', ['codigoSala', 'jugadoresConRol']),
     hayAlcalde() {
-      return this.jugadores.some((j) => j.alcalde)
+      return this.jugadoresConRol.some((j) => j.alcalde)
     },
   },
 
   async created() {
-    const res = await axiosInstance.get(`/salas/${this.codigoSala}/jugadores`)
-    this.$store.dispatch('sala/setJugadores', res.data)
+    // El narrador carga la lista con roles visibles
+    try {
+      const res = await axiosInstance.get(`/salas/${this.codigoSala}/roles`)
+      this.$store.dispatch('sala/setJugadoresConRol', res.data)
+    } catch (error) {
+      alert('Error al cargar jugadores')
+    }
     this.conectarWebSocket()
+  },
+
+  beforeUnmount() {
+    if (this.stompClient) {
+      this.stompClient.deactivate()
+      this.stompClient = null
+    }
   },
 
   methods: {
@@ -85,6 +104,7 @@ export default {
         cliente.subscribe(`/topic/partida/${this.codigoSala}/fase`, (msg) => {
           const payload = JSON.parse(msg.body)
           this.esDia = payload.fase === 'DIA'
+          this.$store.dispatch('sala/setFase', payload.fase)
         })
         cliente.subscribe(`/topic/partida/${this.codigoSala}/muerte`, (msg) => {
           const payload = JSON.parse(msg.body)
@@ -164,7 +184,6 @@ export default {
 .contenedor-narrador {
   min-height: 100vh;
   padding: 20px;
-
   background-image: url('@/assets/imgs/fondo.png');
   background-size: cover;
 }
@@ -184,14 +203,20 @@ export default {
 
 .narrador-box {
   background: black;
-  color: red;
-
+  color: #cc0000;
   padding: 12px 20px;
-
-  font-weight: bold;
+  font-family: 'Cinzel', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .noche .narrador-box {
   background: white;
+  color: #8b0000;
 }
 </style>

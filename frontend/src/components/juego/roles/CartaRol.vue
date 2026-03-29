@@ -23,18 +23,18 @@
   <div v-else-if="modoVista === 'narrador'"
     class="carta-mesa carta-narrador"
     :class="{ muerto: !jugador.estaVivo, alcalde: jugador.alcalde }"
-    :style="{ borderColor: jugador.rol ? getColorBando(jugador.bando) : '#555' }"
+    :style="{ borderColor: getColorBando(rolJugador) }"
     @click="$emit('seleccionar', jugador)">
 
     <div class="carta-mesa-imagen">
-      <img :src="getImagenRol(jugador.rol)" :alt="jugador.nombre" />
+      <img :src="getImagenRol(nombreRolJugador)" :alt="jugador.nombre" />
       <span v-if="!jugador.estaVivo" class="overlay-muerto">💀</span>
     </div>
 
     <div class="carta-mesa-datos">
       <p class="carta-mesa-nombre">{{ jugador.nombre }}</p>
-      <p class="carta-mesa-rol" :style="{ color: getColorBando(jugador.bando) }">
-        {{ jugador.rol || '???' }}
+      <p class="carta-mesa-rol" :style="{ color: getColorBando(rolJugador) }">
+        {{ nombreRolJugador || '???' }}
       </p>
     </div>
 
@@ -77,12 +77,12 @@ export default {
   name: 'CartaRol',
 
   props: {
-    
+    // 'carga' | 'miRol' | 'narrador' | 'jugador'
     modoVista: {
       type: String,
       default: 'jugador',
     },
-    
+    // Para modos 'carga' y 'miRol' — datos del propio jugador desde el store
     nombreRol: {
       type: String,
       default: null,
@@ -95,7 +95,8 @@ export default {
       type: String,
       default: null,
     },
-    
+    // Para modos 'narrador' y 'jugador' — objeto jugador completo
+    // Soporta tanto JugadorDto (jugador.rol) como JugadorRolDto (jugador.nombreRol)
     jugador: {
       type: Object,
       default: () => ({}),
@@ -105,13 +106,24 @@ export default {
   emits: ['seleccionar'],
 
   computed: {
-
+    // Imagen para modos carga/miRol
     imagen() {
       return getImagenRol(this.nombreRol)
     },
 
+    // Color del bando para modos carga/miRol
     colorBando() {
       return getColorBando(this.bando)
+    },
+
+    // Nombre del rol del jugador — compatible con JugadorDto y JugadorRolDto
+    nombreRolJugador() {
+      return this.jugador?.rol || this.jugador?.nombreRol || null
+    },
+
+    // Bando del jugador — compatible con JugadorDto y JugadorRolDto
+    rolJugador() {
+      return this.jugador?.bando || null
     },
   },
 
@@ -123,7 +135,7 @@ export default {
 </script>
 
 <style scoped>
-
+/* ── MODO CARGA / MI ROL ── */
 .carta-completa {
   display: flex;
   flex-direction: column;
@@ -230,6 +242,7 @@ export default {
   align-items: center;
   justify-content: center;
   border-radius: 8px;
+  width: 100%;
 }
 
 .carta-imagen-oculta i {
@@ -294,7 +307,6 @@ export default {
   box-shadow: 0 0 0 2px gold;
 }
 
-/* Narrador: borde más visible */
 .carta-narrador {
   border-width: 2px;
 }

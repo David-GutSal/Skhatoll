@@ -1,6 +1,6 @@
 <template>
   <div class="carta" :class="[estadoClase, esDia ? 'dia' : 'noche']" @click="$emit('seleccionar')">
-    <img src="@/assets/imgs/bruja.jpg" />
+    <img src="@/assets/imgs/carta-bruja.jpg" />
 
     <div class="info">
       <p>Jugador: {{ jugador.nombre }}</p>

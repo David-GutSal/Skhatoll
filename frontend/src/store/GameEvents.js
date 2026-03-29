@@ -1,52 +1,35 @@
+// GameEvents unificado — ahora usa Vuex en vez de gameState
+// Úsalo en cualquier componente: import { GameEvents } from '@/store/GameEvents'
 
-import { gameState } from './gameState'
-
+import store from '@/store'
 
 export const GameEvents = {
+
   cambiarFase(fase) {
-    if (fase !== 'DIA' && fase !== 'NOCHE') return
-    gameState.fase = fase
-    console.log(`Fase cambiada a: ${fase}`)
+    store.dispatch('sala/setFase', fase)
   },
 
   procesarVotacion(votos) {
-    Object.keys(votos).forEach((nombre) => {
-      const jugador = gameState.jugadores.find((j) => j.nombre === nombre)
-      if (jugador) jugador.votos = votos[nombre]
-    })
-    console.log(
-      'Votos actualizados:',
-      gameState.jugadores.map((j) => ({ nombre: j.nombre, votos: j.votos })),
-    )
+    store.dispatch('sala/actualizarVotos', votos)
   },
 
   marcarMuerto(nombreJugador) {
-    const jugador = gameState.jugadores.find((j) => j.nombre === nombreJugador)
-    if (jugador) {
-      jugador.estaVivo = false
-      console.log(`Jugador ${nombreJugador} ha muerto`)
-    }
+    store.dispatch('sala/marcarMuerto', nombreJugador)
   },
 
   designarAlcalde(nombreJugador) {
-    gameState.jugadores.forEach((j) => (j.alcalde = false))
-    const jugador = gameState.jugadores.find((j) => j.nombre === nombreJugador)
-    if (jugador) jugador.alcalde = true
-    console.log(`Jugador ${nombreJugador} es el nuevo alcalde`)
+    store.dispatch('sala/designarAlcalde', nombreJugador)
   },
 
   turnoNocturno(nombreJugador) {
-    gameState.jugadores.forEach((j) => (j.esTurno = false))
-    const jugador = gameState.jugadores.find((j) => j.nombre === nombreJugador)
-    if (jugador) jugador.esTurno = true
-    console.log(`Es el turno de ${nombreJugador} en la noche`)
+    store.dispatch('sala/turnoNocturno', nombreJugador)
   },
 
   reiniciarVotos() {
-    gameState.jugadores.forEach((j) => (j.votos = 0))
-    console.log('Votos reiniciados')
+    store.dispatch('sala/reiniciarVotos')
   },
 
+  // Mantiene compatibilidad con el sistema de simulación anterior
   eventoSimulado(tipo, payload) {
     switch (tipo) {
       case 'FASE':

@@ -28,7 +28,7 @@
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
 
-import BrujaImg from '@/assets/imgs/bruja.jpg'
+import BrujaImg from '@/assets/imgs/carta-bruja.jpg'
 import { mapActions } from 'vuex'
 export default {
   name: 'CargaRolView',

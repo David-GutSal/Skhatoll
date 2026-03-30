@@ -62,13 +62,13 @@ h1, h2, h3, h4, h5, h6 {
 .sticky-topbar {
   position: sticky;
   top: 0;
-  z-index: 101;
+  z-index: 200;
 }
 
 .sticky-navbar {
   position: sticky;
   top: 80px;
-  z-index: 102;
+  z-index: 100;
   outline: 3px solid transparent;
 }
 

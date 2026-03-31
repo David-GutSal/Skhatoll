@@ -1,60 +1,60 @@
 <template>
   <div class="contenedor-narrador" :class="esDia ? 'dia' : 'noche'">
-  <div class="contenido">
+    <div class="contenido">
 
-    <div class="cabecera">
-      <div class="nombre-box" :class="esDia ? 'nombre-dia' : 'nombre-noche'">
-        <i class="fa-solid fa-book-open-reader"></i>
-        <span>Narrador: {{ nombre }}</span>
+      <div class="cabecera">
+        <div class="nombre-box" :class="esDia ? 'nombre-dia' : 'nombre-noche'">
+          <i class="fa-solid fa-book-open-reader"></i>
+          <span>Narrador: {{ nombre }}</span>
+        </div>
+        <IndicadorDiaNoche :esDia="esDia" @cambiarFase="cambiarFase" />
+        <div class="carta-fase" :class="esDia ? 'carta-dia' : 'carta-noche'">
+          <p class="carta-fase-titulo">{{ esDia ? 'EL DÍA' : 'LA NOCHE' }}</p>
+          <img :src="esDia ? solImg : lunaImg" class="carta-fase-img" />
+          <p class="carta-fase-texto">
+            {{ esDia
+              ? 'La cálida luz del Sol ahuyenta a las bestias pero no a las sospechas'
+              : 'La clara luz de la luna ilumina a las bestias que acechan entre las sombras'
+            }}
+          </p>
+        </div>
       </div>
-      <IndicadorDiaNoche :esDia="esDia" @cambiarFase="cambiarFase" />
 
-      <div class="carta-fase" :class="esDia ? 'carta-dia' : 'carta-noche'">
-        <p class="carta-fase-titulo">{{ esDia ? ' EL DÍA' : 'LA NOCHE' }}</p>
-        <img :src="esDia ? solImg : lunaImg" class="carta-fase-img" />
-        <p class="carta-fase-texto">
-          {{ esDia
-            ? 'La cálida luz del Sol ahuyenta a las bestias pero no a las sospechas'
-            : 'La clara luz de la luna ilumina a las bestias que acechan entre las sombras'
-          }}
-        </p>
+      <PanelControlNarrador
+        :esDia="esDia"
+        :hayAlcalde="hayAlcalde"
+        @votarLinchamiento="iniciarVotacionLinchamiento"
+        @votarAlcalde="iniciarVotacionAlcalde"
+        @finalizarVotacion="finalizarVotacion"
+        @eventos="iniciarEventos"
+        @verPersonajes="seccionActiva = seccionActiva === 'personajes' ? null : 'personajes'"
+        @verReglas="seccionActiva = seccionActiva === 'reglas' ? null : 'reglas'"
+      />
+
+      <div class="mesa-wrapper-outer">
+        <MesaJugadores
+          :jugadores="jugadoresConRol"
+          :esDia="esDia"
+          :modoNarrador="true"
+          @seleccionarJugador="activarTurnoJugador"
+        />
       </div>
-    
+
+      <div v-if="seccionActiva" class="seccion-info" :class="esDia ? 'seccion-dia' : 'seccion-noche'">
+        <div v-if="seccionActiva === 'personajes'" class="seccion-contenido">
+          <h2 class="seccion-titulo">Personajes</h2>
+          <p class="seccion-placeholder">Lobo · Bruja · Vidente · Aldeano · Cupido · Cazador · Niño Salvaje · Niña</p>
+          <p class="seccion-placeholder"><em>Contenido detallado próximamente...</em></p>
+        </div>
+        <div v-if="seccionActiva === 'reglas'" class="seccion-contenido">
+          <h2 class="seccion-titulo">Reglas</h2>
+          <p class="seccion-placeholder"><em>Contenido de reglas próximamente...</em></p>
+        </div>
+      </div>
+
     </div>
-
-    <PanelControlNarrador
-      :esDia="esDia"
-      :hayAlcalde="hayAlcalde"
-      @votarLinchamiento="iniciarVotacionLinchamiento"
-      @votarAlcalde="iniciarVotacionAlcalde"
-      @finalizarVotacion="finalizarVotacion"
-      @eventos="iniciarEventos"
-      @verPersonajes="seccionActiva = seccionActiva === 'personajes' ? null : 'personajes'"
-      @verReglas="seccionActiva = seccionActiva === 'reglas' ? null : 'reglas'"
-    />
-
-    <MesaJugadores
-      :jugadores="jugadoresConRol"
-      :esDia="esDia"
-      :modoNarrador="true"
-      @seleccionarJugador="activarTurnoJugador"
-    />
-
-    <div v-if="seccionActiva" class="seccion-info" :class="esDia ? 'seccion-dia' : 'seccion-noche'">
-      <div v-if="seccionActiva === 'personajes'" class="seccion-contenido">
-        <h2 class="seccion-titulo">Personajes</h2>
-        <p class="seccion-placeholder">Lobo · Bruja · Vidente · Aldeano · Cupido · Cazador · Niño Salvaje · Niña</p>
-        <p class="seccion-placeholder"><em>Contenido detallado próximamente...</em></p>
-      </div>
-      <div v-if="seccionActiva === 'reglas'" class="seccion-contenido">
-        <h2 class="seccion-titulo">Reglas</h2>
-        <p class="seccion-placeholder"><em>Contenido de reglas próximamente...</em></p>
-      </div>
-    </div>
-  </div>
 
     <div class="footer-aldea" :class="esDia ? 'footer-dia' : 'footer-noche'"></div>
-
   </div>
 </template>
 
@@ -206,18 +206,22 @@ export default {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 0;
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
 }
 
-.dia {
-  background-image: url('@/assets/imgs/fondodia.png');
-}
+.dia { background-image: url('@/assets/imgs/fondodia.png'); }
+.noche { background-image: url('@/assets/imgs/fondonoche.png'); }
 
-.noche {
-  background-image: url('@/assets/imgs/fondonoche.png');
+.contenido {
+  width: 90%;
+  margin: 0 auto;
+  padding-top: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
 }
 
 .cabecera {
@@ -238,6 +242,7 @@ export default {
   font-size: 1.3rem;
   font-weight: 700;
   color: #cc0000;
+  align-self: flex-start;
 }
 
 .nombre-dia { background: #000; }
@@ -248,19 +253,21 @@ export default {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 20px;
+  padding: 16px;
   border-radius: 15px;
-  max-width: 300px;
+  width: clamp(120px, 20vw, 260px);
+  flex-shrink: 0;
 }
 
-.carta-dia { background: white; border: 10px solid #e4ba03; }
-.carta-noche { background: #000; border: 10px solid #cc0000; }
+.carta-dia { background: white; border: 8px solid #e4ba03; }
+.carta-noche { background: #000; border: 8px solid #cc0000; }
 
 .carta-fase-titulo {
   font-family: 'Cinzel', Arial, sans-serif;
   font-weight: 700;
-  font-size: 3rem;
+  font-size: clamp(1.2rem, 3vw, 2.5rem);
   margin: 0;
+  text-align: center;
 }
 
 .carta-dia .carta-fase-titulo { color: #e4ba03; }
@@ -270,7 +277,7 @@ export default {
   width: 100%;
   aspect-ratio: 1/1;
   object-fit: cover;
-  border-radius: 15px;
+  border-radius: 10px;
 }
 
 .carta-dia .carta-fase-img { border: 5px solid #e4ba03; }
@@ -279,7 +286,7 @@ export default {
 .carta-fase-texto {
   font-family: 'Raleway', Arial, sans-serif;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: clamp(0.6rem, 1.2vw, 0.95rem);
   text-align: center;
   font-style: italic;
   line-height: 1.4;
@@ -289,24 +296,23 @@ export default {
 .carta-dia .carta-fase-texto { color: #e4ba03; }
 .carta-noche .carta-fase-texto { color: #cc0000; }
 
-.contenedor-narrador > .mesa-wrapper,
-.contenedor-narrador > :deep(.mesa-wrapper) {
-  margin: 0 20px;
+.mesa-wrapper-outer :deep(.mesa-wrapper) {
+  border-width: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
 }
 
 .seccion-info {
-  margin: 20px;
   border-radius: 12px;
   padding: 24px;
 }
 
 .seccion-dia {
-  background: rgba(0,0,0,0.7);
+  background: rgba(0, 0, 0, 0.7);
   border: 5px solid #e4ba03;
 }
 
 .seccion-noche {
-  background: rgba(0,0,0,0.85);
+  background: rgba(0, 0, 0, 0.85);
   border: 5px solid #cc0000;
 }
 
@@ -325,7 +331,6 @@ export default {
 }
 
 .footer-aldea {
-  margin-top: auto;
   width: 100%;
   height: 900px;
   background-size: cover;
@@ -333,34 +338,11 @@ export default {
   background-repeat: no-repeat;
 }
 
-.footer-dia {
-  background-image: url('@/assets/imgs/footer-dia.png');
-}
-
-.footer-noche {
-  background-image: url('@/assets/imgs/footer-noche.png');
-}
-
-.contenido {
-  width: 90%;
-  margin: 0 auto;
-  padding-top: 70px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
+.footer-dia { background-image: url('@/assets/imgs/footer-dia.png'); }
+.footer-noche { background-image: url('@/assets/imgs/footer-noche.png'); }
 
 @media (max-width: 900px) {
-  .contenido {
-    width: 85%;
-  }
-}
-
-@media (max-width: 600px) {
-  .contenido {
-    width: 95%;
-    padding-top: 20px;
-  }
+  .contenido { width: 85%; }
 }
 
 @media (max-width: 768px) {
@@ -369,7 +351,16 @@ export default {
     align-items: center;
   }
   .carta-fase {
-    max-width: 130px;
+    width: 60%;
+    max-width: 200px;
   }
+}
+
+@media (max-width: 600px) {
+  .contenido {
+    width: 95%;
+    padding-top: 20px;
+  }
+  .nombre-box { font-size: 1rem; }
 }
 </style>

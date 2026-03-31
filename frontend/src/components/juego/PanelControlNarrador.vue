@@ -1,33 +1,31 @@
 <template>
   <div class="panel-control" :class="esDia ? 'dia' : 'noche'">
 
-    <template v-if="esDia">
-      <button
-        class="btn-panel"
-        :disabled="hayAlcalde"
-        @click="$emit('votarAlcalde')"
-      >
-        <i class="fa-solid fa-medal"></i>
-        Hacer Elecciones
-      </button>
+    <div class="panel-principal">
+      <template v-if="esDia">
+        <button class="btn-panel" :disabled="hayAlcalde" @click="$emit('votarAlcalde')">
+          <i class="fa-solid fa-medal"></i>
+          Hacer Elecciones
+        </button>
 
-      <button class="btn-panel" @click="$emit('votarLinchamiento')">
-        <i class="fa-solid fa-face-dizzy"></i>
-        Provocar Linchamiento
-      </button>
+        <button class="btn-panel" @click="$emit('votarLinchamiento')">
+          <i class="fa-solid fa-face-dizzy"></i>
+          Provocar Linchamiento
+        </button>
 
-      <button class="btn-panel" @click="$emit('finalizarVotacion')">
-        <i class="fa-solid fa-calendar-check"></i>
-        Finalizar Votación
-      </button>
-    </template>
+        <button class="btn-panel" @click="$emit('finalizarVotacion')">
+          <i class="fa-solid fa-calendar-check"></i>
+          Finalizar Votación
+        </button>
+      </template>
 
-    <template v-else>
-      <button class="btn-panel btn-eventos" @click="toggleEventos">
-        <i :class="eventosActivos ? 'fa-solid fa-stop' : 'fa-solid fa-play'"></i>
-        {{ eventosActivos ? 'Finalizar Eventos' : 'Iniciar Eventos' }}
-      </button>
-    </template>
+      <template v-else>
+        <button class="btn-panel btn-eventos" @click="toggleEventos">
+          <i :class="eventosActivos ? 'fa-solid fa-stop' : 'fa-solid fa-play'"></i>
+          {{ eventosActivos ? 'Finalizar Eventos' : 'Iniciar Eventos' }}
+        </button>
+      </template>
+    </div>
 
     <div class="btns-info">
       <button class="btn-info" @click="$emit('verPersonajes')">
@@ -68,20 +66,27 @@ export default {
 </script>
 
 <style scoped>
-
 .panel-control {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 20px;
+  border-radius: 15px;
+  background: rgba(0, 0, 0, 0.9) !important;
+}
+
+.panel-principal {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
   flex-wrap: wrap;
-  padding: 16px 20px;
-  margin-bottom: 20px;
 }
 
 .btn-panel {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   padding: 12px 20px;
   border-radius: 10px;
@@ -93,6 +98,8 @@ export default {
   font-size: 0.9rem;
   letter-spacing: 0.04em;
   cursor: pointer;
+  flex: 1;
+  min-width: 160px;
   transition: transform 0.15s ease, background 0.2s ease, color 0.2s ease;
 }
 
@@ -126,14 +133,16 @@ export default {
 .btns-info {
   display: flex;
   gap: 10px;
-  margin-left: auto;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .btn-info {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 10px 16px;
+  padding: 10px 20px;
   border-radius: 10px;
   border: 3px solid #e4ba03;
   background: transparent;
@@ -146,13 +155,14 @@ export default {
 }
 
 .btn-info:hover {
-  background: #000;
+  background: #006199;
+  color:#e4ba03;
   transform: scale(0.96);
 }
 
 .noche .btn-info {
   border-color: #cc0000;
-  color: #cc0000;
+  color: #ffffff;
 }
 
 .noche .btn-info:hover {
@@ -161,16 +171,12 @@ export default {
 }
 
 @media (max-width: 768px) {
-  .panel-control {
+  .panel-principal {
     flex-direction: column;
     align-items: stretch;
   }
-  .btns-info {
-    margin-left: 0;
-    justify-content: center;
-  }
-  .btn-panel, .btn-info {
-    justify-content: center;
+  .btn-panel {
+    width: 100%;
   }
 }
 </style>

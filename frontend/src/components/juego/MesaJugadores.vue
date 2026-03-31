@@ -72,7 +72,6 @@ export default {
   background: rgba(0, 0, 0, 0.45);
 }
 
-/* Sombra en las cartas */
 .mesa :deep(.carta-mesa) {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
 }

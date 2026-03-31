@@ -1,53 +1,53 @@
 <template>
   <div class="contenedor-jugador" :class="esDia ? 'dia' : 'noche'">
-<div class="contenido">
+    <div class="contenido">
 
-    <CabeceraJugador
-      :nombreJugador="nombre"
-      :esDia="esDia"
-      :esNarrador="false"
-    />
-
-    <PanelVotacionesJugador
-      :esDia="esDia"
-      :votacionActiva="votacionActiva"
-      :jugadorSeleccionado="jugadorSeleccionado"
-      @votarAlcalde="votarAlcalde"
-      @votarCulpable="votarCulpable"
-    />
-
-    <div class="mesa-contenedor">
-      <MesaJugadores
-        :jugadores="jugadoresVisibles"
+      <CabeceraJugador
+        :nombreJugador="nombre"
         :esDia="esDia"
-        :modoNarrador="false"
-        @seleccionarJugador="seleccionarJugador"
+        :esNarrador="false"
       />
+
+      <PanelVotacionesJugador
+        :esDia="esDia"
+        :votacionActiva="votacionActiva"
+        :jugadorSeleccionado="jugadorSeleccionado"
+        @votarAlcalde="votarAlcalde"
+        @votarCulpable="votarCulpable"
+      />
+
+      <div class="mesa-wrapper-outer">
+        <MesaJugadores
+          :jugadores="jugadoresVisibles"
+          :esDia="esDia"
+          :modoNarrador="false"
+          @seleccionarJugador="seleccionarJugador"
+        />
+      </div>
+
+      <div v-if="mensajeEvento" class="cuadro-evento" :class="esDia ? 'evento-dia' : 'evento-noche'">
+        <i class="fa-solid fa-bell"></i>
+        {{ mensajeEvento }}
+      </div>
+
+      <div v-if="!esDia && esMiTurno" class="cuadro-evento evento-noche">
+        <i class="fa-solid fa-moon"></i>
+        Cuadro de eventos provisional para cuando el narrador te llame
+      </div>
+
+      <BotonMiRol />
+
+      <ZonaPoderes
+        :miRol="miRol"
+        :jugadorSeleccionado="jugadorSeleccionado"
+        :esMiTurno="esMiTurno"
+        @devorar="devorarJugador"
+        @premonicion="usarPremonicion"
+      />
+
     </div>
-
-    <div v-if="mensajeEvento" class="cuadro-evento" :class="esDia ? 'evento-dia' : 'evento-noche'">
-      <i class="fa-solid fa-bell"></i>
-      {{ mensajeEvento }}
-    </div>
-
-    <div v-if="!esDia && esMiTurno" class="cuadro-evento evento-noche">
-      <i class="fa-solid fa-moon"></i>
-      Cuadro de eventos provisional para cuando el narrador te llame
-    </div>
-
-    <BotonMiRol />
-
-    <ZonaPoderes
-      :miRol="miRol"
-      :jugadorSeleccionado="jugadorSeleccionado"
-      :esMiTurno="esMiTurno"
-      @devorar="devorarJugador"
-      @premonicion="usarPremonicion"
-    />
-</div>
 
     <div class="footer-aldea" :class="esDia ? 'footer-dia' : 'footer-noche'"></div>
-
   </div>
 </template>
 
@@ -200,7 +200,6 @@ export default {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 0;
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -209,11 +208,25 @@ export default {
 .dia { background-image: url('@/assets/imgs/fondodia.png'); }
 .noche { background-image: url('@/assets/imgs/fondonoche.png'); }
 
+.contenido {
+  width: 90%;
+  margin: 0 auto;
+  padding-top: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+}
+
+.mesa-wrapper-outer :deep(.mesa-wrapper) {
+  border-width: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
 .cuadro-evento {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 16px 20px;
   padding: 14px 20px;
   border-radius: 10px;
   font-family: 'Raleway', Arial, sans-serif;
@@ -222,21 +235,20 @@ export default {
 }
 
 .evento-dia {
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   border: 2px solid #e4ba03;
   color: #e4ba03;
 }
 
 .evento-noche {
-  background: rgba(0,0,0,0.7);
+  background: rgba(0, 0, 0, 0.7);
   border: 2px solid #cc0000;
   color: #cc0000;
 }
 
 .footer-aldea {
-  margin-top: auto;
   width: 100%;
-  height: 120px;
+  height: 900px;
   background-size: cover;
   background-position: bottom;
   background-repeat: no-repeat;
@@ -245,34 +257,14 @@ export default {
 .footer-dia { background-image: url('@/assets/imgs/footer-dia.png'); }
 .footer-noche { background-image: url('@/assets/imgs/footer-noche.png'); }
 
-.contenido {
-  width: 90%;
-  margin: 0 auto;
-  padding-top: 70px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
 @media (max-width: 900px) {
-  .contenido {
-    width: 85%;
-  }
+  .contenido { width: 85%; }
 }
 
 @media (max-width: 600px) {
   .contenido {
     width: 95%;
     padding-top: 20px;
-  }
-}
-
-@media (max-width: 768px) {
-  .mesa-contenedor {
-    padding: 0 10px;
-  }
-  .cuadro-evento {
-    margin: 12px 10px;
   }
 }
 </style>

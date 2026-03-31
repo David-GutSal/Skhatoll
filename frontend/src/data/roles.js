@@ -1,5 +1,3 @@
-// Imágenes y colores de cada rol — las descripciones vienen del backend
-
 import brujaImg     from '@/assets/imgs/carta-bruja.jpg'
 import aldeanoImg   from '@/assets/imgs/carta-aldeano.jpg'
 import cazadorImg   from '@/assets/imgs/carta-cazador.jpg'
@@ -9,7 +7,6 @@ import ninnaImg     from '@/assets/imgs/carta-ninna.jpg'
 import ninnoImg     from '@/assets/imgs/carta-ninno.jpg'
 import cupidoImg    from '@/assets/imgs/carta-cupido.jpg'
 
-// ── MAPA DE IMÁGENES ──────────────────────────────────────────
 export const IMAGENES_ROL = {
   BRUJA:          brujaImg,
   ALDEANO:        aldeanoImg,
@@ -21,14 +18,12 @@ export const IMAGENES_ROL = {
   CUPIDO:         cupidoImg,
 }
 
-// ── COLORES POR BANDO ─────────────────────────────────────────
 export const COLORES_BANDO = {
   lobo:     '#8b0000',
   aldea:    '#2d5a1b',
   narrador: '#1a3a5c',
 }
 
-// ── HELPERS ───────────────────────────────────────────────────
 export function getImagenRol(nombreRol) {
   if (!nombreRol) return brujaImg
   return IMAGENES_ROL[nombreRol.toUpperCase()] || brujaImg
@@ -39,7 +34,6 @@ export function getColorBando(bando) {
   return COLORES_BANDO[bando.toLowerCase()] || '#555'
 }
 
-// ── FRASES ROTATIVAS ─────────────────────────────────────────
 export const FRASES = [
   'Cuando las barbas de tu vecino veas cortar, pon las tuyas a remojar.',
   'El lobo ya no come la carne que quiere, sino la que puede.',

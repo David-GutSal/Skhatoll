@@ -1,6 +1,12 @@
 <template>
-  <div class="contenedor-jugador">
-    <CabeceraJugador :nombreJugador="nombre" :esDia="esDia" />
+  <div class="contenedor-jugador" :class="esDia ? 'dia' : 'noche'">
+<div class="contenido">
+
+    <CabeceraJugador
+      :nombreJugador="nombre"
+      :esDia="esDia"
+      :esNarrador="false"
+    />
 
     <PanelVotacionesJugador
       :esDia="esDia"
@@ -10,14 +16,26 @@
       @votarCulpable="votarCulpable"
     />
 
-    <MesaJugadores
-      :jugadores="jugadoresVisibles"
-      :jugadorSeleccionado="jugadorSeleccionado"
-      :esDia="esDia"
-      @seleccionarJugador="seleccionarJugador"
-    />
+    <div class="mesa-contenedor">
+      <MesaJugadores
+        :jugadores="jugadoresVisibles"
+        :esDia="esDia"
+        :modoNarrador="false"
+        @seleccionarJugador="seleccionarJugador"
+      />
+    </div>
 
-    <BotonMiRol :miRol="miRol" />
+    <div v-if="mensajeEvento" class="cuadro-evento" :class="esDia ? 'evento-dia' : 'evento-noche'">
+      <i class="fa-solid fa-bell"></i>
+      {{ mensajeEvento }}
+    </div>
+
+    <div v-if="!esDia && esMiTurno" class="cuadro-evento evento-noche">
+      <i class="fa-solid fa-moon"></i>
+      Cuadro de eventos provisional para cuando el narrador te llame
+    </div>
+
+    <BotonMiRol />
 
     <ZonaPoderes
       :miRol="miRol"
@@ -26,6 +44,10 @@
       @devorar="devorarJugador"
       @premonicion="usarPremonicion"
     />
+</div>
+
+    <div class="footer-aldea" :class="esDia ? 'footer-dia' : 'footer-noche'"></div>
+
   </div>
 </template>
 
@@ -41,6 +63,7 @@ import BotonMiRol from '@/components/juego/BotonMiRol.vue'
 import ZonaPoderes from '@/components/juego/ZonaPoderes.vue'
 
 export default {
+  name: 'JugadorView',
   components: {
     CabeceraJugador,
     PanelVotacionesJugador,
@@ -56,12 +79,14 @@ export default {
       esMiTurno: false,
       jugadorSeleccionado: null,
       stompClient: null,
+      mensajeEvento: null,
     }
   },
 
   computed: {
     ...mapGetters('auth', ['nombre']),
     ...mapGetters('sala', ['codigoSala', 'jugadores', 'miRol']),
+
     jugadoresVisibles() {
       if (!this.esDia && this.miRol && this.miRol.toLowerCase() === 'lobo') {
         return this.jugadores.filter((j) => j.nombre !== this.nombre)
@@ -71,9 +96,20 @@ export default {
   },
 
   async created() {
-    const res = await axiosInstance.get(`/salas/${this.codigoSala}/jugadores`)
-    this.$store.dispatch('sala/setJugadores', res.data)
+    try {
+      const res = await axiosInstance.get(`/salas/${this.codigoSala}/jugadores`)
+      this.$store.dispatch('sala/setJugadores', res.data)
+    } catch (error) {
+      alert('Error al cargar jugadores')
+    }
     this.conectarWebSocket()
+  },
+
+  beforeUnmount() {
+    if (this.stompClient) {
+      this.stompClient.deactivate()
+      this.stompClient = null
+    }
   },
 
   methods: {
@@ -116,8 +152,6 @@ export default {
 
     usarPremonicion() {
       if (!this.jugadorSeleccionado) return
-      // La vidente solo ve el rol si el narrador le da permiso (esMiTurno)
-      // Por ahora mostramos el nombre, el rol no viene en la lista de jugadores
       alert('Has usado tu premonición sobre: ' + this.jugadorSeleccionado.nombre)
     },
 
@@ -131,6 +165,7 @@ export default {
         cliente.subscribe(`/topic/partida/${this.codigoSala}/fase`, (msg) => {
           const payload = JSON.parse(msg.body)
           this.esDia = payload.fase === 'DIA'
+          this.$store.dispatch('sala/setFase', payload.fase)
         })
         cliente.subscribe(`/topic/partida/${this.codigoSala}/muerte`, (msg) => {
           const payload = JSON.parse(msg.body)
@@ -163,10 +198,81 @@ export default {
 <style scoped>
 .contenedor-jugador {
   min-height: 100vh;
-  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
 
+.dia { background-image: url('@/assets/imgs/fondodia.png'); }
+.noche { background-image: url('@/assets/imgs/fondonoche.png'); }
+
+.cuadro-evento {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 20px;
+  padding: 14px 20px;
+  border-radius: 10px;
+  font-family: 'Raleway', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.evento-dia {
+  background: rgba(0,0,0,0.6);
+  border: 2px solid #e4ba03;
+  color: #e4ba03;
+}
+
+.evento-noche {
+  background: rgba(0,0,0,0.7);
+  border: 2px solid #cc0000;
+  color: #cc0000;
+}
+
+.footer-aldea {
+  margin-top: auto;
+  width: 100%;
+  height: 120px;
+  background-size: cover;
+  background-position: bottom;
+  background-repeat: no-repeat;
+}
+
+.footer-dia { background-image: url('@/assets/imgs/footer-dia.png'); }
+.footer-noche { background-image: url('@/assets/imgs/footer-noche.png'); }
+
+.contenido {
+  width: 90%;
+  margin: 0 auto;
+  padding-top: 70px;
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .contenido {
+    width: 85%;
+  }
+}
+
+@media (max-width: 600px) {
+  .contenido {
+    width: 95%;
+    padding-top: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .mesa-contenedor {
+    padding: 0 10px;
+  }
+  .cuadro-evento {
+    margin: 12px 10px;
+  }
 }
 </style>

@@ -72,6 +72,7 @@ const routes = [
     path: '/resultados',
     name: 'resultados',
     component: ResultadosView,
+    meta: { sinLayout: true },
   },
 
   // Añade esto temporalmente en el router para previsualizar las pantallas de carga en CargaRolView

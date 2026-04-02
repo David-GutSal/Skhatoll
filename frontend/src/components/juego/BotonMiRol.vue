@@ -1,12 +1,10 @@
 <template>
   <div class="boton-mirol-wrapper">
 
-    <!-- Botón -->
     <button class="boton-mirol" @click="mostrar = true">
       <i class="fa-solid fa-scroll"></i> Mi Rol
     </button>
 
-    <!-- Modal -->
     <div v-if="mostrar" class="modal-overlay" @click.self="mostrar = false">
       <div class="modal-contenido">
         <button class="modal-cerrar" @click="mostrar = false">
@@ -48,16 +46,17 @@ export default {
 .boton-mirol-wrapper {
   display: flex;
   justify-content: center;
+  margin-top: 15px;
 }
 
 .boton-mirol {
   background: #8b0000;
   color: white;
   border: none;
-  padding: 12px 28px;
+  padding: 16px 36px;
   border-radius: 10px;
   font-family: 'Cinzel', Arial, sans-serif;
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   cursor: pointer;
@@ -75,7 +74,6 @@ export default {
   transform: scale(0.96);
 }
 
-/* Modal */
 .modal-overlay {
   position: fixed;
   inset: 0;

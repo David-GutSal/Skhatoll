@@ -1,6 +1,5 @@
 <template>
 
-  <!-- ── MODO CARGA / MI ROL ── -->
   <div v-if="modoVista === 'carga' || modoVista === 'miRol'"
     class="carta-completa"
     :style="{ borderColor: colorBando }">
@@ -135,7 +134,7 @@ export default {
 </script>
 
 <style scoped>
-/* ── MODO CARGA / MI ROL ── */
+
 .carta-completa {
   display: flex;
   flex-direction: column;
@@ -168,7 +167,7 @@ export default {
   right: 0;
   padding: 6px 12px;
   font-family: 'Cinzel', Arial, sans-serif;
-  font-size: 0.75rem;
+  font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   color: white;
@@ -193,13 +192,12 @@ export default {
 .carta-descripcion {
   font-family: 'Raleway', Arial, sans-serif;
   color: #ccc;
-  font-size: 0.9rem;
+  font-size: 1rem;
   line-height: 1.6;
   font-style: italic;
   margin: 0;
 }
 
-/* ── MODO MESA (narrador y jugador) ── */
 .carta-mesa {
   display: flex;
   flex-direction: column;
@@ -234,7 +232,6 @@ export default {
   border-radius: 8px;
 }
 
-/* Imagen oculta modo jugador */
 .carta-imagen-oculta {
   background: #2a2a2a;
   aspect-ratio: 3 / 4;
@@ -291,14 +288,12 @@ export default {
   letter-spacing: 0.2em;
 }
 
-/* Iconos */
 .carta-iconos {
   display: flex;
   gap: 6px;
   font-size: 0.85rem;
 }
 
-/* Estados */
 .muerto {
   opacity: 0.45;
 }

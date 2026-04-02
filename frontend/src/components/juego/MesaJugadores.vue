@@ -1,58 +1,79 @@
 <template>
-  <div class="mesa" :class="{ noche: !esDia }">
-    <CartaRol
-      v-for="j in jugadores"
-      :key="j.idUsuario"
-      :modoVista="modoNarrador ? 'narrador' : 'jugador'"
-      :jugador="j"
-      :esDia="esDia"
-      @seleccionar="$emit('seleccionarJugador', j)"
-    />
+  <div
+    class="mesa-wrapper"
+    :class="esDia ? 'mesa-dia' : 'mesa-noche'"
+  >
+    <div class="mesa">
+      <CartaRol
+        v-for="j in jugadores"
+        :key="j.idUsuario"
+        :modoVista="modoNarrador ? 'narrador' : 'jugador'"
+        :jugador="j"
+        :esDia="esDia"
+        @seleccionar="$emit('seleccionarJugador', j)"
+      />
+    </div>
   </div>
 </template>
 
 <script>
 import CartaRol from '@/components/juego/roles/CartaRol.vue'
+import mesaImg from '@/assets/imgs/mesa.jpg'
+import mesanocheImg from '@/assets/imgs/mesanoche.jpg'
 
 export default {
   name: 'MesaJugadores',
-
   components: { CartaRol },
 
   props: {
-    jugadores: {
-      type: Array,
-      default: () => [],
-    },
-    esDia: {
-      type: Boolean,
-      default: true,
-    },
-    // true → narrador (ve roles) | false → jugador (roles ocultos)
-    modoNarrador: {
-      type: Boolean,
-      default: false,
-    },
+    jugadores: { type: Array, default: () => [] },
+    esDia: { type: Boolean, default: true },
+    modoNarrador: { type: Boolean, default: false },
   },
 
   emits: ['seleccionarJugador'],
+
+  data() {
+    return { mesaImg, mesanocheImg }
+  },
+
+  computed: {
+    bgMesa() {
+      return this.esDia ? this.mesaImg : this.mesanocheImg
+    },
+  },
 }
 </script>
 
 <style scoped>
+.mesa-wrapper {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 5px solid black;
+  background-size: cover;
+  background-position: center;
+}
+
+.mesa-dia {
+  background-image: v-bind("'url(' + mesaImg + ')'");
+  border-color: #000;
+}
+
+.mesa-noche {
+  background-image: v-bind("'url(' + mesanocheImg + ')'");
+  border-color: white;
+}
+
 .mesa {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 16px;
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.6);
-  border: 3px solid white;
-  border-radius: 12px;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.45);
 }
 
-.mesa.noche {
-  border-color: #8b0000;
-  background: rgba(0, 0, 0, 0.8);
+.mesa :deep(.carta-mesa) {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
 }
 
 @media (max-width: 900px) {
@@ -64,6 +85,8 @@ export default {
 @media (max-width: 500px) {
   .mesa {
     grid-template-columns: repeat(2, 1fr);
+    padding: 14px;
+    gap: 10px;
   }
 }
 </style>

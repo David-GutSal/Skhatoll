@@ -11,6 +11,7 @@
     </template>
 
     <router-view />
+     <Footer v-if="!$route.meta.sinLayout" />
   </div>
 </template>
 
@@ -18,10 +19,11 @@
 import TopBar from '@/components/layout/TopBar.vue'
 import Header from '@/components/layout/Header.vue'
 import Navbar from '@/components/layout/Navbar.vue'
+import Footer from '@/components/layout/Footer.vue';
 
 export default {
   name: 'App',
-  components: { TopBar, Header, Navbar },
+  components: { TopBar, Header, Navbar, Footer},
 
   data() {
     return {
@@ -67,7 +69,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .sticky-navbar {
   position: sticky;
-  top: 80px;
+  top: 110px;
   z-index: 100;
   outline: 3px solid transparent;
 }

@@ -1,35 +1,42 @@
 <template>
- <div id="app">
-    <div class="sticky-topbar" :class="{ scrolled: hayScroll }">
-      <TopBar />
-    </div>
-    <Header />
-    <div class="sticky-navbar" :class="{ scrolled: hayScroll }">
-      <Navbar />
-    </div>  
-    <router-view/>
+  <div id="app">
+    <template v-if="!$route.meta.sinLayout">
+      <div class="sticky-topbar" :class="{ scrolled: hayScroll }">
+        <TopBar />
+      </div>
+      <Header />
+      <div class="sticky-navbar" :class="{ scrolled: hayScroll }">
+        <Navbar />
+      </div>
+    </template>
+
+    <router-view />
   </div>
 </template>
 
 <script>
-import TopBar from "@/components/layout/TopBar.vue"
-import Header from "@/components/layout/Header.vue"
-import Navbar from "@/components/layout/Navbar.vue"
+import TopBar from '@/components/layout/TopBar.vue'
+import Header from '@/components/layout/Header.vue'
+import Navbar from '@/components/layout/Navbar.vue'
 
 export default {
-  name: "App",
+  name: 'App',
   components: { TopBar, Header, Navbar },
+
   data() {
     return {
       hayScroll: false,
     }
   },
+
   mounted() {
     window.addEventListener('scroll', this.detectarScroll)
   },
+
   unmounted() {
     window.removeEventListener('scroll', this.detectarScroll)
   },
+
   methods: {
     detectarScroll() {
       this.hayScroll = window.scrollY > 0
@@ -39,10 +46,9 @@ export default {
 </script>
 
 <style>
-
 body {
-  margin: 0;
   font-family: 'Raleway', Arial, sans-serif;
+  margin: 0;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -53,27 +59,24 @@ h1, h2, h3, h4, h5, h6 {
   min-height: 100vh;
 }
 
-#app > router-view {
-  padding: 20px;
-}
-
 .sticky-topbar {
   position: sticky;
   top: 0;
-  z-index: 102;
+  z-index: 200;
 }
 
 .sticky-navbar {
   position: sticky;
-  top: 95px;
-  z-index: 101;
+  top: 80px;
+  z-index: 100;
+  outline: 3px solid transparent;
 }
 
 .sticky-navbar.scrolled {
-  outline: 1px solid #cc0000;
+  outline: 2px solid #cc0000;
 }
 
-@media (max-width: 690px) {
+@media (max-width: 600px) {
   .sticky-navbar {
     top: 150px;
   }

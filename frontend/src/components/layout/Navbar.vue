@@ -23,6 +23,7 @@ export default {
   background:#000000;
   min-height: 60px;
   align-items: center;
+  z-index: 15;
 }
 
 .navbar a{

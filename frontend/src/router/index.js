@@ -40,28 +40,32 @@ const routes = [
     component: LobbyView,
   },
 
-  {
+   {
     path: '/carga-rol',
     name: 'cargaRol',
     component: CargaRolView,
+    meta: { sinLayout: true },
   },
 
   {
     path: '/espera-narrador',
     name: 'esperaNarrador',
     component: EsperaNarradorView,
+    meta: { sinLayout: true },
   },
 
   {
     path: '/narrador',
     name: 'narrador',
     component: NarradorView,
+    meta: { sinLayout: true },
   },
 
   {
     path: '/jugador',
     name: 'jugador',
     component: JugadorView,
+    meta: { sinLayout: true },
   },
   
   {
@@ -69,6 +73,11 @@ const routes = [
     name: 'resultados',
     component: ResultadosView,
   },
+
+  // Añade esto temporalmente en el router para previsualizar las pantallas de carga en CargaRolView
+/*{ path: '/preview-carga', component: CargaRolView, meta: { sinLayout: true } },
+  { path: '/preview-espera', component: EsperaNarradorView, meta: { sinLayout: true } }
+*/
 ]
 
 const router = createRouter({

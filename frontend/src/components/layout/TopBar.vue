@@ -172,7 +172,7 @@ export default {
   color: white;
   min-height: 80px;
   position: relative;
-  z-index: 100;
+  z-index: 200;
 }
 
 .logo img {

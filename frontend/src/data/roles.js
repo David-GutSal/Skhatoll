@@ -49,4 +49,12 @@ export const FRASES = [
   'La verdad es un lujo que pocos pueden permitirse en la aldea.',
   'El silencio de un inocente puede costar más vidas que la mentira de un culpable.',
   'Confiar es un regalo que en Castronegro muy pocos se pueden permitir.',
+  'Pueblo dividido, victoria de los lobos.',
+  'Quien mucho acusa, algo oculta.',
+  'En la noche todos los aldeanos parecen lobos.',
+  'Más vale aldeano desconfiado que lobo suelto.',
+  'El lobo callado es el más peligroso.',
+  'En este pueblo hay más lobos que ovejas.',
+  'Aquí huele a perro mojado…',
+  'Cuando el tonto coge la linde, la linde se acaba pero el tonto sigue'
 ]

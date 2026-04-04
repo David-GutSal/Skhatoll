@@ -361,6 +361,7 @@ export default {
   font-weight: 700;
   color: #e4ba03;
   margin-bottom: 25px;
+  text-align: center;
 }
 
 .noticia { margin-bottom: 50px; }
@@ -407,6 +408,8 @@ export default {
   text-decoration: none;
   transition: all 0.2s ease;
   margin-top: 35px;
+  border: none;
+  cursor: pointer;
 }
 
 .btn-rojo { background: #cc0000; color: white; }
@@ -454,6 +457,23 @@ export default {
 .bold { font-weight: 600; }
 .rojo-centro { color: #8b0000; font-weight: 600; }
 
+ul {
+margin: 10px 0;
+font-family: 'Raleway', Arial, sans-serif;
+list-style: square;
+}
+
+li {
+margin: 10px 0;
+font-size: 0.95rem;
+}
+
+li::marker {
+color: #e4ba03;
+font-weight: bolder;
+font-size: 1.2rem;
+}
+
 .img-centro {
   width: 100%;
   aspect-ratio: 16/9;
@@ -489,11 +509,10 @@ export default {
   max-width: 420px;
   background: rgba(255, 255, 255, 0.85);
   border: 6px solid #e4ba03;
-  border-radius: 16px;
   padding: 45px 30px;
   text-align: center;
   z-index: 3;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
 }
 
 .overlay-titulo {
@@ -520,6 +539,7 @@ export default {
 .btn-sala-juegos:hover {
   background: #000000;
   transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(85, 0, 0, 0.3);
 }
 
 .btn-sala-juegos:active {
@@ -534,7 +554,7 @@ export default {
   margin-top: 50px;
 }
 
-@media (max-width: 992px) {
+@media (max-width: 1300px) {
   .bloques-inner {
     grid-template-columns: 1fr;
     width: 90%;
@@ -542,13 +562,7 @@ export default {
 
   .bloque-central { order: -1; }
 
-  .titulo-skhatoll,
-  .noticia-texto,
-  .cuadro-parrafo,
-  .noticia-titulo,
-  .bloque-titulo-principal {
-    text-align: center;
-  }
+  
 }
 
 @media (max-width: 768px) {
@@ -572,6 +586,7 @@ export default {
 }
 
 @media (max-width: 576px) {
+
   .bloques-inner {
     width: 95%;
   }

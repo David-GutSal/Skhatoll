@@ -98,4 +98,20 @@ public class PartidaController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
+
+    // -------------------------------------------------------
+    // GET /partida/{codigo}/sesion-activa
+    // Devuelve: { idSesion, tipo, ronda, abierta, fechaInicio }
+    // -------------------------------------------------------
+    @GetMapping("/{codigo}/sesion-activa")
+    public ResponseEntity<?> getSesionActiva(@PathVariable String codigo) {
+        try {
+            SesionVotacion sesion = partidaService.getSesionActiva(codigo);
+            return ResponseEntity.ok(sesion);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
 }

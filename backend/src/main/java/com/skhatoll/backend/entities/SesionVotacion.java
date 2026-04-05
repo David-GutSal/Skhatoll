@@ -44,6 +44,6 @@ public class SesionVotacion {
     private LocalDateTime fechaCierre;
 
     public enum TipoVotacion {
-        DIA, LOBOS, HABILIDAD
+        DIA, LOBOS, HABILIDAD, ALCALDE
     }
 }

@@ -333,4 +333,13 @@ public class PartidaService  implements IPartidaService {
         return new ResultadoVotacionDto(
                 sesion.getIdSesion(), sesion.getTipo().name(), masVotados.get(0), false);
     }
+
+    public SesionVotacion getSesionActiva(String codigoSala) {
+        Sala sala = salaRepository.findByCodigoSala(codigoSala)
+                .orElseThrow(() -> new IllegalArgumentException("Sala no encontrada"));
+
+        return sesionVotacionRepository
+                .findBySala_IdSalaAndAbiertaTrue(sala.getIdSala())
+                .orElseThrow(() -> new IllegalStateException("No hay ninguna votación abierta"));
+    }
 }

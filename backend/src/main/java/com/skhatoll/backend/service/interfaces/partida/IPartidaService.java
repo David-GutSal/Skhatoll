@@ -13,7 +13,8 @@ public interface IPartidaService {
     ResultadoVotacionDto cerrarVotacion(String codigo, Integer idSesion);
 
     SesionVotacion abrirVotacion(String codigo, AbrirVotacionRequest request);
-
+    
     void cambiarFase(String codigo);
 
+    SesionVotacion getSesionActiva(String codigo);
 }

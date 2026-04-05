@@ -95,8 +95,10 @@ public class SalaController {
         }
     }
 
+    // -------------------------------------------------------
     // GET /salas/{codigo}/roles
     // Solo accesible para el narrador
+    // -------------------------------------------------------
     @GetMapping("/{codigo}/roles")
     public ResponseEntity<?> getJugadoresConRol(@PathVariable String codigo) {
         try {

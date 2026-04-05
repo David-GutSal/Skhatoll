@@ -4,21 +4,6 @@
     </main>
 </template>
 
-<script>
-import TopBar from "@/components/layout/TopBar.vue"
-import Header from "@/components/layout/Header.vue"
-import Navbar from "@/components/layout/Navbar.vue"
-
-export default {
-  name:"InicioView",
-  components:{
-    TopBar,
-    Header,
-    Navbar
-  }
-}
-</script>
-
 <style scoped>
 .pagina{
   display:grid;

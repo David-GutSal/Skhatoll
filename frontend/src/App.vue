@@ -69,16 +69,24 @@ h1, h2, h3, h4, h5, h6 {
 
 .sticky-navbar {
   position: sticky;
-  top: 110px;
+  top: 112px;
   z-index: 100;
-  outline: 3px solid transparent;
+  background-color: #ffffff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.75);
 }
 
 .sticky-navbar.scrolled {
-  outline: 2px solid #cc0000;
+  outline: 2px solid #e4ba03;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.95);
 }
 
-@media (max-width: 600px) {
+@media (max-width: 700px) {
+  .sticky-navbar {
+    top: 100px;
+  }
+}
+
+@media (max-width: 690px) {
   .sticky-navbar {
     top: 150px;
   }

@@ -4,8 +4,8 @@ export default {
   state: () => ({
     codigoSala: null,
     esCreador: false,
-    jugadores: [],          // lista básica — todos los jugadores
-    jugadoresConRol: [],    // lista con roles — solo visible para el narrador
+    jugadores: [],
+    jugadoresConRol: [],
     miRol: null,
     miRolDescripcion: null,
     miBando: null,

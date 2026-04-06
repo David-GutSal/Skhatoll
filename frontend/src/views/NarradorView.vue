@@ -42,9 +42,7 @@
 
       <div v-if="seccionActiva" class="seccion-info" :class="esDia ? 'seccion-dia' : 'seccion-noche'">
         <div v-if="seccionActiva === 'personajes'" class="seccion-contenido">
-          <h2 class="seccion-titulo">Personajes</h2>
-          <p class="seccion-placeholder">Lobo · Bruja · Vidente · Aldeano · Cupido · Cazador · Niño Salvaje · Niña</p>
-          <p class="seccion-placeholder"><em>Contenido detallado próximamente...</em></p>
+          <ListaPersonajes />
         </div>
         <div v-if="seccionActiva === 'reglas'" class="seccion-contenido">
           <h2 class="seccion-titulo">Reglas</h2>
@@ -68,10 +66,11 @@ import PanelControlNarrador from '@/components/juego/PanelControlNarrador.vue'
 import MesaJugadores from '@/components/juego/MesaJugadores.vue'
 import solImg from '@/assets/imgs/sol.jpg'
 import lunaImg from '@/assets/imgs/luna.jpg'
+import ListaPersonajes from '@/components/juego/ListaPersonajes.vue'
 
 export default {
   name: 'NarradorView',
-  components: { IndicadorDiaNoche, PanelControlNarrador, MesaJugadores },
+  components: { IndicadorDiaNoche, PanelControlNarrador, MesaJugadores, ListaPersonajes },
 
   data() {
     return {

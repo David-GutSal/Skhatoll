@@ -67,6 +67,7 @@ export default {
   color: white;
   margin: 0 0 28px 0;
   font-size: 2.5rem;
+  font-weight: bolder;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }

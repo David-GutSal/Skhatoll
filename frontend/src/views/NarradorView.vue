@@ -92,14 +92,42 @@ export default {
   },
 
   async created() {
-    try {
-      const res = await axiosInstance.get(`/salas/${this.codigoSala}/roles`)
-      this.$store.dispatch('sala/setJugadoresConRol', res.data)
-    } catch (error) {
-      alert('Error al cargar jugadores')
+    // 🟢 RECUPERAR SALA SI SE PERDIÓ
+  if (!this.codigoSala) {
+    const codigoGuardado = localStorage.getItem('codigoSala')
+    if (codigoGuardado) {
+      this.$store.dispatch('sala/unirse', codigoGuardado)
+    } else {
+      alert("No hay sala activa")
+      this.$router.push('/')
+      return
     }
-    this.conectarWebSocket()
-  },
+  }
+  // 1. Cargar jugadores
+  try {
+    const res = await axiosInstance.get(`/salas/${this.codigoSala}/roles`)
+    this.$store.dispatch('sala/setJugadoresConRol', res.data)
+  } catch (error) {
+    alert('Error al cargar jugadores')
+  }
+
+  // 2. 🔥 NUEVO: comprobar sesión activa
+  try {
+    const res = await axiosInstance.get(`/partida/${this.codigoSala}/sesion-activa`)
+
+    console.log("📡 SESION ACTIVA:", res.data)
+
+    if (res.data?.abierta) {
+      this.idSesionActual = res.data.idSesion
+      console.log("🟢 SESION RECUPERADA:", this.idSesionActual)
+    }
+  } catch (error) {
+    console.log("ℹ️ No hay sesión activa (normal)")
+  }
+
+  // 3. Conectar WS
+  this.conectarWebSocket()
+},
 
   beforeUnmount() {
     if (this.stompClient) {
@@ -110,17 +138,13 @@ export default {
 
   methods: {
     async cambiarFase(fase) {
-      try {
-        this.esDia = fase === 'dia'
-        await axiosInstance.put(`/partida/${this.codigoSala}/fase`)
-      } catch (error) {
-        alert(
-          error.response?.status === 409
-            ? 'Cierra la votación antes de cambiar la fase'
-            : 'Error al cambiar la fase',
-        )
-      }
-    },
+  try {
+    this.esDia = fase === 'DIA'
+    await axiosInstance.put(`/partida/${this.codigoSala}/fase`, { fase })
+  } catch (error) {
+    alert("Error al cambiar la fase")
+  }
+},
 
     conectarWebSocket() {
       const token = this.$store.getters['auth/token']
@@ -150,27 +174,123 @@ export default {
           })
           this.$router.push({ name: 'resultados' })
         })
+        cliente.subscribe(`/topic/partida/${this.codigoSala}/votacion`, (msg) => {
+  const payload = JSON.parse(msg.body)
+
+  console.log("📩 VOTACION WS:", payload)
+
+  // 🟢 VOTACION ABIERTA
+  if (payload.tipo === 'VOTACION_ABIERTA') {
+    this.idSesionActual = payload.idSesion
+    console.log("✅ SESION ABIERTA:", this.idSesionActual)
+  }
+
+  // 🔴 VOTACION CERRADA
+  if (payload.tipo === 'VOTACION_CERRADA') {
+    console.log("❌ SESION CERRADA")
+    this.idSesionActual = null
+  }
+
+  // 🏁 RESULTADO FINAL (ej: alcalde o linchamiento)
+  if (payload.tipo === 'ALCALDE' || payload.tipo === 'DIA' || payload.tipo === 'LOBOS') {
+    console.log("🏁 RESULTADO:", payload)
+
+    // aquí puedes luego mostrar UI si quieres
+    this.idSesionActual = null
+  }
+})
       }
       cliente.activate()
       this.stompClient = cliente
     },
 
+/* CODIGO DE PRUEBAS DE FUNCIONAMIENTO- BORRAR AL TERMINAR
+    conectarWebSocket() {
+  const token = this.$store.getters['auth/token']
+
+  const cliente = new Client({
+    webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+    connectHeaders: { Authorization: `Bearer ${token}` },
+  })
+
+  cliente.onConnect = () => {
+    console.log("🟢 WS CONECTADO")
+
+    cliente.subscribe(`/topic/partida/${this.codigoSala}/votacion`, (msg) => {
+      console.log("📩 VOTACION WS:", msg.body)
+
+      const payload = JSON.parse(msg.body)
+      if (payload.idSesion) {
+        this.idSesionActual = payload.idSesion
+        console.log("✅ ID SESION ACTUAL:", this.idSesionActual)
+      }
+    })
+
+    cliente.subscribe(`/topic/partida/${this.codigoSala}/fase`, (msg) => {
+      console.log("📩 FASE WS:", msg.body)
+    })
+
+    cliente.subscribe(`/topic/partida/${this.codigoSala}/muerte`, (msg) => {
+      console.log("📩 MUERTE WS:", msg.body)
+    })
+  }
+
+  cliente.onStompError = (frame) => {
+    console.error("❌ ERROR WS:", frame)
+  }
+
+  cliente.activate()
+  this.stompClient = cliente
+},
+*/
+
+
     async iniciarVotacionLinchamiento() {
       try {
         const res = await axiosInstance.post(`/partida/${this.codigoSala}/votacion/abrir`, { tipo: 'DIA' })
-        this.idSesionActual = res.data
+
+console.log("🟢 RESPUESTA ABRIR VOTACION:", res.data)
+
+// ⚠️ IMPORTANTE: el backend devuelve directamente el ID
+this.idSesionActual = res.data
       } catch (error) {
-        alert('Error al iniciar votación')
+        alert(error.response?.status === 409 ? 'Ya hay una votación abierta' : 'Error al iniciar votación')
       }
     },
 
-    iniciarVotacionAlcalde() {
-      alert('Funcionalidad de alcalde no disponible aún')
+    async iniciarVotacionAlcalde() {
+      try {
+        const res = await axiosInstance.post(`/partida/${this.codigoSala}/votacion/abrir`, { tipo: 'ALCALDE' })
+        this.idSesionActual = res.data
+      } catch (error) {
+        alert(error.response?.status === 409 ? 'Ya hay una votación abierta' : 'Error al iniciar elecciones')
+      }
     },
 
+/* VOTACION DE ALCALDE DESACTIVADA TEMPORALMENTE
+async iniciarVotacionAlcalde() {
+  console.log("🔥🔥🔥 ALCALDE CLICK 🔥🔥🔥")
+
+  try {
+    const res = await axiosInstance.post(
+      `/partida/${this.codigoSala}/votacion/abrir`,
+      { tipo: 'ALCALDE' }
+    )
+
+    this.idSesionActual = res.data
+  } catch (error) {
+    console.log(error.response?.data)
+  }
+},
+*/
     async finalizarVotacion() {
+      if (!this.idSesionActual) {
+        alert('No hay ninguna votación activa')
+        return
+      }
       try {
         await axiosInstance.put(`/partida/${this.codigoSala}/votacion/${this.idSesionActual}/cerrar`)
+        this.idSesionActual = null
       } catch (error) {
         alert('Error al finalizar votación')
       }
@@ -182,10 +302,10 @@ export default {
 
     async iniciarVotacionNoche() {
       try {
-        const res = await axiosInstance.post(`/partida/${this.codigoSala}/votacion/abrir`, { tipo: 'Lobos' })
+        const res = await axiosInstance.post(`/partida/${this.codigoSala}/votacion/abrir`, { tipo: 'LOBOS' })
         this.idSesionActual = res.data
       } catch (error) {
-        alert('Error al iniciar eventos nocturnos')
+        alert(error.response?.status === 409 ? 'Ya hay una votación abierta' : 'Error al iniciar eventos nocturnos')
       }
     },
 

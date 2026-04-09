@@ -98,9 +98,11 @@ export default {
 
   actions: {
     crearSala({ commit }, codigoSala) {
+      localStorage.setItem('codigoSala', codigoSala)
       commit('SET_SALA', { codigoSala, esCreador: true })
     },
     unirse({ commit }, codigoSala) {
+      localStorage.setItem('codigoSala', codigoSala)
       commit('SET_SALA', { codigoSala, esCreador: false })
     },
     setJugadores({ commit }, jugadores) {
@@ -135,6 +137,7 @@ export default {
       commit('SET_RESULTADO', resultado)
     },
     salir({ commit }) {
+      localStorage.setItem('codigoSala')
       commit('CLEAR_SALA')
     },
   },

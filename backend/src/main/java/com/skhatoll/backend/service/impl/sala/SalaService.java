@@ -115,7 +115,11 @@ public class SalaService implements ISalaService {
                         su.getUsuario().getIdUsuario(),
                         su.getUsuario().getNombre(),
                         su.getUsuario().getCodigoUuid(),
-                        su.getEstaVivo()))
+                        su.getEstaVivo(),
+                        su.getUsuario().getIdUsuario().equals(
+                                sala.getNarrador().getIdUsuario()
+                        )
+                ))
                 .toList();
     }
 

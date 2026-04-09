@@ -6,6 +6,14 @@ import axiosInstance from './plugins/axios'
 import './assets/styles/main.css'
 
 const app = createApp(App)
+// 🟢 RECUPERAR AUTH AL RECARGAR
+const token = localStorage.getItem('token')
+const nombre = localStorage.getItem('nombre')
+const uuid = localStorage.getItem('uuid')
+
+if (token && nombre) {
+  store.dispatch('auth/login', { token, nombre, uuid })
+}
 
 axiosInstance.interceptors.request.use((config) => {
   const token = store.getters['auth/token']
@@ -17,3 +25,5 @@ app.use(router)
 app.use(store)
 
 app.mount('#app')
+
+

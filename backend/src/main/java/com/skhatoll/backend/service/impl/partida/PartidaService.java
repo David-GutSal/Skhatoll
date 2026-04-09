@@ -97,6 +97,11 @@ public class PartidaService  implements IPartidaService {
     public SesionVotacion abrirVotacion(String codigoSala, AbrirVotacionRequest request) {
         Usuario solicitante = getUsuarioAutenticado();
         Sala sala = getSalaIniciada(codigoSala);
+// Añadidos prints para comprobar error del Frontend
+        System.out.println("=== DEBUG BACKEND ===");
+        System.out.println("Solicitante: " + solicitante.getNombre());
+        System.out.println("Narrador: " + sala.getNarrador().getNombre());
+        System.out.println("Son iguales? " + sala.getNarrador().getIdUsuario().equals(solicitante.getIdUsuario()));
 
         if (!sala.getNarrador().getIdUsuario().equals(solicitante.getIdUsuario())) {
             throw new IllegalStateException("Solo el narrador puede abrir votaciones");

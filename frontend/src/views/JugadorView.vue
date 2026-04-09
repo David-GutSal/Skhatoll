@@ -11,6 +11,7 @@
       <PanelVotacionesJugador
         :esDia="esDia"
         :votacionActiva="votacionActiva"
+        :tipoVotacion="tipoVotacion"
         :jugadorSeleccionado="jugadorSeleccionado"
         @votarAlcalde="votarAlcalde"
         @votarCulpable="votarCulpable"
@@ -32,7 +33,7 @@
 
       <div v-if="!esDia && esMiTurno" class="cuadro-evento evento-noche">
         <i class="fa-solid fa-moon"></i>
-        Cuadro de eventos provisional para cuando el narrador te llame
+        Es tu turno — activa tu poder
       </div>
 
       <BotonMiRol />
@@ -76,6 +77,7 @@ export default {
     return {
       esDia: true,
       votacionActiva: false,
+      tipoVotacion: null,
       esMiTurno: false,
       jugadorSeleccionado: null,
       stompClient: null,
@@ -102,6 +104,17 @@ export default {
     } catch (error) {
       alert('Error al cargar jugadores')
     }
+
+    try {
+      const sesion = await axiosInstance.get(`/partida/${this.codigoSala}/sesion-activa`)
+      if (sesion.data?.abierta) {
+        this.votacionActiva = true
+        this.tipoVotacion = sesion.data.tipo
+      }
+    } catch {
+      // No hay sesión activa, es normal
+    }
+
     this.conectarWebSocket()
   },
 
@@ -178,6 +191,14 @@ export default {
         cliente.subscribe(`/topic/partida/${this.codigoSala}/votacion`, (msg) => {
           const payload = JSON.parse(msg.body)
           this.votacionActiva = payload.abierta ?? false
+          this.tipoVotacion = payload.abierta ? payload.tipo : null
+        })
+        cliente.subscribe(`/topic/partida/${this.codigoSala}/turno`, (msg) => {
+          const payload = JSON.parse(msg.body)
+          this.esMiTurno = payload.nombreJugador === this.nombre
+          if (this.esMiTurno) {
+            this.mensajeEvento = `Es tu turno, ${this.nombre}. Activa tu poder.`
+          }
         })
         cliente.subscribe(`/topic/partida/${this.codigoSala}/fin`, (msg) => {
           const payload = JSON.parse(msg.body)

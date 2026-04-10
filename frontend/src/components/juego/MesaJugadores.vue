@@ -1,11 +1,9 @@
 <template>
-  <div
-    class="mesa-wrapper"
-    :class="esDia ? 'mesa-dia' : 'mesa-noche'"
-  >
+  <div class="mesa-wrapper" :class="esDia ? 'mesa-dia' : 'mesa-noche'">
+
     <div class="mesa">
       <CartaRol
-        v-for="j in jugadores"
+        v-for="j in jugadoresFiltrados"
         :key="j.idUsuario"
         :modoVista="modoNarrador ? 'narrador' : 'jugador'"
         :jugador="j"
@@ -38,6 +36,10 @@ export default {
   },
 
   computed: {
+    jugadoresFiltrados() {
+      return this.jugadores.filter((j) => !j.esNarrador)
+    },
+
     bgMesa() {
       return this.esDia ? this.mesaImg : this.mesanocheImg
     },
@@ -46,6 +48,7 @@ export default {
 </script>
 
 <style scoped>
+
 .mesa-wrapper {
   border-radius: 16px;
   overflow: hidden;

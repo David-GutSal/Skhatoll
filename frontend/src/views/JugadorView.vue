@@ -1,12 +1,7 @@
 <template>
   <div class="contenedor-jugador" :class="esDia ? 'dia' : 'noche'">
     <div class="contenido">
-
-      <CabeceraJugador
-        :nombreJugador="nombre"
-        :esDia="esDia"
-        :esNarrador="false"
-      />
+      <CabeceraJugador :nombreJugador="nombre" :esDia="esDia" :esNarrador="false" :nombreNarrador="nombreNarrador"/>
 
       <PanelVotacionesJugador
         :esDia="esDia"
@@ -26,7 +21,11 @@
         />
       </div>
 
-      <div v-if="mensajeEvento" class="cuadro-evento" :class="esDia ? 'evento-dia' : 'evento-noche'">
+      <div
+        v-if="mensajeEvento"
+        class="cuadro-evento"
+        :class="esDia ? 'evento-dia' : 'evento-noche'"
+      >
         <i class="fa-solid fa-bell"></i>
         {{ mensajeEvento }}
       </div>
@@ -45,7 +44,6 @@
         @devorar="devorarJugador"
         @premonicion="usarPremonicion"
       />
-
     </div>
 
     <div class="footer-aldea" :class="esDia ? 'footer-dia' : 'footer-noche'"></div>
@@ -88,6 +86,15 @@ export default {
   computed: {
     ...mapGetters('auth', ['nombre']),
     ...mapGetters('sala', ['codigoSala', 'jugadores', 'miRol']),
+
+    nombreNarrador() {
+    const narrador = this.jugadores.find(j => j.esNarrador === true);
+    return narrador ? narrador.nombre : 'Esperando narrador...';
+  },
+
+  soyNarrador() {
+    return this.jugadores.some(j => j.esNarrador === true && j.nombre === this.nombre);
+  },
 
     jugadoresVisibles() {
       if (!this.esDia && this.miRol && this.miRol.toLowerCase() === 'lobo') {
@@ -226,8 +233,12 @@ export default {
   background-attachment: fixed;
 }
 
-.dia { background-image: url('@/assets/imgs/fondodia.png'); }
-.noche { background-image: url('@/assets/imgs/fondonoche.png'); }
+.dia {
+  background-image: url('@/assets/imgs/fondodia.png');
+}
+.noche {
+  background-image: url('@/assets/imgs/fondonoche.png');
+}
 
 .contenido {
   width: 90%;
@@ -275,11 +286,17 @@ export default {
   background-repeat: no-repeat;
 }
 
-.footer-dia { background-image: url('@/assets/imgs/footer-dia.png'); }
-.footer-noche { background-image: url('@/assets/imgs/footer-noche.png'); }
+.footer-dia {
+  background-image: url('@/assets/imgs/footer-dia.png');
+}
+.footer-noche {
+  background-image: url('@/assets/imgs/footer-noche.png');
+}
 
 @media (max-width: 900px) {
-  .contenido { width: 85%; }
+  .contenido {
+    width: 85%;
+  }
 }
 
 @media (max-width: 600px) {

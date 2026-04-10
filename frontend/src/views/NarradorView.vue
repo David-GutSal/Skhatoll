@@ -374,8 +374,10 @@ async iniciarVotacionAlcalde() {
   gap: 8px;
   padding: 16px;
   border-radius: 15px;
-  width: clamp(120px, 20vw, 260px);
+  width: clamp(140px, 22vw, 270px);
   flex-shrink: 0;
+  min-width: 210px;
+  margin-left: 23px;
 }
 
 .carta-dia { background: white; border: 8px solid #e4ba03; }
@@ -405,11 +407,11 @@ async iniciarVotacionAlcalde() {
 .carta-fase-texto {
   font-family: 'Raleway', Arial, sans-serif;
   font-weight: 700;
-  font-size: clamp(0.6rem, 1.2vw, 0.95rem);
+  font-size: clamp(0.85rem, 1.2vw, 1.2rem);
   text-align: center;
-  font-style: italic;
   line-height: 1.4;
   margin: 0;
+  font-style: italic;
 }
 
 .carta-dia .carta-fase-texto { color: #e4ba03; }

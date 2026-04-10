@@ -12,6 +12,7 @@ export default {
     bandoGanador: null,
     mensajeFin: null,
     fase: 'DIA',
+    narradorActual: null,
   }),
 
   mutations: {
@@ -94,6 +95,10 @@ export default {
       state.miBando = null
       state.fase = 'DIA'
     },
+
+    SET_NARRADOR(state, nombreNarrador) {
+      state.narradorActual = nombreNarrador;
+    },
   },
 
   actions: {
@@ -140,6 +145,9 @@ export default {
       localStorage.setItem('codigoSala')
       commit('CLEAR_SALA')
     },
+    setNarrador({ commit }, nombreNarrador) {
+      commit('SET_NARRADOR', nombreNarrador);
+    },
   },
 
   getters: {
@@ -153,5 +161,6 @@ export default {
     fase:             (state) => state.fase,
     bandoGanador:     (state) => state.bandoGanador,
     mensajeFin:       (state) => state.mensajeFin,
+    narradorActual: (state) => state.narradorActual,
   },
 }

@@ -4,7 +4,7 @@
     <template v-if="esDia">
       <button
         class="btn-voto"
-        :disabled="!votacionActiva || !jugadorSeleccionado"
+        :disabled="!votacionActiva || tipoVotacion !== 'ALCALDE' || !jugadorSeleccionado"
         @click="$emit('votarAlcalde')"
       >
         <i class="fa-solid fa-medal"></i>
@@ -13,7 +13,7 @@
 
       <button
         class="btn-voto"
-        :disabled="!votacionActiva || !jugadorSeleccionado"
+        :disabled="!votacionActiva || tipoVotacion !== 'DIA' || !jugadorSeleccionado"
         @click="$emit('votarCulpable')"
       >
         <i class="fa-solid fa-face-dizzy"></i>
@@ -42,6 +42,7 @@ export default {
   props: {
     esDia: { type: Boolean, default: true },
     votacionActiva: { type: Boolean, default: false },
+    tipoVotacion: { type: String, default: null },
     jugadorSeleccionado: { type: Object, default: null },
   },
   emits: ['votarAlcalde', 'votarCulpable'],
@@ -59,13 +60,8 @@ export default {
   border-radius: 15px;
 }
 
-.wrapper-dia {
-  background: rgba(0, 0, 0, 0.9);
-}
-
-.wrapper-noche {
-  background: rgba(0, 0, 0, 0.9);
-}
+.wrapper-dia { background: rgba(0, 0, 0, 0.9); }
+.wrapper-noche { background: rgba(0, 0, 0, 0.9); }
 
 .btn-voto {
   display: flex;
@@ -116,31 +112,16 @@ export default {
   background: rgba(0, 0, 0, 0.4);
 }
 
-.cuadro-dia {
-  border: 2px solid #e4ba03;
-  color: white;
-}
-
-.cuadro-dia i {
-  color: #e4ba03;
-}
-
-.cuadro-noche {
-  border: 2px solid #cc0000;
-  color: #cc0000;
-}
-
-.cuadro-noche i {
-  color: #cc0000;
-}
+.cuadro-dia { border: 2px solid #e4ba03; color: white; }
+.cuadro-dia i { color: #e4ba03; }
+.cuadro-noche { border: 2px solid #cc0000; color: #cc0000; }
+.cuadro-noche i { color: #cc0000; }
 
 @media (max-width: 768px) {
   .panel-votaciones-wrapper {
     flex-direction: column;
     align-items: stretch;
   }
-  .btn-voto {
-    width: 100%;
-  }
+  .btn-voto { width: 100%; }
 }
 </style>

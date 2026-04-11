@@ -77,7 +77,9 @@ const routes = [
 
   // Añade esto temporalmente en el router para previsualizar las pantallas de carga en CargaRolView
 /*{ path: '/preview-carga', component: CargaRolView, meta: { sinLayout: true } },
-  { path: '/preview-espera', component: EsperaNarradorView, meta: { sinLayout: true } }
+  { path: '/preview-espera', component: EsperaNarradorView, meta: { sinLayout: true } },
+// Igual para las opciones de victoria y derrota
+  { path: '/preview-resultados', component: ResultadosView, meta: { sinLayout: true } }
 */
 ]
 

@@ -85,6 +85,9 @@ export default {
       state.bandoGanador = bandoGanador
       state.mensajeFin = mensaje
     },
+    SET_MI_BANDO(state, bando) {
+      state.miBando = bando;
+    },
     CLEAR_SALA(state) {
       state.codigoSala = null
       state.esCreador = false

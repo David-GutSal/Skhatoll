@@ -72,4 +72,17 @@ public class SalaSocketService {
         private String descripcionRol;
         private String bando;
     }
+
+    @Data
+    @AllArgsConstructor
+    public static class AlcaldeEvent {
+        private String tipo;
+        private String nombreAlcalde;
+    }
+
+    public void notificarAlcalde(String codigoSala, String nombreAlcalde) {
+        messagingTemplate.convertAndSend(
+                "/topic/partida/" + codigoSala + "/alcalde",
+                new AlcaldeEvent("ALCALDE_ELEGIDO", nombreAlcalde));
+    }
 }

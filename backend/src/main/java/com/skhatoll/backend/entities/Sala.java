@@ -54,6 +54,10 @@ public class Sala {
     @Builder.Default
     private LocalDateTime fechaCreacion = LocalDateTime.now();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_alcalde")
+    private Usuario alcalde;
+
     public enum EstadoSala {
         CREADA, INICIADA, CERRADA
     }

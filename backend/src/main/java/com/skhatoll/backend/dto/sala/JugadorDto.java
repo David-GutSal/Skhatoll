@@ -10,4 +10,6 @@ public class JugadorDto {
     private String nombre;
     private String codigoUuid;
     private Boolean estaVivo;
+    private boolean esNarrador;
+    private Boolean esAlcalde;
 }

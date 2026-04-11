@@ -111,18 +111,13 @@ public class SalaService implements ISalaService {
 
         return salaUsuarioRepository.findBySala_IdSala(sala.getIdSala())
                 .stream()
-                .map(su -> {
-                    boolean esNarrador = su.getUsuario().getIdUsuario()
-                            .equals(sala.getNarrador().getIdUsuario());
-
-                    return new JugadorDto(
-                            su.getUsuario().getIdUsuario(),
-                            su.getUsuario().getNombre(),
-                            su.getUsuario().getCodigoUuid(),
-                            su.getEstaVivo(),
-                            esNarrador // 🔥 CLAVE
-                    );
-                })
+                .map(su -> new JugadorDto(
+                        su.getUsuario().getIdUsuario(),
+                        su.getUsuario().getNombre(),
+                        su.getUsuario().getCodigoUuid(),
+                        su.getEstaVivo(),
+                        su.getUsuario().getIdUsuario().equals(sala.getNarrador().getIdUsuario()),
+                        sala.getAlcalde() != null && su.getUsuario().getIdUsuario().equals(sala.getAlcalde().getIdUsuario())))
                 .toList();
     }
 

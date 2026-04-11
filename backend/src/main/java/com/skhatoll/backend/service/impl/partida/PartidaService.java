@@ -11,6 +11,7 @@ import com.skhatoll.backend.repository.SalaRepository;
 import com.skhatoll.backend.repository.SalaUsuarioRepository;
 import com.skhatoll.backend.entities.Usuario;
 import com.skhatoll.backend.repository.UsuarioRepository;
+import com.skhatoll.backend.service.impl.sala.SalaSocketService;
 import com.skhatoll.backend.service.interfaces.partida.IPartidaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,6 +34,7 @@ public class PartidaService  implements IPartidaService {
     private final VotoRepository votoRepository;
     private final UsuarioRepository usuarioRepository;
     private final PartidaSocketService partidaSocketService;
+    private final SalaSocketService salaSocketService;
 
     // -------------------------------------------------------
     // Obtener el usuario autenticado desde el contexto de Security
@@ -145,13 +147,25 @@ public class PartidaService  implements IPartidaService {
             throw new IllegalStateException("La sesión ya está cerrada");
         }
 
-        // Cerrar la sesión
         sesion.setAbierta(false);
         sesion.setFechaCierre(LocalDateTime.now());
         sesionVotacionRepository.save(sesion);
 
         // Calcular resultado
         ResultadoVotacionDto resultado = calcularResultado(sesion);
+
+        if (sesion.getTipo() == SesionVotacion.TipoVotacion.ALCALDE
+                && !resultado.isEmpate()
+                && resultado.getNombreGanador() != null) {
+
+            usuarioRepository.findByNombre(resultado.getNombreGanador())
+                    .ifPresent(nuevoAlcalde -> {
+                        sala.setAlcalde(nuevoAlcalde);
+                        salaRepository.save(sala);
+                    });
+
+            salaSocketService.notificarAlcalde(codigoSala, resultado.getNombreGanador());
+        }
 
         partidaSocketService.notificarVotacion(
                 codigoSala, sesion.getIdSesion(), sesion.getTipo().name(), false);
@@ -313,10 +327,9 @@ public class PartidaService  implements IPartidaService {
 
         if (votos.isEmpty()) {
             return new ResultadoVotacionDto(
-                    sesion.getIdSesion(), sesion.getTipo().name(), null, true);
+                    sesion.getIdSesion(), sesion.getTipo().name(), null, null, true);
         }
 
-        // Contar votos por objetivo
         Map<String, Long> conteo = votos.stream()
                 .collect(Collectors.groupingBy(
                         v -> v.getObjetivo().getNombre(),
@@ -329,14 +342,20 @@ public class PartidaService  implements IPartidaService {
                 .map(Map.Entry::getKey)
                 .toList();
 
-        // Empate si hay más de un jugador con el máximo de votos
         if (masVotados.size() > 1) {
             return new ResultadoVotacionDto(
-                    sesion.getIdSesion(), sesion.getTipo().name(), null, true);
+                    sesion.getIdSesion(), sesion.getTipo().name(), null, null, true);
+        }
+
+        String ganador = masVotados.get(0);
+
+        if (sesion.getTipo() == SesionVotacion.TipoVotacion.ALCALDE) {
+            return new ResultadoVotacionDto(
+                    sesion.getIdSesion(), sesion.getTipo().name(), null, ganador, false);
         }
 
         return new ResultadoVotacionDto(
-                sesion.getIdSesion(), sesion.getTipo().name(), masVotados.get(0), false);
+                sesion.getIdSesion(), sesion.getTipo().name(), ganador, null, false);
     }
 
     public SesionVotacion getSesionActiva(String codigoSala) {

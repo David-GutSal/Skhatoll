@@ -147,6 +147,14 @@ export default {
       return this.nombreNarrador === this.nombre
     },
   },
+  watch: {
+  codigoSala(nuevo) {
+    if (nuevo) {
+      this.cargarJugadores()
+      this.conectarWebSocket()
+    }
+  }
+},
 
   created() {
     if (this.codigoSala) {

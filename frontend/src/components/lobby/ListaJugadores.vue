@@ -8,10 +8,10 @@
       <ul class="lista" :class="modoCreador ? 'lista-creador' : 'lista-jugador'">
         <li v-for="jugador in jugadores" :key="jugador.idUsuario" class="jugador-item">
 
-          <i v-if="jugador.esNarrador" class="fa-solid fa-book-open-reader icono-narrador"></i>
+          <i v-if="esNarrador(jugador)" class="fa-solid fa-book-open-reader icono-narrador"></i>
           <i v-else class="fa-solid fa-person icono-jugador"></i>
 
-          <span class="jugador-nombre" :class="{ 'es-narrador': jugador.esNarrador }">
+          <span class="jugador-nombre" :class="{ 'es-narrador': esNarrador(jugador) }">
             {{ jugador.nombre }}
           </span>
 
@@ -20,7 +20,7 @@
             type="radio"
             name="narrador"
             class="radio-narrador"
-            :checked="jugador.esNarrador"
+            :checked="esNarrador(jugador)"
             @change="$emit('asignar-narrador', jugador.idUsuario)"
           />
 
@@ -35,10 +35,10 @@
       <p v-else class="mensaje-pie mensaje-jugador">
         <i class="fa-solid fa-book-open-reader"></i>
         <span v-if="soyNarrador">
-          ¡Has sido escogido para ser el narrador de la próxima partida! ¡Deja volar tu imaginación y sorprende a los jugadores!
+          ¡Has sido escogido para ser el narrador de la próxima partida! ¡Deja volar tu imaginación!
         </span>
         <span v-else-if="nombreNarrador">
-          Al parecer <strong>{{ nombreNarrador }}</strong> es el narrador de la partida, ¡a ver qué tal se le da!
+          Al parecer <strong>{{ nombreNarrador }}</strong> es el narrador
         </span>
         <span v-else>
           Esperando a que el creador elija un narrador...
@@ -66,6 +66,12 @@ export default {
 
   data() {
     return { lobbyImg }
+  },
+
+  methods: {
+    esNarrador(jugador) {
+      return jugador.nombre === this.nombreNarrador
+    },
   },
 }
 </script>

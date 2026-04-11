@@ -12,6 +12,7 @@ export default {
     bandoGanador: null,
     mensajeFin: null,
     fase: 'DIA',
+    narradorActual: null,
   }),
 
   mutations: {
@@ -84,6 +85,9 @@ export default {
       state.bandoGanador = bandoGanador
       state.mensajeFin = mensaje
     },
+    SET_MI_BANDO(state, bando) {
+      state.miBando = bando;
+    },
     CLEAR_SALA(state) {
       state.codigoSala = null
       state.esCreador = false
@@ -94,13 +98,19 @@ export default {
       state.miBando = null
       state.fase = 'DIA'
     },
+
+    SET_NARRADOR(state, nombreNarrador) {
+      state.narradorActual = nombreNarrador;
+    },
   },
 
   actions: {
     crearSala({ commit }, codigoSala) {
+      localStorage.setItem('codigoSala', codigoSala)
       commit('SET_SALA', { codigoSala, esCreador: true })
     },
     unirse({ commit }, codigoSala) {
+      localStorage.setItem('codigoSala', codigoSala)
       commit('SET_SALA', { codigoSala, esCreador: false })
     },
     setJugadores({ commit }, jugadores) {
@@ -135,7 +145,11 @@ export default {
       commit('SET_RESULTADO', resultado)
     },
     salir({ commit }) {
+      localStorage.setItem('codigoSala')
       commit('CLEAR_SALA')
+    },
+    setNarrador({ commit }, nombreNarrador) {
+      commit('SET_NARRADOR', nombreNarrador);
     },
   },
 
@@ -150,5 +164,6 @@ export default {
     fase:             (state) => state.fase,
     bandoGanador:     (state) => state.bandoGanador,
     mensajeFin:       (state) => state.mensajeFin,
+    narradorActual: (state) => state.narradorActual,
   },
 }

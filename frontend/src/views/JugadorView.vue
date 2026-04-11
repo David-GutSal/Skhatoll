@@ -1,16 +1,12 @@
 <template>
   <div class="contenedor-jugador" :class="esDia ? 'dia' : 'noche'">
     <div class="contenido">
-
-      <CabeceraJugador
-        :nombreJugador="nombre"
-        :esDia="esDia"
-        :esNarrador="false"
-      />
+      <CabeceraJugador :nombreJugador="nombre" :esDia="esDia" :esNarrador="false" :nombreNarrador="nombreNarrador"/>
 
       <PanelVotacionesJugador
         :esDia="esDia"
         :votacionActiva="votacionActiva"
+        :tipoVotacion="tipoVotacion"
         :jugadorSeleccionado="jugadorSeleccionado"
         @votarAlcalde="votarAlcalde"
         @votarCulpable="votarCulpable"
@@ -25,14 +21,18 @@
         />
       </div>
 
-      <div v-if="mensajeEvento" class="cuadro-evento" :class="esDia ? 'evento-dia' : 'evento-noche'">
+      <div
+        v-if="mensajeEvento"
+        class="cuadro-evento"
+        :class="esDia ? 'evento-dia' : 'evento-noche'"
+      >
         <i class="fa-solid fa-bell"></i>
         {{ mensajeEvento }}
       </div>
 
       <div v-if="!esDia && esMiTurno" class="cuadro-evento evento-noche">
         <i class="fa-solid fa-moon"></i>
-        Cuadro de eventos provisional para cuando el narrador te llame
+        Es tu turno — activa tu poder
       </div>
 
       <BotonMiRol />
@@ -44,7 +44,6 @@
         @devorar="devorarJugador"
         @premonicion="usarPremonicion"
       />
-
     </div>
 
     <div class="footer-aldea" :class="esDia ? 'footer-dia' : 'footer-noche'"></div>
@@ -76,6 +75,7 @@ export default {
     return {
       esDia: true,
       votacionActiva: false,
+      tipoVotacion: null,
       esMiTurno: false,
       jugadorSeleccionado: null,
       stompClient: null,
@@ -86,6 +86,15 @@ export default {
   computed: {
     ...mapGetters('auth', ['nombre']),
     ...mapGetters('sala', ['codigoSala', 'jugadores', 'miRol']),
+
+    nombreNarrador() {
+    const narrador = this.jugadores.find(j => j.esNarrador === true);
+    return narrador ? narrador.nombre : 'Esperando narrador...';
+  },
+
+  soyNarrador() {
+    return this.jugadores.some(j => j.esNarrador === true && j.nombre === this.nombre);
+  },
 
     jugadoresVisibles() {
       if (!this.esDia && this.miRol && this.miRol.toLowerCase() === 'lobo') {
@@ -102,6 +111,17 @@ export default {
     } catch (error) {
       alert('Error al cargar jugadores')
     }
+
+    try {
+      const sesion = await axiosInstance.get(`/partida/${this.codigoSala}/sesion-activa`)
+      if (sesion.data?.abierta) {
+        this.votacionActiva = true
+        this.tipoVotacion = sesion.data.tipo
+      }
+    } catch {
+      // No hay sesión activa, es normal
+    }
+
     this.conectarWebSocket()
   },
 
@@ -178,6 +198,14 @@ export default {
         cliente.subscribe(`/topic/partida/${this.codigoSala}/votacion`, (msg) => {
           const payload = JSON.parse(msg.body)
           this.votacionActiva = payload.abierta ?? false
+          this.tipoVotacion = payload.abierta ? payload.tipo : null
+        })
+        cliente.subscribe(`/topic/partida/${this.codigoSala}/turno`, (msg) => {
+          const payload = JSON.parse(msg.body)
+          this.esMiTurno = payload.nombreJugador === this.nombre
+          if (this.esMiTurno) {
+            this.mensajeEvento = `Es tu turno, ${this.nombre}. Activa tu poder.`
+          }
         })
         cliente.subscribe(`/topic/partida/${this.codigoSala}/fin`, (msg) => {
           const payload = JSON.parse(msg.body)
@@ -205,8 +233,12 @@ export default {
   background-attachment: fixed;
 }
 
-.dia { background-image: url('@/assets/imgs/fondodia.png'); }
-.noche { background-image: url('@/assets/imgs/fondonoche.png'); }
+.dia {
+  background-image: url('@/assets/imgs/fondodia.png');
+}
+.noche {
+  background-image: url('@/assets/imgs/fondonoche.png');
+}
 
 .contenido {
   width: 90%;
@@ -254,11 +286,17 @@ export default {
   background-repeat: no-repeat;
 }
 
-.footer-dia { background-image: url('@/assets/imgs/footer-dia.png'); }
-.footer-noche { background-image: url('@/assets/imgs/footer-noche.png'); }
+.footer-dia {
+  background-image: url('@/assets/imgs/footer-dia.png');
+}
+.footer-noche {
+  background-image: url('@/assets/imgs/footer-noche.png');
+}
 
 @media (max-width: 900px) {
-  .contenido { width: 85%; }
+  .contenido {
+    width: 85%;
+  }
 }
 
 @media (max-width: 600px) {

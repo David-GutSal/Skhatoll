@@ -8,6 +8,7 @@ import lombok.Data;
 public class ResultadoVotacionDto {
     private Integer idSesion;
     private String tipo;
-    private String nombreEliminado;
+    private Integer idUsuario;     // 👈 NUEVO
+    private String nombreJugador;  // 👈 NUEVO
     private boolean empate;
 }

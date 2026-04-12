@@ -38,9 +38,17 @@ public class PartidaService  implements IPartidaService {
     // Obtener el usuario autenticado desde el contexto de Security
     // -------------------------------------------------------
     private Usuario getUsuarioAutenticado() {
-        String nombre = SecurityContextHolder.getContext().getAuthentication().getName();
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated() ||
+                "anonymousUser".equals(authentication.getName())) {
+            throw new IllegalStateException("Usuario no autenticado");
+        }
+
+        String nombre = authentication.getName();
+
         return usuarioRepository.findByNombre(nombre)
-                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + nombre));
     }
 
     // -------------------------------------------------------
@@ -147,6 +155,14 @@ public class PartidaService  implements IPartidaService {
 
         // Calcular resultado
         ResultadoVotacionDto resultado = calcularResultado(sesion);
+
+        // 🔥 LINCHAMIENTO automático (solo votación de día)
+        if (sesion.getTipo() == SesionVotacion.TipoVotacion.DIA
+                && !resultado.isEmpate()
+                && resultado.getIdUsuario() != null) {
+
+            confirmarMuerte(codigoSala, resultado.getIdUsuario());
+        }
 
         partidaSocketService.notificarVotacion(
                 codigoSala, sesion.getIdSesion(), sesion.getTipo().name(), false);
@@ -307,30 +323,41 @@ public class PartidaService  implements IPartidaService {
         List<Voto> votos = votoRepository.findBySesion_IdSesion(sesion.getIdSesion());
 
         if (votos.isEmpty()) {
-            return new ResultadoVotacionDto(
-                    sesion.getIdSesion(), sesion.getTipo().name(), null, true);
+            return new ResultadoVotacionDto(sesion.getIdSesion(), sesion.getTipo().name(), null, null, true);
         }
 
-        // Contar votos por objetivo
         Map<String, Long> conteo = votos.stream()
                 .collect(Collectors.groupingBy(
                         v -> v.getObjetivo().getNombre(),
-                        Collectors.counting()));
+                        Collectors.counting()
+                ));
 
-        long maxVotos = conteo.values().stream().mapToLong(Long::longValue).max().orElse(0);
+        long maxVotos = conteo.values().stream()
+                .mapToLong(Long::longValue)
+                .max()
+                .orElse(0);
 
         List<String> masVotados = conteo.entrySet().stream()
                 .filter(e -> e.getValue() == maxVotos)
                 .map(Map.Entry::getKey)
                 .toList();
 
-        // Empate si hay más de un jugador con el máximo de votos
         if (masVotados.size() > 1) {
-            return new ResultadoVotacionDto(
-                    sesion.getIdSesion(), sesion.getTipo().name(), null, true);
+            return new ResultadoVotacionDto(sesion.getIdSesion(), sesion.getTipo().name(), null, null, true);
         }
 
+        // 🔹 Ganador
+        String nombreGanador = masVotados.getFirst();
+
+        Usuario usuarioGanador = usuarioRepository.findByNombre(nombreGanador)
+                .orElseThrow(() -> new IllegalStateException("Ganador no encontrado"));
+
         return new ResultadoVotacionDto(
-                sesion.getIdSesion(), sesion.getTipo().name(), masVotados.get(0), false);
+                sesion.getIdSesion(),
+                sesion.getTipo().name(),
+                usuarioGanador.getIdUsuario(), // 👈 IMPORTANTE
+                nombreGanador,                // 👈 IMPORTANTE
+                false
+        );
     }
 }

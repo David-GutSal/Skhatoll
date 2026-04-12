@@ -264,6 +264,17 @@ public class PartidaService  implements IPartidaService {
         salaUsuario.setMuerteConfirmada(true);
         salaUsuarioRepository.save(salaUsuario);
 
+        // 🔥 Si muere el alcalde → quitarlo y avisar
+        if (sala.getAlcalde() != null &&
+                sala.getAlcalde().getIdUsuario().equals(idUsuario)) {
+
+            sala.setAlcalde(null);
+            salaRepository.save(sala);
+
+            // Notificar que ya no hay alcalde
+            salaSocketService.notificarAlcalde(codigoSala, null);
+        }
+
         MuerteConfirmadaDto muerte = new MuerteConfirmadaDto(
                 salaUsuario.getUsuario().getNombre(),
                 salaUsuario.getRol().getNombre(),
@@ -333,7 +344,15 @@ public class PartidaService  implements IPartidaService {
         Map<String, Long> conteo = votos.stream()
                 .collect(Collectors.groupingBy(
                         v -> v.getObjetivo().getNombre(),
-                        Collectors.counting()));
+                        Collectors.summingLong(v -> {
+
+                            boolean esAlcalde = sesion.getSala().getAlcalde() != null &&
+                                    v.getVotante().getIdUsuario()
+                                            .equals(sesion.getSala().getAlcalde().getIdUsuario());
+
+                            return esAlcalde ? 2L : 1L;
+                        })
+                ));
 
         long maxVotos = conteo.values().stream().mapToLong(Long::longValue).max().orElse(0);
 
@@ -343,6 +362,27 @@ public class PartidaService  implements IPartidaService {
                 .toList();
 
         if (masVotados.size() > 1) {
+
+            Usuario alcalde = sesion.getSala().getAlcalde();
+
+            if (alcalde != null) {
+                Optional<Voto> votoAlcalde = votos.stream()
+                        .filter(v -> v.getVotante().getIdUsuario().equals(alcalde.getIdUsuario()))
+                        .findFirst();
+
+                if (votoAlcalde.isPresent()) {
+                    String elegido = votoAlcalde.get().getObjetivo().getNombre();
+
+                    if (sesion.getTipo() == SesionVotacion.TipoVotacion.ALCALDE) {
+                        return new ResultadoVotacionDto(
+                                sesion.getIdSesion(), sesion.getTipo().name(), null, elegido, false);
+                    }
+
+                    return new ResultadoVotacionDto(
+                            sesion.getIdSesion(), sesion.getTipo().name(), elegido, null, false);
+                }
+            }
+
             return new ResultadoVotacionDto(
                     sesion.getIdSesion(), sesion.getTipo().name(), null, null, true);
         }

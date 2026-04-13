@@ -256,24 +256,29 @@ export default {
 },
 */
 
-    async iniciarVotacionLinchamiento() {
-      try {
-        const res = await axiosInstance.post(`/partida/${this.codigoSala}/votacion/abrir`, {
-          tipo: 'DIA',
-        })
+async iniciarVotacionLinchamiento() {
+  try {
+    const res = await axiosInstance.post(
+      `/partida/${this.codigoSala}/votacion/abrir`,
+      { tipo: 'DIA' }
+    )
 
-        console.log('🟢 RESPUESTA ABRIR VOTACION:', res.data)
+    console.log('🟢 RESPUESTA ABRIR VOTACION:', res.data)
 
-        // ⚠️ IMPORTANTE: el backend devuelve directamente el ID
-        this.idSesionActual = res.data
-      } catch (error) {
-        alert(
-          error.response?.status === 409
-            ? 'Ya hay una votación abierta'
-            : 'Error al iniciar votación',
-        )
-      }
-    },
+    this.idSesionActual = res.data
+
+    // 🔥 AÑADE ESTO
+    this.votacionActiva = true
+    this.tipoVotacion = 'DIA'
+
+  } catch (error) {
+    alert(
+      error.response?.status === 409
+        ? 'Ya hay una votación abierta'
+        : 'Error al iniciar votación'
+    )
+  }
+},
 
     async iniciarVotacionAlcalde() {
       try {

@@ -1,9 +1,9 @@
 <template>
-
-  <div v-if="modoVista === 'carga' || modoVista === 'miRol'"
+  <div
+    v-if="modoVista === 'carga' || modoVista === 'miRol'"
     class="carta-completa"
-    :style="{ borderColor: colorBando }">
-
+    :style="{ borderColor: colorBando }"
+  >
     <div class="carta-imagen-wrapper">
       <img :src="imagen" :alt="nombreRol" class="carta-imagen" />
       <div class="carta-bando-badge" :style="{ background: colorBando }">
@@ -15,58 +15,78 @@
       <h2 class="carta-nombre">{{ nombreRol }}</h2>
       <p class="carta-descripcion">{{ descripcion }}</p>
     </div>
-
   </div>
 
   <!-- ── MODO NARRADOR: ve imagen + nombre + rol de cada jugador ── -->
-  <div v-else-if="modoVista === 'narrador'"
+  <div
+    v-else-if="modoVista === 'narrador'"
     class="carta-mesa carta-narrador"
     :class="{ muerto: !jugador.estaVivo, alcalde: jugador.alcalde }"
     :style="{ borderColor: getColorBando(rolJugador) }"
-    @click="$emit('seleccionar', jugador)">
-
+    @click="$emit('seleccionar', jugador)"
+  >
     <div class="carta-mesa-imagen">
       <img :src="getImagenRol(nombreRolJugador)" :alt="jugador.nombre" />
       <span v-if="!jugador.estaVivo" class="overlay-muerto">💀</span>
     </div>
 
     <div class="carta-mesa-datos">
-      <p class="carta-mesa-nombre">{{ jugador.nombre }}</p>
+      <p class="carta-mesa-nombre">
+        {{ jugador.nombre }}
+
+        <span v-if="jugador.alcalde" class="alcalde-inline" title="Alcalde">
+          <i class="fa-solid fa-medal"></i>
+        </span>
+      </p>
       <p class="carta-mesa-rol" :style="{ color: getColorBando(rolJugador) }">
         {{ nombreRolJugador || '???' }}
       </p>
     </div>
 
     <div class="carta-iconos">
-      <span v-if="jugador.alcalde" title="Alcalde">👑</span>
-      <span v-if="jugador.votos > 0" title="Votos">🗳 {{ jugador.votos }}</span>
+      <span v-if="jugador.alcalde" class="alcalde-badge" title="Alcalde">
+        <i class="fa-solid fa-medal"></i>
+      </span>
+      <span v-if="jugador.votos > 0" class="badge-votos">
+        <i class="fa-solid fa-check"></i> {{ jugador.votos }}
+      </span>
     </div>
-
   </div>
 
   <!-- ── MODO JUGADOR: ve nombre pero NO el rol de los demás ── -->
-  <div v-else-if="modoVista === 'jugador'"
+  <div
+    v-else-if="modoVista === 'jugador'"
     class="carta-mesa carta-jugador"
-    :class="{ muerto: !jugador.estaVivo, alcalde: jugador.alcalde }"
-    @click="$emit('seleccionar', jugador)">
-
+    :class="{
+      muerto: !jugador.estaVivo,
+      alcalde: jugador.alcalde,
+      seleccionado: jugadorSeleccionado?.idUsuario === jugador.idUsuario,
+    }"
+    @click="$emit('seleccionar', jugador)"
+  >
     <div class="carta-mesa-imagen carta-imagen-oculta">
       <i class="fa-solid fa-person"></i>
       <span v-if="!jugador.estaVivo" class="overlay-muerto">💀</span>
     </div>
 
     <div class="carta-mesa-datos">
-      <p class="carta-mesa-nombre">{{ jugador.nombre }}</p>
+      <p class="carta-mesa-nombre">
+        {{ jugador.nombre }}
+
+        <span v-if="jugador.alcalde" class="alcalde-inline" title="Alcalde">
+          <i class="fa-solid fa-medal"></i>
+        </span>
+      </p>
       <p class="carta-mesa-rol oculto">???</p>
     </div>
 
     <div class="carta-iconos">
-      <span v-if="jugador.alcalde" title="Alcalde">👑</span>
+      <span v-if="jugador.alcalde" class="alcalde-badge" title="Alcalde">
+        <i class="fa-solid fa-medal"></i>
+      </span>
       <span v-if="jugador.votos > 0" title="Votos">🗳 {{ jugador.votos }}</span>
     </div>
-
   </div>
-
 </template>
 
 <script>
@@ -99,6 +119,10 @@ export default {
     jugador: {
       type: Object,
       default: () => ({}),
+    },
+    jugadorSeleccionado: {
+      type: Object,
+      default: null,
     },
   },
 
@@ -134,7 +158,6 @@ export default {
 </script>
 
 <style scoped>
-
 .carta-completa {
   display: flex;
   flex-direction: column;
@@ -205,10 +228,12 @@ export default {
   gap: 8px;
   padding: 10px;
   background: #1f1f1f;
-  border: 2px solid #333;
+  border: 3px solid #333;
   border-radius: 10px;
   cursor: pointer;
-  transition: transform 0.15s ease, border-color 0.2s ease;
+  transition:
+    transform 0.15s ease,
+    border-color 0.2s ease;
   font-family: 'Raleway', Arial, sans-serif;
   position: relative;
 }
@@ -230,6 +255,32 @@ export default {
   object-fit: cover;
   display: block;
   border-radius: 8px;
+}
+
+.carta-mesa.seleccionado {
+  transform: scale(0.92);
+  border: 5px solid white !important;
+  box-shadow:
+    0 0 10px white,
+    0 0 20px rgba(255, 255, 255, 0.8),
+    0 0 30px rgba(255, 255, 255, 0.4);
+  transition: all 0.2s ease;
+}
+
+@keyframes flashVoto {
+  0% {
+    box-shadow: 0 0 0px white;
+  }
+  50% {
+    box-shadow: 0 0 25px white;
+  }
+  100% {
+    box-shadow: 0 0 10px white;
+  }
+}
+
+.carta-mesa.seleccionado {
+  animation: flashVoto 0.4s ease;
 }
 
 .carta-imagen-oculta {
@@ -265,8 +316,8 @@ export default {
 
 .carta-mesa-nombre {
   font-family: 'Cinzel', Arial, sans-serif;
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: bold;
   color: white;
   margin: 0 0 2px 0;
   white-space: nowrap;
@@ -275,8 +326,8 @@ export default {
 }
 
 .carta-mesa-rol {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin: 0;
@@ -298,8 +349,41 @@ export default {
   opacity: 0.45;
 }
 
-.alcalde {
-  box-shadow: 0 0 0 2px gold;
+.alcalde-inline {
+  margin-left: 6px;
+  color: #e4ba03;
+  font-size: 1rem;
+}
+
+.alcalde-inline i {
+  color: #e4ba03;
+}
+
+/* borde dorado + glow SOLO cuando es alcalde */
+.carta-mesa.alcalde {
+  border: 4px solid #e4ba03 !important;
+  box-shadow:
+    0 0 8px rgba(228, 186, 3, 0.5),
+    0 0 18px rgba(228, 186, 3, 0.25);
+  transition:
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.carta-mesa.alcalde:hover {
+  box-shadow:
+    0 0 12px rgba(228, 186, 3, 0.8),
+    0 0 25px rgba(228, 186, 3, 0.4);
+}
+
+.badge-votos {
+  background: rgba(0, 0, 0, 0.7);
+  color: #e4ba03;
+  border: 2px solid #e4ba03;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .carta-narrador {

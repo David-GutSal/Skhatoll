@@ -1,7 +1,27 @@
 <template>
   <div class="contenedor-jugador" :class="esDia ? 'dia' : 'noche'">
     <div class="contenido">
-      <CabeceraJugador :nombreJugador="nombre" :esDia="esDia" :esNarrador="false" :nombreNarrador="nombreNarrador"/>
+      <CabeceraJugador
+        :nombreJugador="nombre"
+        :esDia="esDia"
+        :esNarrador="false"
+        :nombreNarrador="nombreNarrador"
+      />
+      <div
+        v-if="mensajeEvento"
+        class="cuadro-evento"
+        :class="esDia ? 'evento-dia' : 'evento-noche'"
+      >
+        <i v-if="tipoVotacion === 'ALCALDE'" class="fa-solid fa-medal"></i>
+
+        <i v-else-if="tipoVotacion === 'DIA'" class="fa-solid fa-gavel"></i>
+
+        <i v-else-if="tipoVotacion === 'LOBOS'" class="fa-solid fa-skull"></i>
+
+        <i v-else class="fa-solid fa-bell"></i>
+
+        {{ mensajeEvento }}
+      </div>
 
       <PanelVotacionesJugador
         :esDia="esDia"
@@ -17,17 +37,9 @@
           :jugadores="jugadoresVisibles"
           :esDia="esDia"
           :modoNarrador="false"
+          :jugadorSeleccionado="jugadorSeleccionado"
           @seleccionarJugador="seleccionarJugador"
         />
-      </div>
-
-      <div
-        v-if="mensajeEvento"
-        class="cuadro-evento"
-        :class="esDia ? 'evento-dia' : 'evento-noche'"
-      >
-        <i class="fa-solid fa-bell"></i>
-        {{ mensajeEvento }}
       </div>
 
       <div v-if="!esDia && esMiTurno" class="cuadro-evento evento-noche">
@@ -88,13 +100,13 @@ export default {
     ...mapGetters('sala', ['codigoSala', 'jugadores', 'miRol']),
 
     nombreNarrador() {
-    const narrador = this.jugadores.find(j => j.esNarrador === true);
-    return narrador ? narrador.nombre : 'Esperando narrador...';
-  },
+      const narrador = this.jugadores.find((j) => j.esNarrador === true)
+      return narrador ? narrador.nombre : 'Esperando narrador...'
+    },
 
-  soyNarrador() {
-    return this.jugadores.some(j => j.esNarrador === true && j.nombre === this.nombre);
-  },
+    soyNarrador() {
+      return this.jugadores.some((j) => j.esNarrador === true && j.nombre === this.nombre)
+    },
 
     jugadoresVisibles() {
       if (!this.esDia && this.miRol && this.miRol.toLowerCase() === 'lobo') {
@@ -195,10 +207,41 @@ export default {
           const payload = JSON.parse(msg.body)
           this.$store.dispatch('sala/actualizarVotos', payload.votos)
         })
+        cliente.subscribe(`/topic/partida/${this.codigoSala}/alcalde`, (msg) => {
+          const payload = JSON.parse(msg.body)
+
+          console.log('👑 ALCALDE RECIBIDO:', payload)
+
+          if (payload.tipo === 'ALCALDE_ELEGIDO') {
+            this.$store.dispatch('sala/designarAlcalde', payload.nombreAlcalde)
+          }
+        })
         cliente.subscribe(`/topic/partida/${this.codigoSala}/votacion`, (msg) => {
           const payload = JSON.parse(msg.body)
+
+          console.log('📩 VOTACION JUGADOR:', payload)
+
           this.votacionActiva = payload.abierta ?? false
-          this.tipoVotacion = payload.abierta ? payload.tipo : null
+
+          if (payload.abierta) {
+            this.tipoVotacion = payload.tipoVotacion
+
+            // 🔥 MENSAJE VISUAL SEGÚN TIPO
+            if (payload.tipoVotacion === 'ALCALDE') {
+              this.mensajeEvento = 'ELECCIONES ABIERTAS'
+            } else if (payload.tipoVotacion === 'DIA') {
+              this.mensajeEvento = 'VOTACIÓN DE LINCHAMIENTO'
+            } else if (payload.tipoVotacion === 'LOBOS') {
+              this.mensajeEvento = 'LOS LOBOS DECIDEN'
+            }
+
+            // ⏱️ Se borra solo después
+            setTimeout(() => {
+              this.mensajeEvento = null
+            }, 30000)
+          } else {
+            this.tipoVotacion = null
+          }
         })
         cliente.subscribe(`/topic/partida/${this.codigoSala}/turno`, (msg) => {
           const payload = JSON.parse(msg.body)
@@ -303,6 +346,21 @@ export default {
   .contenido {
     width: 95%;
     padding-top: 20px;
+  }
+}
+
+.cuadro-evento {
+  animation: aparecer 0.4s ease;
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 </style>

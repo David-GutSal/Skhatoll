@@ -24,6 +24,10 @@
           <i :class="eventosActivos ? 'fa-solid fa-stop' : 'fa-solid fa-play'"></i>
           {{ eventosActivos ? 'Finalizar Eventos' : 'Iniciar Eventos' }}
         </button>
+        <button class="btn-panel" @click="$emit('finalizarVotacion')">
+          <i class="fa-solid fa-calendar-check"></i>
+          Finalizar Votación
+        </button>
       </template>
     </div>
 
@@ -156,7 +160,7 @@ export default {
 
 .btn-info:hover {
   background: #006199;
-  color:#e4ba03;
+  color: #e4ba03;
   transform: scale(0.96);
 }
 
@@ -175,8 +179,6 @@ export default {
     flex-direction: column;
     align-items: stretch;
   }
-  .btn-panel {
-    width: 100%;
-  }
+  .btn-panel { width: 100%; }
 }
 </style>

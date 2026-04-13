@@ -11,6 +11,7 @@ import com.skhatoll.backend.repository.SalaRepository;
 import com.skhatoll.backend.repository.SalaUsuarioRepository;
 import com.skhatoll.backend.entities.Usuario;
 import com.skhatoll.backend.repository.UsuarioRepository;
+import com.skhatoll.backend.service.impl.sala.SalaSocketService;
 import com.skhatoll.backend.service.interfaces.partida.IPartidaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,6 +34,7 @@ public class PartidaService  implements IPartidaService {
     private final VotoRepository votoRepository;
     private final UsuarioRepository usuarioRepository;
     private final PartidaSocketService partidaSocketService;
+    private final SalaSocketService salaSocketService;
 
     // -------------------------------------------------------
     // Obtener el usuario autenticado desde el contexto de Security
@@ -105,6 +107,11 @@ public class PartidaService  implements IPartidaService {
     public SesionVotacion abrirVotacion(String codigoSala, AbrirVotacionRequest request) {
         Usuario solicitante = getUsuarioAutenticado();
         Sala sala = getSalaIniciada(codigoSala);
+// Añadidos prints para comprobar error del Frontend
+        System.out.println("=== DEBUG BACKEND ===");
+        System.out.println("Solicitante: " + solicitante.getNombre());
+        System.out.println("Narrador: " + sala.getNarrador().getNombre());
+        System.out.println("Son iguales? " + sala.getNarrador().getIdUsuario().equals(solicitante.getIdUsuario()));
 
         if (!sala.getNarrador().getIdUsuario().equals(solicitante.getIdUsuario())) {
             throw new IllegalStateException("Solo el narrador puede abrir votaciones");
@@ -148,7 +155,6 @@ public class PartidaService  implements IPartidaService {
             throw new IllegalStateException("La sesión ya está cerrada");
         }
 
-        // Cerrar la sesión
         sesion.setAbierta(false);
         sesion.setFechaCierre(LocalDateTime.now());
         sesionVotacionRepository.save(sesion);

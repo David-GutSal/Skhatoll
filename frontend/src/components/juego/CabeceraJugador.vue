@@ -1,11 +1,25 @@
 <template>
   <div class="cabecera">
 
-    <div class="nombre-box" :class="esDia ? 'nombre-dia' : 'nombre-noche'">
-      <i :class="esNarrador ? 'fa-solid fa-book-open-reader' : 'fa-solid fa-person'"></i>
-      <span>{{ esNarrador ? 'Narrador' : 'Jugador' }}: {{ nombreJugador }}</span>
+    <!-- Columna izquierda: Nombre del jugador + Narrador -->
+    <div class="columna-izquierda">
+      <div class="nombre-box" :class="esDia ? 'nombre-dia' : 'nombre-noche'">
+        <i :class="esNarrador ? 'fa-solid fa-book-open-reader' : 'fa-solid fa-person'"></i>
+        <span>{{ esNarrador ? 'Narrador' : 'Jugador' }}: {{ nombreJugador }}</span>
+      </div>
+
+      <!-- Cuadro del Narrador - Solo para jugadores normales -->
+      <div 
+        v-if="!esNarrador && nombreNarrador"
+        class="narrador-box"
+        :class="esDia ? 'narrador-dia' : 'narrador-noche'"
+      >
+        <i class="fa-solid fa-book-open-reader"></i>
+        <span>El Narrador es: <strong>{{ nombreNarrador }}</strong></span>
+      </div>
     </div>
 
+    <!-- Carta de fase (derecha) -->
     <div class="carta-fase" :class="esDia ? 'carta-dia' : 'carta-noche'">
       <p class="carta-fase-titulo">{{ esDia ? 'EL DÍA' : 'LA NOCHE' }}</p>
       <img
@@ -34,6 +48,7 @@ export default {
     nombreJugador: { type: String, default: '' },
     esDia: { type: Boolean, default: true },
     esNarrador: { type: Boolean, default: false },
+    nombreNarrador: { type: String, default: '' },
   },
   data() {
     return { solImg, lunaImg }
@@ -46,34 +61,73 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 20px;
   flex-wrap: wrap;
-  gap: 16px;
-  background: transparent;
 }
 
+.columna-izquierda {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-width: 280px;
+}
+
+/* Caja del nombre del jugador */
 .nombre-box {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 12px 20px;
   border-radius: 12px;
+  width: 400px;
   font-family: 'Cinzel', Arial, sans-serif;
   font-size: 1.3rem;
   font-weight: 700;
   color: #cc0000;
-  align-self: flex-start;
 }
 
 .nombre-dia {
   background: #000;
-  color: #cc0000;
 }
 
 .nombre-noche {
   background: white;
-  color: #cc0000;
 }
 
+/* Caja del Narrador - mismo ancho que la del nombre */
+.narrador-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-family: 'Raleway', Arial, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  width: 400px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border: 2px solid;
+}
+
+.narrador-dia {
+  background: rgba(0, 0, 0, 0.82);
+  border-color: #e4ba03;
+  color: #ffdd57;
+}
+
+.narrador-noche {
+  background: rgba(0, 0, 0, 0.85);
+  border-color: #cc0000;
+  color: #ff7777;
+}
+
+.narrador-box i {
+  font-size: 26px;
+  min-width: 30px;
+}
+
+/* Carta de fase */
 .carta-fase {
   display: flex;
   flex-direction: column;
@@ -81,8 +135,10 @@ export default {
   gap: 8px;
   padding: 16px;
   border-radius: 15px;
-  width: clamp(120px, 20vw, 260px);
+  width: clamp(140px, 22vw, 270px);
   flex-shrink: 0;
+  min-width: 210px;
+  margin-left: 23px;
 }
 
 .carta-dia {
@@ -119,7 +175,7 @@ export default {
 .carta-fase-texto {
   font-family: 'Raleway', Arial, sans-serif;
   font-weight: 700;
-  font-size: clamp(0.6rem, 1.2vw, 0.95rem);
+  font-size: clamp(0.85rem, 1.2vw, 1.2rem);
   text-align: center;
   line-height: 1.4;
   margin: 0;
@@ -129,17 +185,18 @@ export default {
 .carta-dia .carta-fase-texto { color: #e4ba03; }
 .carta-noche .carta-fase-texto { color: #cc0000; }
 
-@media (max-width: 600px) {
+@media (max-width: 750px) {
   .cabecera {
     flex-direction: column;
     align-items: center;
   }
-  .carta-fase {
-    width: 60%;
-    max-width: 200px;
+  .columna-izquierda {
+    width: 100%;
+    min-width: auto;
+    align-items: center;
   }
-  .nombre-box {
-    font-size: 1rem;
+  .nombre-box,
+  .narrador-box {
     width: 100%;
     justify-content: center;
   }

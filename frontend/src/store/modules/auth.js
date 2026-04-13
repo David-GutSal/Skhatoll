@@ -12,11 +12,22 @@ export default {
       state.token = token
       state.nombre = nombre
       state.uuid = uuid
+
+      // 🟢 GUARDAR EN LOCALSTORAGE
+      localStorage.setItem('token', token)
+      localStorage.setItem('nombre', nombre)
+      localStorage.setItem('uuid', uuid)
     },
+
     CLEAR_AUTH(state) {
       state.token = null
       state.nombre = null
       state.uuid = null
+
+      // 🔴 BORRAR LOCALSTORAGE
+      localStorage.removeItem('token')
+      localStorage.removeItem('nombre')
+      localStorage.removeItem('uuid')
     },
   },
 

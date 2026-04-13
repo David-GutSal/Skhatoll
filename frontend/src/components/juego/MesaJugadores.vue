@@ -8,6 +8,7 @@
         :modoVista="modoNarrador ? 'narrador' : 'jugador'"
         :jugador="j"
         :esDia="esDia"
+        :jugadorSeleccionado="jugadorSeleccionado"
         @seleccionar="$emit('seleccionarJugador', j)"
       />
     </div>
@@ -27,6 +28,7 @@ export default {
     jugadores: { type: Array, default: () => [] },
     esDia: { type: Boolean, default: true },
     modoNarrador: { type: Boolean, default: false },
+    jugadorSeleccionado: Object,
   },
 
   emits: ['seleccionarJugador'],

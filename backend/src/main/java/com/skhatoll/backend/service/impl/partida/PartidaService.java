@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class PartidaService  implements IPartidaService {
+public class PartidaService implements IPartidaService {
 
     private final SalaRepository salaRepository;
     private final SalaUsuarioRepository salaUsuarioRepository;
@@ -42,23 +42,20 @@ public class PartidaService  implements IPartidaService {
     private Usuario getUsuarioAutenticado() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication == null || !authentication.isAuthenticated() ||
-                "anonymousUser".equals(authentication.getName())) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
             throw new IllegalStateException("Usuario no autenticado");
         }
 
         String nombre = authentication.getName();
 
-        return usuarioRepository.findByNombre(nombre)
-                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + nombre));
+        return usuarioRepository.findByNombre(nombre).orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + nombre));
     }
 
     // -------------------------------------------------------
     // Obtener sala iniciada por código
     // -------------------------------------------------------
     private Sala getSalaIniciada(String codigoSala) {
-        Sala sala = salaRepository.findByCodigoSala(codigoSala)
-                .orElseThrow(() -> new IllegalArgumentException("Sala no encontrada"));
+        Sala sala = salaRepository.findByCodigoSala(codigoSala).orElseThrow(() -> new IllegalArgumentException("Sala no encontrada"));
 
         if (sala.getEstadoSala() != Sala.EstadoSala.INICIADA) {
             throw new IllegalStateException("La partida no está en curso");
@@ -79,17 +76,12 @@ public class PartidaService  implements IPartidaService {
             throw new IllegalStateException("Solo el narrador puede cambiar la fase");
         }
 
-        // Comprobar que no hay votaciones abiertas
         if (sesionVotacionRepository.existsBySala_IdSalaAndAbiertaTrue(sala.getIdSala())) {
             throw new IllegalStateException("Debes cerrar la votación antes de cambiar la fase");
         }
 
-        // Alternar fase
-        Sala.EstadoDia nuevaFase = sala.getEstadoDia() == Sala.EstadoDia.DIA
-                ? Sala.EstadoDia.NOCHE
-                : Sala.EstadoDia.DIA;
+        Sala.EstadoDia nuevaFase = sala.getEstadoDia() == Sala.EstadoDia.DIA ? Sala.EstadoDia.NOCHE : Sala.EstadoDia.DIA;
 
-        // Si pasamos a DÍA incrementamos la ronda
         if (nuevaFase == Sala.EstadoDia.DIA) {
             sala.setRondaActual(sala.getRondaActual() + 1);
         }
@@ -107,31 +99,20 @@ public class PartidaService  implements IPartidaService {
     public SesionVotacion abrirVotacion(String codigoSala, AbrirVotacionRequest request) {
         Usuario solicitante = getUsuarioAutenticado();
         Sala sala = getSalaIniciada(codigoSala);
-// Añadidos prints para comprobar error del Frontend
-        System.out.println("=== DEBUG BACKEND ===");
-        System.out.println("Solicitante: " + solicitante.getNombre());
-        System.out.println("Narrador: " + sala.getNarrador().getNombre());
-        System.out.println("Son iguales? " + sala.getNarrador().getIdUsuario().equals(solicitante.getIdUsuario()));
 
         if (!sala.getNarrador().getIdUsuario().equals(solicitante.getIdUsuario())) {
             throw new IllegalStateException("Solo el narrador puede abrir votaciones");
         }
 
-        // No puede haber dos votaciones abiertas a la vez
         if (sesionVotacionRepository.existsBySala_IdSalaAndAbiertaTrue(sala.getIdSala())) {
             throw new IllegalStateException("Ya hay una votación abierta en esta sala");
         }
 
-        SesionVotacion sesion = SesionVotacion.builder()
-                .sala(sala)
-                .tipo(request.getTipo())
-                .ronda(sala.getRondaActual())
-                .build();
+        SesionVotacion sesion = SesionVotacion.builder().sala(sala).tipo(request.getTipo()).ronda(sala.getRondaActual()).build();
 
         sesionVotacionRepository.save(sesion);
 
-        partidaSocketService.notificarVotacion(
-                codigoSala, sesion.getIdSesion(), sesion.getTipo().name(), true);
+        partidaSocketService.notificarVotacion(codigoSala, sesion.getIdSesion(), sesion.getTipo().name(), true);
 
         return sesion;
     }
@@ -148,8 +129,7 @@ public class PartidaService  implements IPartidaService {
             throw new IllegalStateException("Solo el narrador puede cerrar votaciones");
         }
 
-        SesionVotacion sesion = sesionVotacionRepository.findById(idSesion)
-                .orElseThrow(() -> new IllegalArgumentException("Sesión de votación no encontrada"));
+        SesionVotacion sesion = sesionVotacionRepository.findById(idSesion).orElseThrow(() -> new IllegalArgumentException("Sesión de votación no encontrada"));
 
         if (!sesion.getAbierta()) {
             throw new IllegalStateException("La sesión ya está cerrada");
@@ -159,19 +139,26 @@ public class PartidaService  implements IPartidaService {
         sesion.setFechaCierre(LocalDateTime.now());
         sesionVotacionRepository.save(sesion);
 
-        // Calcular resultado
         ResultadoVotacionDto resultado = calcularResultado(sesion);
 
-        // 🔥 LINCHAMIENTO automático (solo votación de día)
-        if (sesion.getTipo() == SesionVotacion.TipoVotacion.DIA
-                && !resultado.isEmpate()
-                && resultado.getIdUsuario() != null) {
+        // Elección de alcalde: asignar ganador como nuevo alcalde
+        if (sesion.getTipo() == SesionVotacion.TipoVotacion.ALCALDE && !resultado.isEmpate() && resultado.getNombreGanador() != null) {
 
-            confirmarMuerte(codigoSala, resultado.getIdUsuario());
+            usuarioRepository.findByNombre(resultado.getNombreGanador()).ifPresent(nuevoAlcalde -> {
+                sala.setAlcalde(nuevoAlcalde);
+                salaRepository.save(sala);
+            });
+
+            salaSocketService.notificarAlcalde(codigoSala, resultado.getNombreGanador());
         }
 
-        partidaSocketService.notificarVotacion(
-                codigoSala, sesion.getIdSesion(), sesion.getTipo().name(), false);
+        // Linchamiento automático: si es votación de día con ganador claro, confirmar muerte
+        if (sesion.getTipo() == SesionVotacion.TipoVotacion.DIA && !resultado.isEmpate() && resultado.getNombreEliminado() != null) {
+
+            usuarioRepository.findByNombre(resultado.getNombreEliminado()).ifPresent(eliminado -> confirmarMuerte(codigoSala, eliminado.getIdUsuario()));
+        }
+
+        partidaSocketService.notificarVotacion(codigoSala, sesion.getIdSesion(), sesion.getTipo().name(), false);
         partidaSocketService.notificarResultadoVotacion(codigoSala, resultado);
 
         return resultado;
@@ -185,36 +172,23 @@ public class PartidaService  implements IPartidaService {
         Usuario votante = getUsuarioAutenticado();
         Sala sala = getSalaIniciada(codigoSala);
 
-        // Comprobar que hay una sesión abierta
-        SesionVotacion sesion = sesionVotacionRepository
-                .findBySala_IdSalaAndAbiertaTrue(sala.getIdSala())
-                .orElseThrow(() -> new IllegalStateException("No hay ninguna votación abierta"));
+        SesionVotacion sesion = sesionVotacionRepository.findBySala_IdSalaAndAbiertaTrue(sala.getIdSala()).orElseThrow(() -> new IllegalStateException("No hay ninguna votación abierta"));
 
-        // Comprobar que el votante está vivo en la sala
-        SalaUsuario salaUsuario = salaUsuarioRepository
-                .findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), votante.getIdUsuario())
-                .orElseThrow(() -> new IllegalStateException("No estás en esta sala"));
+        SalaUsuario salaUsuario = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), votante.getIdUsuario()).orElseThrow(() -> new IllegalStateException("No estás en esta sala"));
 
         if (!salaUsuario.getEstaVivo()) {
             throw new IllegalStateException("Los jugadores eliminados no pueden votar");
         }
 
-        // Comprobar que el objetivo existe y está vivo
-        Usuario objetivo = usuarioRepository.findById(request.getIdObjetivo())
-                .orElseThrow(() -> new IllegalArgumentException("Jugador objetivo no encontrado"));
+        Usuario objetivo = usuarioRepository.findById(request.getIdObjetivo()).orElseThrow(() -> new IllegalArgumentException("Jugador objetivo no encontrado"));
 
-        SalaUsuario objetivoEnSala = salaUsuarioRepository
-                .findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), objetivo.getIdUsuario())
-                .orElseThrow(() -> new IllegalArgumentException("El objetivo no está en esta sala"));
+        SalaUsuario objetivoEnSala = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), objetivo.getIdUsuario()).orElseThrow(() -> new IllegalArgumentException("El objetivo no está en esta sala"));
 
         if (!objetivoEnSala.getEstaVivo()) {
             throw new IllegalStateException("No puedes votar a un jugador eliminado");
         }
 
-        // Upsert: actualizar voto existente o crear uno nuevo
-        Optional<Voto> votoExistente = votoRepository
-                .findBySesion_IdSesionAndVotante_IdUsuario(
-                        sesion.getIdSesion(), votante.getIdUsuario());
+        Optional<Voto> votoExistente = votoRepository.findBySesion_IdSesionAndVotante_IdUsuario(sesion.getIdSesion(), votante.getIdUsuario());
 
         Voto voto;
         if (votoExistente.isPresent()) {
@@ -222,22 +196,12 @@ public class PartidaService  implements IPartidaService {
             voto.setObjetivo(objetivo);
             voto.setFechaVoto(LocalDateTime.now());
         } else {
-            voto = Voto.builder()
-                    .sesion(sesion)
-                    .votante(votante)
-                    .objetivo(objetivo)
-                    .build();
+            voto = Voto.builder().sesion(sesion).votante(votante).objetivo(objetivo).build();
         }
 
         votoRepository.save(voto);
 
-        // Notificar lista de votos actualizada en tiempo real
-        List<VotoDto> votos = votoRepository.findBySesion_IdSesion(sesion.getIdSesion())
-                .stream()
-                .map(v -> new VotoDto(
-                        v.getVotante().getNombre(),
-                        v.getObjetivo().getNombre()))
-                .toList();
+        List<VotoDto> votos = votoRepository.findBySesion_IdSesion(sesion.getIdSesion()).stream().map(v -> new VotoDto(v.getVotante().getNombre(), v.getObjetivo().getNombre())).toList();
 
         partidaSocketService.notificarVotos(codigoSala, votos);
     }
@@ -254,38 +218,27 @@ public class PartidaService  implements IPartidaService {
             throw new IllegalStateException("Solo el narrador puede confirmar muertes");
         }
 
-        SalaUsuario salaUsuario = salaUsuarioRepository
-                .findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), idUsuario)
-                .orElseThrow(() -> new IllegalArgumentException("El jugador no está en esta sala"));
+        SalaUsuario salaUsuario = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), idUsuario).orElseThrow(() -> new IllegalArgumentException("El jugador no está en esta sala"));
 
         if (!salaUsuario.getEstaVivo()) {
             throw new IllegalStateException("El jugador ya está eliminado");
         }
 
-        // Confirmar muerte y revelar rol
         salaUsuario.setEstaVivo(false);
         salaUsuario.setMuerteConfirmada(true);
         salaUsuarioRepository.save(salaUsuario);
 
-        // 🔥 Si muere el alcalde → quitarlo y avisar
-        if (sala.getAlcalde() != null &&
-                sala.getAlcalde().getIdUsuario().equals(idUsuario)) {
-
+        // Si muere el alcalde → desasignarlo y notificar
+        if (sala.getAlcalde() != null && sala.getAlcalde().getIdUsuario().equals(idUsuario)) {
             sala.setAlcalde(null);
             salaRepository.save(sala);
-
-            // Notificar que ya no hay alcalde
             salaSocketService.notificarAlcalde(codigoSala, null);
         }
 
-        MuerteConfirmadaDto muerte = new MuerteConfirmadaDto(
-                salaUsuario.getUsuario().getNombre(),
-                salaUsuario.getRol().getNombre(),
-                salaUsuario.getRol().getBando().name());
+        MuerteConfirmadaDto muerte = new MuerteConfirmadaDto(salaUsuario.getUsuario().getNombre(), salaUsuario.getRol().getNombre(), salaUsuario.getRol().getBando().name());
 
         partidaSocketService.notificarMuerte(codigoSala, muerte);
 
-        // Comprobar condición de victoria tras cada muerte
         comprobarFinPartida(codigoSala, sala);
     }
 
@@ -293,34 +246,19 @@ public class PartidaService  implements IPartidaService {
     // Comprobar si la partida ha terminado
     // -------------------------------------------------------
     private void comprobarFinPartida(String codigoSala, Sala sala) {
-        List<SalaUsuario> jugadoresVivos = salaUsuarioRepository
-                .findBySala_IdSala(sala.getIdSala())
-                .stream()
-                .filter(su -> su.getEstaVivo()
-                        && !su.getUsuario().getIdUsuario()
-                        .equals(sala.getNarrador().getIdUsuario()))
-                .toList();
+        List<SalaUsuario> jugadoresVivos = salaUsuarioRepository.findBySala_IdSala(sala.getIdSala()).stream().filter(su -> su.getEstaVivo() && !su.getUsuario().getIdUsuario().equals(sala.getNarrador().getIdUsuario())).toList();
 
-        long lobosVivos = jugadoresVivos.stream()
-                .filter(su -> su.getRol() != null
-                        && su.getRol().getBando().name().equals("lobo"))
-                .count();
+        long lobosVivos = jugadoresVivos.stream().filter(su -> su.getRol() != null && su.getRol().getBando().name().equals("lobo")).count();
 
-        long aldeaViva = jugadoresVivos.stream()
-                .filter(su -> su.getRol() != null
-                        && su.getRol().getBando().name().equals("aldea"))
-                .count();
+        long aldeaViva = jugadoresVivos.stream().filter(su -> su.getRol() != null && su.getRol().getBando().name().equals("aldea")).count();
 
         String bandoGanador = null;
         String mensaje = null;
 
-        // Aldeanos ganan si no quedan lobos
         if (lobosVivos == 0) {
             bandoGanador = "aldea";
             mensaje = "¡La aldea ha eliminado a todos los hombres lobo!";
-        }
-        // Lobos ganan si igualan o superan a los aldeanos
-        else if (lobosVivos >= aldeaViva) {
+        } else if (lobosVivos >= aldeaViva) {
             bandoGanador = "lobo";
             mensaje = "¡Los hombres lobo dominan la aldea!";
         }
@@ -328,8 +266,7 @@ public class PartidaService  implements IPartidaService {
         if (bandoGanador != null) {
             sala.setEstadoSala(Sala.EstadoSala.CERRADA);
             salaRepository.save(sala);
-            partidaSocketService.notificarFinPartida(
-                    codigoSala, new FinPartidaDto(bandoGanador, mensaje));
+            partidaSocketService.notificarFinPartida(codigoSala, new FinPartidaDto(bandoGanador, mensaje));
         }
     }
 
@@ -343,67 +280,53 @@ public class PartidaService  implements IPartidaService {
             return new ResultadoVotacionDto(sesion.getIdSesion(), sesion.getTipo().name(), null, null, true);
         }
 
-        Map<String, Long> conteo = votos.stream()
-                .collect(Collectors.groupingBy(
-                        v -> v.getObjetivo().getNombre(),
-                        Collectors.summingLong(v -> {
+        // El voto del alcalde cuenta doble
+        Map<String, Long> conteo = votos.stream().collect(Collectors.groupingBy(v -> v.getObjetivo().getNombre(), Collectors.summingLong(v -> {
+            boolean esAlcalde = sesion.getSala().getAlcalde() != null && v.getVotante().getIdUsuario().equals(sesion.getSala().getAlcalde().getIdUsuario());
+            return esAlcalde ? 2L : 1L;
+        })));
 
-                            boolean esAlcalde = sesion.getSala().getAlcalde() != null &&
-                                    v.getVotante().getIdUsuario()
-                                            .equals(sesion.getSala().getAlcalde().getIdUsuario());
+        long maxVotos = conteo.values().stream().mapToLong(Long::longValue).max().orElse(0);
 
-                            return esAlcalde ? 2L : 1L;
-                        })
-                ));
+        List<String> masVotados = conteo.entrySet().stream().filter(e -> e.getValue() == maxVotos).map(Map.Entry::getKey).toList();
 
-        long maxVotos = conteo.values().stream()
-                .mapToLong(Long::longValue)
-                .max()
-                .orElse(0);
-
-        List<String> masVotados = conteo.entrySet().stream()
-                .filter(e -> e.getValue() == maxVotos)
-                .map(Map.Entry::getKey)
-                .toList();
-
+        // Empate: intentar desempate por voto del alcalde
         if (masVotados.size() > 1) {
-
             Usuario alcalde = sesion.getSala().getAlcalde();
 
             if (alcalde != null) {
-                Optional<Voto> votoAlcalde = votos.stream()
-                        .filter(v -> v.getVotante().getIdUsuario().equals(alcalde.getIdUsuario()))
-                        .findFirst();
+                Optional<Voto> votoAlcalde = votos.stream().filter(v -> v.getVotante().getIdUsuario().equals(alcalde.getIdUsuario())).findFirst();
 
                 if (votoAlcalde.isPresent()) {
                     String elegido = votoAlcalde.get().getObjetivo().getNombre();
 
                     if (sesion.getTipo() == SesionVotacion.TipoVotacion.ALCALDE) {
-                        return new ResultadoVotacionDto(
-                                sesion.getIdSesion(), sesion.getTipo().name(), null, elegido, false);
+                        return new ResultadoVotacionDto(sesion.getIdSesion(), sesion.getTipo().name(), null, elegido, false);
                     }
 
-                    return new ResultadoVotacionDto(
-                            sesion.getIdSesion(), sesion.getTipo().name(), elegido, null, false);
+                    return new ResultadoVotacionDto(sesion.getIdSesion(), sesion.getTipo().name(), elegido, null, false);
                 }
             }
 
-            return new ResultadoVotacionDto(
-                    sesion.getIdSesion(), sesion.getTipo().name(), null, null, true);
+            return new ResultadoVotacionDto(sesion.getIdSesion(), sesion.getTipo().name(), null, null, true);
         }
 
-        // 🔹 Ganador
+        // Ganador claro: asignar a nombreEliminado o nombreGanador según el tipo de votación
         String nombreGanador = masVotados.getFirst();
 
-        Usuario usuarioGanador = usuarioRepository.findByNombre(nombreGanador)
-                .orElseThrow(() -> new IllegalStateException("Ganador no encontrado"));
+        if (sesion.getTipo() == SesionVotacion.TipoVotacion.ALCALDE) {
+            return new ResultadoVotacionDto(sesion.getIdSesion(), sesion.getTipo().name(), null, nombreGanador, false);
+        }
 
-        return new ResultadoVotacionDto(
-                sesion.getIdSesion(),
-                sesion.getTipo().name(),
-                usuarioGanador.getIdUsuario(),
-                nombreGanador,               
-                false
-        );
+        return new ResultadoVotacionDto(sesion.getIdSesion(), sesion.getTipo().name(), nombreGanador, null, false);
+    }
+
+    // -------------------------------------------------------
+    // Obtener sesión de votación activa de una sala
+    // -------------------------------------------------------
+    public SesionVotacion getSesionActiva(String codigoSala) {
+        Sala sala = salaRepository.findByCodigoSala(codigoSala).orElseThrow(() -> new IllegalArgumentException("Sala no encontrada"));
+
+        return sesionVotacionRepository.findBySala_IdSalaAndAbiertaTrue(sala.getIdSala()).orElseThrow(() -> new IllegalStateException("No hay ninguna votación abierta"));
     }
 }

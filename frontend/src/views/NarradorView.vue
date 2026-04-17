@@ -49,8 +49,7 @@
           <ListaPersonajes />
         </div>
         <div v-if="seccionActiva === 'reglas'" class="seccion-contenido">
-          <h2 class="seccion-titulo">Reglas</h2>
-          <p class="seccion-placeholder"><em>Contenido de reglas próximamente...</em></p>
+          <ListaReglas />
         </div>
       </div>
     </div>
@@ -70,6 +69,7 @@ import MesaJugadores from '@/components/juego/MesaJugadores.vue'
 import solImg from '@/assets/imgs/sol.jpg'
 import lunaImg from '@/assets/imgs/luna.jpg'
 import ListaPersonajes from '@/components/juego/ListaPersonajes.vue'
+import ListaReglas from '@/components/juego/ListaReglas.vue'
 
 export default {
   name: 'NarradorView',

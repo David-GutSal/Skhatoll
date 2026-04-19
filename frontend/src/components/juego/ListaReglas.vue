@@ -4,7 +4,7 @@
 
     <div class="desplegable-grupo">
       <button class="desplegable-header dorado" @click="toggleDesplegable('objetivos')">
-        <span class="desplegable-nombre">Objetivos del juego</span>
+        <span>Objetivos del juego</span>
         <i :class="abiertos.objetivos ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down'"></i>
       </button>
       <transition name="desplegable">
@@ -13,16 +13,18 @@
           <p class="reglas-texto"><i class="fa-solid fa-user-group icono-rojo"></i> <strong>Los Aldeanos (mayoría):</strong> Su objetivo es descubrir y eliminar a todos los Hombres Lobo.</p>
           <p class="reglas-texto"><i class="fa-brands fa-wolf-pack-battalion icono-rojo"></i> <strong>Los Hombres Lobo (minoría):</strong> Su objetivo es eliminar a todos los Aldeanos sin ser descubiertos.</p>
           <p class="reglas-texto">Los Hombres Lobo se conocen entre sí y actúan juntos por la noche. La mayoría de los Aldeanos no saben quiénes son los lobos, por lo que deben usar la deducción, el debate y la sospecha para identificarlos. La partida termina cuando:</p>
-          <p class="reglas-texto"><i class="fa-solid fa-trophy icono-rojo"></i> Todos los Hombres Lobo han sido eliminados → Victoria de los Aldeanos.</p>
-          <p class="reglas-texto"><i class="fa-solid fa-trophy icono-rojo"></i> Todos los Aldeanos han sido eliminados → Victoria de los Hombres Lobo.</p>
-          <p class="reglas-texto"><i class="fa-solid fa-trophy icono-rojo"></i> Se cumple la condición especial de algún personaje con poderes.</p>
+          <div id="cajavictoria">
+            <p class="reglas-texto"><i class="fa-solid fa-trophy icono-rojo"></i> Todos los Hombres Lobo han sido eliminados → Victoria de los Aldeanos.</p>
+            <p class="reglas-texto"><i class="fa-solid fa-trophy icono-rojo"></i> Todos los Aldeanos han sido eliminados → Victoria de los Hombres Lobo.</p>
+            <p class="reglas-texto"><i class="fa-solid fa-trophy icono-rojo"></i> Se cumple la condición especial de algún personaje con poderes.</p>
+          </div>
         </div>
       </transition>
     </div>
 
     <div class="desplegable-grupo">
       <button class="desplegable-header rojo" @click="toggleDesplegable('resumen')">
-        <span class="desplegable-nombre">Resumen de turnos</span>
+        <span>Resumen de turnos</span>
         <i :class="abiertos.resumen ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down'"></i>
       </button>
       <transition name="desplegable">
@@ -34,40 +36,44 @@
 
     <div class="desplegable-grupo">
       <button class="desplegable-header rojo" @click="toggleDesplegable('preparacion')">
-        <span class="desplegable-nombre">Turno de Preparación</span>
+        <span>Turno de Preparación</span>
         <i :class="abiertos.preparacion ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down'"></i>
       </button>
       <transition name="desplegable">
         <div v-if="abiertos.preparacion" class="desplegable-contenido">
           <p class="reglas-texto intro-cursiva">Es el turno previo a empezar la partida, se reparten los roles, se presentan a los personajes y algunos de los personajes especiales utilizan sus poderes.</p>
           <p class="reglas-texto">1. Tras repartir las cartas, el narrador duerme a la aldea e irá llamando a cada personaje para ver el rol que le ha tocado a cada uno.</p>
-          <p class="reglas-texto">2. El narrador llama al Ladrón (En caso de existir).</p>
-          <p class="reglas-texto narrador-voz">"El narrador dice: 'El ladrón se despierta'. El jugador que tiene la carta Ladrón abre los ojos y mira discretamente las dos cartas que hay en el medio de la mesa, y cambia si quiere de personaje. El narrador dice 'El Ladrón vuelve a dormir'. El Ladrón vuelve a cerrar los ojos."</p>
-          <p class="reglas-texto">3. El narrador llama a Cupido (En caso de existir).</p>
-          <p class="reglas-texto narrador-voz">"El narrador dice 'Cupido se despierta'. Cupido abre los ojos y designa a dos jugadores (de los cuales uno puede ser él mismo). El narrador da una vuelta a la mesa y toca discretamente el hombro de los dos enamorados. El narrador dice 'Cupido vuelve a dormir'. Cupido vuelve a cerrar los ojos."</p>
-          <p class="reglas-texto">4. El narrador llama a los Enamorados (Si existe Cupido).</p>
-          <p class="reglas-texto narrador-voz">"El narrador dice 'Los enamorados se despiertan, se reconocen y se vuelven a dormir'. No se muestran sus cartas, de manera que cada jugador ignora la verdadera personalidad del ser amado. Tras esto, el narrador sigue con el turno normal."</p>
+          <p class="reglas-texto">2. El narrador llama al Ladrón (En caso de existir). El narrador dice:</p>
+          <p class="reglas-texto narrador-voz">"El ladrón se despierta." (El jugador que tiene la carta Ladrón abre los ojos y mira discretamente las dos cartas que hay en el medio de la mesa, y cambia si quiere de personaje.) "El Ladrón vuelve a dormir". (El Ladrón vuelve a cerrar los ojos.)</p>
+          <p class="reglas-texto">3. El narrador llama a Cupido (En caso de existir). El narrador dice:</p>
+          <p class="reglas-texto narrador-voz">"Cupido se despierta." (Cupido abre los ojos y designa a dos jugadores.)</p>
+          <p class="reglas-texto">El narrador da una vuelta a la mesa y toca discretamente el hombro de los dos enamorados. El narrador dice:</p>
+          <p class="reglas-texto narrador-voz">"Cupido vuelve a dormir." (Cupido vuelve a cerrar los ojos.)</p>
+          <p class="reglas-texto">4. El narrador llama a los Enamorados (Si existe Cupido). El narrador dice:</p>
+          <p class="reglas-texto narrador-voz">"Los enamorados se despiertan, se reconocen y se vuelven a dormir". (No se muestran sus cartas, de manera que cada jugador ignora la verdadera personalidad del ser amado. Tras esto, el narrador sigue con el turno normal.)</p>
         </div>
       </transition>
     </div>
 
     <div class="desplegable-grupo">
       <button class="desplegable-header rojo" @click="toggleDesplegable('normal')">
-        <span class="desplegable-nombre">Turno Normal</span>
+        <span>Turno Normal</span>
         <i :class="abiertos.normal ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down'"></i>
       </button>
       <transition name="desplegable">
         <div v-if="abiertos.normal" class="desplegable-contenido">
           <p class="reglas-texto intro-cursiva">Varía según la elección de personajes en juego y su supervivencia en la partida, pero los personajes son llamados siempre en este orden:</p>
-          <p class="reglas-texto">1. El narrador llama a la Vidente.</p>
-          <p class="reglas-texto narrador-voz">"El narrador dice: '¡La vidente se despierta, y señala a un jugador del que quiere conocer la verdadera personalidad!' El narrador muestra a la Vidente la carta del jugador designado. El narrador dice 'la vidente se vuelve a dormir'. La Vidente vuelve a cerrar los ojos."</p>
-          <p class="reglas-texto">2. El narrador llama a los Hombres Lobo.</p>
-          <p class="reglas-texto narrador-voz">"El narrador dice: '¡Los Hombres lobo se despiertan, se reconocen y designan una nueva víctima!' Los Hombres Lobo (y solamente ellos) levantan la cabeza, abren los ojos, se ponen de acuerdo en silencio y designan una nueva víctima. Durante este turno, la Niña Pequeña puede espiar a los Hombres Lobo."</p>
-          <p class="reglas-texto narrador-voz">"Si la sorprenden, los Hombres Lobo tienen derecho a cambiar de opinión y la Niña Pequeña muere en lugar de la víctima previamente escogida. El narrador dice: 'los Hombres Lobo saciados vuelven a dormirse y sueñan con próximas y sabrosas víctimas'. Los Hombres Lobo vuelven a cerrar los ojos."</p>
-          <p class="reglas-texto">3. El Narrador llama a la Bruja.</p>
-          <p class="reglas-texto narrador-voz">"El narrador dice: 'La Bruja se despierta, le muestro la víctima de los Hombres Lobo. ¿Usará su poción curativa o su poción venenosa?'. El narrador señala a la Bruja la víctima de los Hombres Lobo. La bruja no está obligada a usar su poder en un turno específico. Si usa una poción, debe designar al narrador su destinatario, con el pulgar hacia arriba para la curación, con el pulgar hacia abajo para el envenenamiento. El narrador revelará el eventual efecto de la poción la mañana siguiente."</p>
-          <p class="reglas-texto">4. El narrador despierta a toda la aldea.</p>
-          <p class="reglas-texto narrador-voz">"El narrador dice: 'Amanece en la aldea, todo el mundo despierta y abre los ojos, todo el mundo salvo...' El narrador anuncia entonces el o los jugadores que han sido víctimas de los hombres lobo o de la bruja durante la noche."</p>
+          <p class="reglas-texto">1. El narrador llama a la Vidente.El narrador dice:</p>
+          <p class="reglas-texto narrador-voz">"¡La vidente se despierta, y señala a un jugador del que quiere conocer la verdadera personalidad!" (El narrador muestra a la Vidente la carta del jugador designado.) "la vidente se vuelve a dormir." (La Vidente vuelve a cerrar los ojos.)</p>
+          <p class="reglas-texto">2. El narrador llama a los Hombres Lobo.El narrador dice:</p>
+          <p class="reglas-texto narrador-voz">"¡Los Hombres lobo se despiertan, se reconocen y designan una nueva víctima! (Los Hombres Lobo y solamente ellos, levantan la cabeza, abren los ojos, se ponen de acuerdo en silencio y designan una nueva víctima. Durante este turno, la Niña Pequeña puede espiar a los Hombres Lobo.)</p>
+          <p class="reglas-texto">Si la sorprenden, los Hombres Lobo tienen derecho a cambiar de opinión y la Niña Pequeña muere en lugar de la víctima previamente escogida. El narrador dice:</p>
+           <p class="reglas-texto narrador-voz">"Los Hombres Lobo saciados vuelven a dormirse y sueñan con próximas y sabrosas víctimas." (Los Hombres Lobo vuelven a cerrar los ojos.)</p>  
+          <p class="reglas-texto">3. El Narrador llama a la Bruja. El narrador dice:</p>
+          <p class="reglas-texto narrador-voz">"La Bruja se despierta, les muestro la víctima de los Hombres Lobo. ¿Usará su poción curativa o su poción venenosa?" (El narrador señala a la Bruja la víctima de los Hombres Lobo. La bruja no está obligada a usar su poder en un turno específico. Si usa una poción, debe designar al narrador su destinatario, con el pulgar hacia arriba para la curación, con el pulgar hacia abajo para el envenenamiento.)</p>
+          <p class="reglas-texto"> El narrador revelará el eventual efecto de la poción la mañana siguiente.</p>
+          <p class="reglas-texto">4. El narrador despierta a toda la aldea. El narrador dice:</p>
+          <p class="reglas-texto narrador-voz">"Amanece en la aldea, todo el mundo despierta y abre los ojos, todo el mundo salvo..." (El narrador anuncia entonces el o los jugadores que han sido víctimas de los hombres lobo o de la bruja durante la noche.)</p>
           <p class="reglas-texto">Este o estos jugadores revelan su carta porque han sido eliminados del juego. No podrán comunicarse con el resto de jugadores de ninguna forma.</p>
           <ul class="reglas-lista">
             <li>Si uno de estos jugadores es el Cazador, tiene derecho a replicar, eliminando inmediatamente a otro jugador a su elección.</li>
@@ -87,9 +93,9 @@
           <p class="reglas-texto">6. La aldea vota.</p>
           <p class="reglas-texto">Los jugadores deben eliminar a un jugador sospechoso de ser Hombre Lobo. A la señal del narrador, cada jugador vota al jugador que quiera eliminar señalándolo con el dedo. El jugador que reciba más votos es eliminado. No olvidéis que el voto del Alguacil cuenta doble.</p>
           <p class="reglas-texto">En caso de empate, si está presente, el voto del alguacil decide. Si no es así, se vota otra vez. Si sigue habiendo empate, ningún jugador es eliminado. Si el jugador linchado es el Cazador, eliminará a su vez a otro jugador inmediatamente.</p>
-          <p class="reglas-texto">7. La aldea vuelve a dormir.</p>
-          <p class="reglas-texto narrador-voz">"El narrador dice: 'Se hace de noche, los supervivientes se vuelven a dormir'; los jugadores vuelven a cerrar los ojos (los jugadores eliminados se callan, sobre todo al descubrir quiénes son los hombres lobo)."</p>
-          <p class="reglas-texto">El juego se reanuda al principio del turno normal, etapa 1.</p>
+          <p class="reglas-texto">7. La aldea vuelve a dormir. El narrador dice:</p>
+          <p class="reglas-texto narrador-voz">"Se hace de noche, los supervivientes se vuelven a dormir." (los jugadores vuelven a cerrar los ojos y los jugadores eliminados se callan, sobre todo al descubrir quiénes son los hombres lobo.)</p>
+          <p class="reglas-texto">Por último, el juego se reanuda al principio del turno normal, vuelta al punto 1.</p>
         </div>
       </transition>
     </div>
@@ -126,8 +132,8 @@ export default {
 
 .reglas-titulo {
   font-family: 'Cinzel', Arial, sans-serif;
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 2.2rem;
+  font-weight: bold;
   color: white;
   text-align: center;
   margin-bottom: 30px;
@@ -145,23 +151,19 @@ export default {
   background: none;
   border: none;
   border-bottom: 2px solid currentColor;
-  padding: 10px 0;
+  padding: 15px 0;
   cursor: pointer;
   text-align: left;
   font-family: 'Cinzel', Arial, sans-serif;
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 2rem;
+  font-weight: bold;
 }
 
 .dorado { color: #e4ba03; }
 .rojo { color: #cc0000; }
 
-.desplegable-nombre {
-  text-decoration: underline;
-}
-
 .desplegable-contenido {
-  padding: 16px 0 8px;
+  padding: 20px 10px 15px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -169,20 +171,31 @@ export default {
 
 .reglas-texto {
   font-family: 'Raleway', Arial, sans-serif;
-  font-size: 1rem;
+  font-size: 1.5rem;
+  font-weight: 600;
   color: white;
-  line-height: 1.6;
-  margin: 0;
+  line-height: 1.8;
+  margin: 2px;
   text-align: left;
+}
+
+#cajavictoria{
+  background-color: #e4ba03;
+  padding: 20px;
+  font-weight: bolder;
+  border-radius: 15px;
 }
 
 .icono-rojo {
   color: #cc0000;
+  margin-right: 5px;
 }
 
 .intro-cursiva {
+  margin: 20px 0;
   font-style: italic;
   text-align: center;
+  font-size: 1.2rem;
 }
 
 .narrador-voz {
@@ -195,29 +208,28 @@ export default {
 .reglas-lista {
   list-style: square;
   padding-left: 24px;
-  margin: 0;
-  color: #cc0000;
+  margin: 20px;
 }
 
 .reglas-lista li {
   font-family: 'Raleway', Arial, sans-serif;
-  font-size: 1rem;
-  color: white;
+  font-size: 1.3rem;
+  color: #e4ba03;
   line-height: 1.6;
-  margin-bottom: 4px;
+  margin: 7px;
 }
 
 .img-resumen {
   display: block;
   max-width: 100%;
   margin: 0 auto;
-  border: 4px solid #e4ba03;
-  border-radius: 10px;
+  border: 6px solid #e4ba03;
+  border-radius: 15px;
 }
 
 .desplegable-enter-active,
 .desplegable-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.4s ease;
 }
 
 .desplegable-enter-from,
@@ -230,7 +242,7 @@ export default {
     padding: 20px;
   }
   .desplegable-header {
-    font-size: 1.1rem;
+    font-size: 1.5rem;
   }
 }
 </style>

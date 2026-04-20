@@ -28,9 +28,16 @@
         <i :class="abiertos.resumen ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down'"></i>
       </button>
       <transition name="desplegable">
-        <div v-if="abiertos.resumen" class="desplegable-contenido">
-          <img src="@/assets/imgs/resumenturnos.png" alt="Resumen de turnos" class="img-resumen" />
-        </div>
+<div v-if="abiertos.resumen" class="desplegable-contenido">
+  <div class="imagen-hover-zoom">
+    <img 
+      src="@/assets/imgs/resumenturnos.png" 
+      alt="Resumen de turnos" 
+      class="img-resumen"
+    />
+    <div class="lupa-hover"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+  </div>
+</div>
       </transition>
     </div>
 
@@ -225,6 +232,43 @@ export default {
   margin: 0 auto;
   border: 6px solid #e4ba03;
   border-radius: 15px;
+  transition: transform 0.4s ease;
+}
+
+.imagen-hover-zoom {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  margin: 0 auto;
+  cursor: zoom-in;
+}
+
+.imagen-hover-zoom:hover .img-resumen {
+  transform: scale(1.1);
+}
+
+.lupa-hover {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.75);
+  color: white;
+  font-size: 1.9rem;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.3s ease;
+  pointer-events: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.imagen-hover-zoom:hover .lupa-hover {
+  opacity: 1;
+  transform: scale(1.1);
 }
 
 .desplegable-enter-active,

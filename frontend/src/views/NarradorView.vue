@@ -73,7 +73,7 @@ import ListaReglas from '@/components/juego/ListaReglas.vue'
 
 export default {
   name: 'NarradorView',
-  components: { IndicadorDiaNoche, PanelControlNarrador, MesaJugadores, ListaPersonajes },
+  components: { IndicadorDiaNoche, PanelControlNarrador, MesaJugadores, ListaPersonajes, ListaReglas },
 
   data() {
     return {

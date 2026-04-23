@@ -1,16 +1,8 @@
 package com.skhatoll.backend.service.impl.partida;
 
 import com.skhatoll.backend.dto.partida.*;
-import com.skhatoll.backend.entities.SesionVotacion;
-import com.skhatoll.backend.entities.Voto;
-import com.skhatoll.backend.repository.SesionVotacionRepository;
-import com.skhatoll.backend.repository.VotoRepository;
-import com.skhatoll.backend.entities.Sala;
-import com.skhatoll.backend.entities.SalaUsuario;
-import com.skhatoll.backend.repository.SalaRepository;
-import com.skhatoll.backend.repository.SalaUsuarioRepository;
-import com.skhatoll.backend.entities.Usuario;
-import com.skhatoll.backend.repository.UsuarioRepository;
+import com.skhatoll.backend.entities.*;
+import com.skhatoll.backend.repository.*;
 import com.skhatoll.backend.service.impl.sala.SalaSocketService;
 import com.skhatoll.backend.service.interfaces.partida.IPartidaService;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +27,8 @@ public class PartidaService implements IPartidaService {
     private final UsuarioRepository usuarioRepository;
     private final PartidaSocketService partidaSocketService;
     private final SalaSocketService salaSocketService;
+    private final HabilidadSalaRepository habilidadSalaRepository;
+    private final EnamoradosRepository enamoradosRepository;
 
     // -------------------------------------------------------
     // Obtener el usuario autenticado desde el contexto de Security
@@ -328,5 +322,189 @@ public class PartidaService implements IPartidaService {
         Sala sala = salaRepository.findByCodigoSala(codigoSala).orElseThrow(() -> new IllegalArgumentException("Sala no encontrada"));
 
         return sesionVotacionRepository.findBySala_IdSalaAndAbiertaTrue(sala.getIdSala()).orElseThrow(() -> new IllegalStateException("No hay ninguna votación abierta"));
+    }
+
+    @Transactional
+    public HabilidadResultadoDto usarHabilidad(String codigoSala, HabilidadRequest request) {
+        Usuario solicitante = getUsuarioAutenticado();
+        Sala sala = getSalaIniciada(codigoSala);
+
+
+        SalaUsuario salaUsuario = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), solicitante.getIdUsuario()).orElseThrow(() -> new IllegalArgumentException("No estás en esta sala"));
+
+        if (!salaUsuario.getEstaVivo()) {
+            throw new IllegalStateException("Los jugadores eliminados no pueden usar habilidades");
+        }
+
+
+        SesionVotacion sesion = sesionVotacionRepository.findBySala_IdSalaAndAbiertaTrue(sala.getIdSala()).orElseThrow(() -> new IllegalStateException("No hay ninguna votación abierta"));
+
+        if (sesion.getTipo() != SesionVotacion.TipoVotacion.HABILIDAD) {
+            throw new IllegalStateException("La sesión activa no es de tipo HABILIDAD");
+        }
+
+        String nombreHabilidad = request.getNombreHabilidad();
+
+
+        if ("vision".equals(nombreHabilidad)) {
+            return usarVision(sala, salaUsuario, request.getObjetivos());
+        }
+
+
+        HabilidadSala habilidad = habilidadSalaRepository.findByIdSalaUsuario_IdSalaUsuarioAndNombre(salaUsuario.getIdSalaUsuario(), nombreHabilidad).orElseThrow(() -> new IllegalArgumentException("No tienes la habilidad: " + nombreHabilidad));
+
+        if (habilidad.getUsada()) {
+            throw new IllegalStateException("Habilidad ya utilizada");
+        }
+
+
+        HabilidadResultadoDto resultado = switch (nombreHabilidad) {
+            case "pocion_vida" -> usarPocionVida(sala, request.getObjetivos());
+            case "pocion_muerte" -> usarPocionMuerte(codigoSala, sala, request.getObjetivos());
+            case "disparo" -> usarDisparo(codigoSala, sala, salaUsuario, request.getObjetivos());
+            case "flechazo" -> usarFlechazo(sala, request.getObjetivos());
+            default -> throw new IllegalArgumentException("Habilidad desconocida: " + nombreHabilidad);
+        };
+
+
+        habilidad.setUsada(true);
+        habilidadSalaRepository.save(habilidad);
+
+        return resultado;
+    }
+
+    // -------------------------------------------------------
+    // Poción de vida: revive a un jugador eliminado
+    // -------------------------------------------------------
+    private HabilidadResultadoDto usarPocionVida(Sala sala, List<Integer> objetivos) {
+        if (objetivos == null || objetivos.size() != 1) {
+            throw new IllegalArgumentException("La poción de vida requiere exactamente un objetivo");
+        }
+
+        SalaUsuario objetivo = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), objetivos.getFirst()).orElseThrow(() -> new IllegalArgumentException("Jugador no encontrado en la sala"));
+
+        if (objetivo.getEstaVivo()) {
+            throw new IllegalStateException("El jugador ya está vivo");
+        }
+
+        objetivo.setEstaVivo(true);
+        objetivo.setMuerteConfirmada(false);
+        salaUsuarioRepository.save(objetivo);
+
+        return new HabilidadResultadoDto("pocion_vida", List.of(objetivo.getUsuario().getNombre()), "REVIVIDO", null);
+    }
+
+    // -------------------------------------------------------
+    // Poción de muerte: elimina a un jugador vivo
+    // -------------------------------------------------------
+    private HabilidadResultadoDto usarPocionMuerte(String codigoSala, Sala sala, List<Integer> objetivos) {
+        if (objetivos == null || objetivos.size() != 1) {
+            throw new IllegalArgumentException("La poción de muerte requiere exactamente un objetivo");
+        }
+
+        SalaUsuario objetivo = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), objetivos.getFirst()).orElseThrow(() -> new IllegalArgumentException("Jugador no encontrado en la sala"));
+
+        if (!objetivo.getEstaVivo()) {
+            throw new IllegalStateException("El jugador ya está eliminado");
+        }
+
+        objetivo.setEstaVivo(false);
+        objetivo.setMuerteConfirmada(true);
+        salaUsuarioRepository.save(objetivo);
+
+        MuerteConfirmadaDto muerte = new MuerteConfirmadaDto(objetivo.getUsuario().getNombre(), objetivo.getRol().getNombre(), objetivo.getRol().getBando().name());
+
+        partidaSocketService.notificarMuerte(codigoSala, muerte);
+        comprobarFinPartida(codigoSala, sala);
+
+        return new HabilidadResultadoDto("pocion_muerte", List.of(objetivo.getUsuario().getNombre()), "ELIMINADO", null);
+    }
+
+    // -------------------------------------------------------
+    // Disparo del cazador: elimina a un jugador al morir
+    // -------------------------------------------------------
+    private HabilidadResultadoDto usarDisparo(String codigoSala, Sala sala,
+                                              SalaUsuario cazador,
+                                              List<Integer> objetivos) {
+        if (cazador.getEstaVivo()) {
+            throw new IllegalStateException("El cazador solo puede disparar cuando ha sido eliminado");
+        }
+
+        if (objetivos == null || objetivos.size() != 1) {
+            throw new IllegalArgumentException("El disparo requiere exactamente un objetivo");
+        }
+
+        SalaUsuario objetivo = salaUsuarioRepository
+                .findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), objetivos.getFirst())
+                .orElseThrow(() -> new IllegalArgumentException("Jugador no encontrado en la sala"));
+
+        if (!objetivo.getEstaVivo()) {
+            throw new IllegalStateException("El objetivo ya está eliminado");
+        }
+
+        objetivo.setEstaVivo(false);
+        objetivo.setMuerteConfirmada(true);
+        salaUsuarioRepository.save(objetivo);
+
+        MuerteConfirmadaDto muerte = new MuerteConfirmadaDto(
+                objetivo.getUsuario().getNombre(),
+                objetivo.getRol().getNombre(),
+                objetivo.getRol().getBando().name());
+
+        partidaSocketService.notificarMuerte(codigoSala, muerte);
+        comprobarFinPartida(codigoSala, sala);
+
+        return new HabilidadResultadoDto(
+                "disparo",
+                List.of(objetivo.getUsuario().getNombre()),
+                "ELIMINADO",
+                null);
+    }
+
+    // -------------------------------------------------------
+    // Flechazo de Cupido: vincula dos jugadores como enamorados
+    // -------------------------------------------------------
+    private HabilidadResultadoDto usarFlechazo(Sala sala, List<Integer> objetivos) {
+        if (objetivos == null || objetivos.size() != 2) {
+            throw new IllegalArgumentException("El flechazo requiere exactamente dos objetivos");
+        }
+
+        Usuario u1 = usuarioRepository.findById(objetivos.get(0)).orElseThrow(() -> new IllegalArgumentException("Jugador 1 no encontrado"));
+        Usuario u2 = usuarioRepository.findById(objetivos.get(1)).orElseThrow(() -> new IllegalArgumentException("Jugador 2 no encontrado"));
+
+
+        salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), u1.getIdUsuario()).filter(SalaUsuario::getEstaVivo).orElseThrow(() -> new IllegalStateException("El jugador 1 no está vivo en la sala"));
+
+        salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), u2.getIdUsuario()).filter(SalaUsuario::getEstaVivo).orElseThrow(() -> new IllegalStateException("El jugador 2 no está vivo en la sala"));
+
+        Enamorados enamorados = Enamorados.builder().sala(sala).usuario1(u1).usuario2(u2).build();
+
+        enamoradosRepository.save(enamorados);
+
+        return new HabilidadResultadoDto("flechazo", List.of(u1.getNombre(), u2.getNombre()), "ENAMORADOS", null);
+    }
+
+    // -------------------------------------------------------
+    // Visión de la Vidente: revela el rol de un jugador (solo al solicitante)
+    // -------------------------------------------------------
+    private HabilidadResultadoDto usarVision(Sala sala, SalaUsuario vidente, List<Integer> objetivos) {
+        if (objetivos == null || objetivos.size() != 1) {
+            throw new IllegalArgumentException("La visión requiere exactamente un objetivo");
+        }
+
+        SalaUsuario objetivo = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), objetivos.getFirst()).orElseThrow(() -> new IllegalArgumentException("Jugador no encontrado en la sala"));
+
+        if (!objetivo.getEstaVivo()) {
+            throw new IllegalStateException("No puedes usar la visión sobre un jugador eliminado");
+        }
+
+        if (objetivo.getRol() == null) {
+            throw new IllegalStateException("El jugador no tiene rol asignado");
+        }
+
+
+        var detalle = Map.of("nombreRol", objetivo.getRol().getNombre(), "bando", objetivo.getRol().getBando().name());
+
+        return new HabilidadResultadoDto("vision", List.of(objetivo.getUsuario().getNombre()), "ROL_REVELADO", detalle);
     }
 }

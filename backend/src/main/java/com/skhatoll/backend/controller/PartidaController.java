@@ -1,8 +1,6 @@
 package com.skhatoll.backend.controller;
 
-import com.skhatoll.backend.dto.partida.AbrirVotacionRequest;
-import com.skhatoll.backend.dto.partida.ResultadoVotacionDto;
-import com.skhatoll.backend.dto.partida.VotarRequest;
+import com.skhatoll.backend.dto.partida.*;
 import com.skhatoll.backend.entities.SesionVotacion;
 import com.skhatoll.backend.service.interfaces.partida.IPartidaService;
 import lombok.RequiredArgsConstructor;
@@ -112,6 +110,19 @@ public class PartidaController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/{codigo}/habilidad")
+    public ResponseEntity<?> usarHabilidad(@PathVariable String codigo,
+                                           @RequestBody HabilidadRequest request) {
+        try {
+            HabilidadResultadoDto resultado = partidaService.usarHabilidad(codigo, request);
+            return ResponseEntity.ok(resultado);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 }

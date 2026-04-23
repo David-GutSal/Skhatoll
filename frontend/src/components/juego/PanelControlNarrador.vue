@@ -1,6 +1,5 @@
 <template>
   <div class="panel-control" :class="esDia ? 'dia' : 'noche'">
-
     <div class="panel-principal">
       <template v-if="esDia">
         <button class="btn-panel" :disabled="hayAlcalde" @click="$emit('votarAlcalde')">
@@ -24,10 +23,11 @@
           <i :class="eventosActivos ? 'fa-solid fa-stop' : 'fa-solid fa-play'"></i>
           {{ eventosActivos ? 'Finalizar Eventos' : 'Iniciar Eventos' }}
         </button>
-        <button class="btn-panel" @click="$emit('finalizarVotacion')">
-          <i class="fa-solid fa-calendar-check"></i>
-          Finalizar Votación
-        </button>
+
+        <div v-if="eventosActivos" class="aviso-seleccion">
+          <i class="fa-solid fa-hand-pointer"></i>
+          Selecciona un jugador para activar sus poderes
+        </div>
       </template>
     </div>
 
@@ -41,7 +41,6 @@
         Reglas
       </button>
     </div>
-
   </div>
 </template>
 
@@ -52,7 +51,14 @@ export default {
     esDia: { type: Boolean, default: true },
     hayAlcalde: { type: Boolean, default: false },
   },
-  emits: ['votarAlcalde', 'votarLinchamiento', 'finalizarVotacion', 'eventos', 'verPersonajes', 'verReglas'],
+  emits: [
+    'votarAlcalde',
+    'votarLinchamiento',
+    'finalizarVotacion',
+    'eventos',
+    'verPersonajes',
+    'verReglas',
+  ],
 
   data() {
     return {
@@ -104,7 +110,10 @@ export default {
   cursor: pointer;
   flex: 1;
   min-width: 160px;
-  transition: transform 0.15s ease, background 0.2s ease, color 0.2s ease;
+  transition:
+    transform 0.15s ease,
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .btn-panel:hover {
@@ -121,6 +130,20 @@ export default {
   opacity: 0.4;
   cursor: not-allowed;
   transform: none;
+}
+
+.aviso-seleccion {
+  width: 100%;
+  text-align: center;
+  color: #cc0000;
+  font-family: 'Raleway', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 6px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .noche .btn-eventos {
@@ -155,7 +178,10 @@ export default {
   font-weight: 700;
   font-size: 0.85rem;
   cursor: pointer;
-  transition: transform 0.15s ease, background 0.2s ease, color 0.2s ease;
+  transition:
+    transform 0.15s ease,
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .btn-info:hover {
@@ -179,6 +205,8 @@ export default {
     flex-direction: column;
     align-items: stretch;
   }
-  .btn-panel { width: 100%; }
+  .btn-panel {
+    width: 100%;
+  }
 }
 </style>

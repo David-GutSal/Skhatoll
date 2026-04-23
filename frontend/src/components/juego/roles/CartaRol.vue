@@ -21,7 +21,7 @@
   <div
     v-else-if="modoVista === 'narrador'"
     class="carta-mesa carta-narrador"
-    :class="{ muerto: !jugador.estaVivo, alcalde: jugador.alcalde }"
+    :class="{ muerto: !jugador.estaVivo, alcalde: jugador.alcalde, 'turno-activo': modoEventos && jugadorSeleccionado?.idUsuario === jugador.idUsuario }"
     :style="{ borderColor: getColorBando(rolJugador) }"
     @click="$emit('seleccionar', jugador)"
   >
@@ -124,6 +124,7 @@ export default {
       type: Object,
       default: null,
     },
+    modoEventos: { type: Boolean, default: false },
   },
 
   emits: ['seleccionar'],
@@ -267,6 +268,16 @@ export default {
   transition: all 0.2s ease;
 }
 
+.carta-mesa.turno-activo {
+transform: scale(0.93);
+  border: 4px solid white !important;
+  box-shadow:
+    0 0 10px rgba(255, 255, 255, 0.9),
+    0 0 25px rgba(255, 255, 255, 0.6),
+    0 0 45px rgba(255, 255, 255, 0.3);
+  transition: all 0.25s ease;
+}
+
 @keyframes flashVoto {
   0% {
     box-shadow: 0 0 0px white;
@@ -374,6 +385,16 @@ export default {
   box-shadow:
     0 0 12px rgba(228, 186, 3, 0.8),
     0 0 25px rgba(228, 186, 3, 0.4);
+}
+
+.carta-mesa.turno-activo {
+  transform: scale(0.93);
+  border: 4px solid white !important;
+  box-shadow:
+    0 0 10px rgba(255, 255, 255, 0.9),
+    0 0 25px rgba(255, 255, 255, 0.6),
+    0 0 45px rgba(255, 255, 255, 0.3);
+  transition: all 0.25s ease;
 }
 
 .badge-votos {

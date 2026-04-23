@@ -36,6 +36,8 @@
           :jugadores="jugadoresConRol"
           :esDia="esDia"
           :modoNarrador="true"
+          :modoEventos="modoEventos"
+          :jugadorSeleccionado="jugadorSeleccionado"
           @seleccionarJugador="activarTurnoJugador"
         />
       </div>
@@ -73,7 +75,13 @@ import ListaReglas from '@/components/juego/ListaReglas.vue'
 
 export default {
   name: 'NarradorView',
-  components: { IndicadorDiaNoche, PanelControlNarrador, MesaJugadores, ListaPersonajes, ListaReglas },
+  components: {
+    IndicadorDiaNoche,
+    PanelControlNarrador,
+    MesaJugadores,
+    ListaPersonajes,
+    ListaReglas,
+  },
 
   data() {
     return {
@@ -83,6 +91,8 @@ export default {
       seccionActiva: null,
       solImg,
       lunaImg,
+      modoEventos: false,
+      jugadorSeleccionado: null,
     }
   },
 
@@ -256,29 +266,27 @@ export default {
 },
 */
 
-async iniciarVotacionLinchamiento() {
-  try {
-    const res = await axiosInstance.post(
-      `/partida/${this.codigoSala}/votacion/abrir`,
-      { tipo: 'DIA' }
-    )
+    async iniciarVotacionLinchamiento() {
+      try {
+        const res = await axiosInstance.post(`/partida/${this.codigoSala}/votacion/abrir`, {
+          tipo: 'DIA',
+        })
 
-    console.log('🟢 RESPUESTA ABRIR VOTACION:', res.data)
+        console.log('🟢 RESPUESTA ABRIR VOTACION:', res.data)
 
-    this.idSesionActual = res.data
+        this.idSesionActual = res.data
 
-    // 🔥 AÑADE ESTO
-    this.votacionActiva = true
-    this.tipoVotacion = 'DIA'
-
-  } catch (error) {
-    alert(
-      error.response?.status === 409
-        ? 'Ya hay una votación abierta'
-        : 'Error al iniciar votación'
-    )
-  }
-},
+        // 🔥 AÑADE ESTO
+        this.votacionActiva = true
+        this.tipoVotacion = 'DIA'
+      } catch (error) {
+        alert(
+          error.response?.status === 409
+            ? 'Ya hay una votación abierta'
+            : 'Error al iniciar votación',
+        )
+      }
+    },
 
     async iniciarVotacionAlcalde() {
       try {
@@ -327,7 +335,21 @@ async iniciarVotacionAlcalde() {
     },
 
     iniciarEventos() {
-      this.iniciarVotacionNoche()
+      this.modoEventos = !this.modoEventos
+
+      // Notificar a los jugadores por WebSocket
+      this.stompClient.publish({
+        destination: `/topic/partida/${this.codigoSala}/turno`,
+        body: JSON.stringify({
+          tipo: this.modoEventos ? 'EVENTOS_INICIADOS' : 'EVENTOS_FINALIZADOS',
+          nombreJugador: null,
+        }),
+      })
+
+      if (!this.modoEventos) {
+        this.jugadorSeleccionado = null
+        this.$store.dispatch('sala/setTurnoActivo', null)
+      }
     },
 
     async iniciarVotacionNoche() {
@@ -345,15 +367,20 @@ async iniciarVotacionAlcalde() {
       }
     },
 
-    async activarTurnoJugador(jugador) {
-      try {
-        await axiosInstance.put(
-          `/partida/${this.codigoSala}/jugador/${jugador.idUsuario}/confirmar-muerte`,
-        )
-      } catch (error) {
-        alert('Error al confirmar muerte')
-      }
-    },
+activarTurnoJugador(jugador) {
+  if (!this.modoEventos) return
+  this.jugadorSeleccionado = jugador
+  this.$store.dispatch('sala/setTurnoActivo', jugador)
+
+  // Notificar al jugador concreto por WebSocket
+  this.stompClient.publish({
+    destination: `/topic/partida/${this.codigoSala}/turno`,
+    body: JSON.stringify({
+      tipo: 'TURNO_JUGADOR',
+      nombreJugador: jugador.nombre,
+    }),
+  })
+},
   },
 }
 </script>

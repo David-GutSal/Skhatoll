@@ -9,6 +9,7 @@
         :jugador="j"
         :esDia="esDia"
         :jugadorSeleccionado="jugadorSeleccionado"
+        :modoEventos="modoEventos"
         @seleccionar="$emit('seleccionarJugador', j)"
       />
     </div>
@@ -29,6 +30,7 @@ export default {
     esDia: { type: Boolean, default: true },
     modoNarrador: { type: Boolean, default: false },
     jugadorSeleccionado: Object,
+    modoEventos: { type: Boolean, default: false },
   },
 
   emits: ['seleccionarJugador'],

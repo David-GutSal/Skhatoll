@@ -13,6 +13,7 @@ export default {
     mensajeFin: null,
     fase: 'DIA',
     narradorActual: null,
+    turnoActivo: null,
   }),
 
   mutations: {
@@ -97,11 +98,16 @@ export default {
       state.miRolDescripcion = null
       state.miBando = null
       state.fase = 'DIA'
+      state.turnoActivo = null
     },
 
     SET_NARRADOR(state, nombreNarrador) {
       state.narradorActual = nombreNarrador;
     },
+
+    SET_TURNO_ACTIVO(state, jugador) {
+  state.turnoActivo = jugador
+},
   },
 
   actions: {
@@ -151,6 +157,9 @@ export default {
     setNarrador({ commit }, nombreNarrador) {
       commit('SET_NARRADOR', nombreNarrador);
     },
+    setTurnoActivo({ commit }, jugador) {
+  commit('SET_TURNO_ACTIVO', jugador)
+},
   },
 
   getters: {
@@ -165,5 +174,6 @@ export default {
     bandoGanador:     (state) => state.bandoGanador,
     mensajeFin:       (state) => state.mensajeFin,
     narradorActual: (state) => state.narradorActual,
+    turnoActivo: (state) => state.turnoActivo,
   },
 }

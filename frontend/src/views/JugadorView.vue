@@ -7,19 +7,16 @@
         :esNarrador="false"
         :nombreNarrador="nombreNarrador"
       />
+
       <div
         v-if="mensajeEvento"
         class="cuadro-evento"
         :class="esDia ? 'evento-dia' : 'evento-noche'"
       >
         <i v-if="tipoVotacion === 'ALCALDE'" class="fa-solid fa-medal"></i>
-
         <i v-else-if="tipoVotacion === 'DIA'" class="fa-solid fa-gavel"></i>
-
         <i v-else-if="tipoVotacion === 'LOBOS'" class="fa-solid fa-skull"></i>
-
         <i v-else class="fa-solid fa-bell"></i>
-
         {{ mensajeEvento }}
       </div>
 
@@ -32,7 +29,22 @@
         @votarCulpable="votarCulpable"
       />
 
-      <div class="mesa-wrapper-outer">
+      <!-- Aviso de turno — justo antes del tablero -->
+      <div v-if="!esDia && esMiTurno" class="cuadro-turno">
+        <div class="cuadro-turno-texto">
+          <i class="fa-solid fa-moon"></i>
+          ¡Es tu turno! Selecciona un jugador y activa tu poder
+        </div>
+        <button class="btn-ir-poderes" @click="scrollAPoderes">
+          <i class="fa-solid fa-arrow-down"></i>
+          Ver mis poderes
+        </button>
+      </div>
+
+      <div
+        class="mesa-wrapper-outer"
+        :class="{ 'mesa-turno-activo': !esDia && esMiTurno }"
+      >
         <MesaJugadores
           :jugadores="jugadoresVisibles"
           :esDia="esDia"
@@ -42,17 +54,14 @@
         />
       </div>
 
-      <div v-if="!esDia && esMiTurno" class="cuadro-evento evento-noche">
-        <i class="fa-solid fa-moon"></i>
-        Es tu turno — activa tu poder
-      </div>
-
       <BotonMiRol />
 
       <ZonaPoderes
+        ref="zonaPoderes"
         :miRol="miRol"
         :jugadorSeleccionado="jugadorSeleccionado"
         :esMiTurno="esMiTurno"
+        :esDia="esDia"
         @devorar="devorarJugador"
         @premonicion="usarPremonicion"
       />
@@ -145,7 +154,12 @@ export default {
   },
 
   methods: {
+    scrollAPoderes() {
+      this.$refs.zonaPoderes.$el.scrollIntoView({ behavior: 'smooth' })
+    },
+
     seleccionarJugador(j) {
+      if (!this.votacionActiva && !this.esMiTurno) return
       this.jugadorSeleccionado = j
     },
 
@@ -184,7 +198,6 @@ export default {
 
     usarPremonicion() {
       if (!this.jugadorSeleccionado) return
-      alert('Has usado tu premonición sobre: ' + this.jugadorSeleccionado.nombre)
     },
 
     conectarWebSocket() {
@@ -209,9 +222,6 @@ export default {
         })
         cliente.subscribe(`/topic/partida/${this.codigoSala}/alcalde`, (msg) => {
           const payload = JSON.parse(msg.body)
-
-          console.log('👑 ALCALDE RECIBIDO:', payload)
-
           if (payload.tipo === 'ALCALDE_ELEGIDO') {
             this.$store.dispatch('sala/designarAlcalde', payload.nombreAlcalde)
           }
@@ -219,14 +229,11 @@ export default {
         cliente.subscribe(`/topic/partida/${this.codigoSala}/votacion`, (msg) => {
           const payload = JSON.parse(msg.body)
 
-          console.log('📩 VOTACION JUGADOR:', payload)
-
           this.votacionActiva = payload.abierta ?? false
 
           if (payload.abierta) {
             this.tipoVotacion = payload.tipoVotacion
 
-            // 🔥 MENSAJE VISUAL SEGÚN TIPO
             if (payload.tipoVotacion === 'ALCALDE') {
               this.mensajeEvento = 'ELECCIONES ABIERTAS'
             } else if (payload.tipoVotacion === 'DIA') {
@@ -235,19 +242,32 @@ export default {
               this.mensajeEvento = 'LOS LOBOS DECIDEN'
             }
 
-            // ⏱️ Se borra solo después
-            setTimeout(() => {
-              this.mensajeEvento = null
-            }, 30000)
+            setTimeout(() => { this.mensajeEvento = null }, 30000)
           } else {
             this.tipoVotacion = null
           }
         })
         cliente.subscribe(`/topic/partida/${this.codigoSala}/turno`, (msg) => {
           const payload = JSON.parse(msg.body)
+
+          if (payload.tipo === 'EVENTOS_INICIADOS') {
+            this.mensajeEvento = '¡Llegó la noche! Presta atención, puede que el narrador te llame para que utilices tus poderes'
+            setTimeout(() => { this.mensajeEvento = null }, 10000)
+            return
+          }
+
+          if (payload.tipo === 'EVENTOS_FINALIZADOS') {
+            this.mensajeEvento = null
+            this.esMiTurno = false
+            return
+          }
+
           this.esMiTurno = payload.nombreJugador === this.nombre
           if (this.esMiTurno) {
             this.mensajeEvento = `Es tu turno, ${this.nombre}. Activa tu poder.`
+            setTimeout(() => { this.mensajeEvento = null }, 30000)
+          } else {
+            this.esMiTurno = false
           }
         })
         cliente.subscribe(`/topic/partida/${this.codigoSala}/fin`, (msg) => {
@@ -298,6 +318,13 @@ export default {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
 }
 
+.mesa-turno-activo :deep(.mesa-wrapper) {
+  border-color: #e4ba03 !important;
+  box-shadow:
+    0 0 12px rgba(228, 186, 3, 0.6),
+    0 0 28px rgba(228, 186, 3, 0.3);
+}
+
 .cuadro-evento {
   display: flex;
   align-items: center;
@@ -307,6 +334,7 @@ export default {
   font-family: 'Raleway', Arial, sans-serif;
   font-weight: 700;
   font-size: 0.95rem;
+  animation: aparecer 0.4s ease;
 }
 
 .evento-dia {
@@ -319,6 +347,50 @@ export default {
   background: rgba(0, 0, 0, 0.7);
   border: 2px solid #cc0000;
   color: #cc0000;
+}
+
+.cuadro-turno {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 2px solid #e4ba03;
+  color: #e4ba03;
+  font-family: 'Raleway', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  animation: aparecer 0.4s ease;
+}
+
+.cuadro-turno-texto {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-ir-poderes {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 2px solid #e4ba03;
+  background: transparent;
+  color: #e4ba03;
+  font-family: 'Raleway', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.btn-ir-poderes:hover {
+  background: #e4ba03;
+  color: #000;
 }
 
 .footer-aldea {
@@ -347,10 +419,10 @@ export default {
     width: 95%;
     padding-top: 20px;
   }
-}
-
-.cuadro-evento {
-  animation: aparecer 0.4s ease;
+  .cuadro-turno {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 @keyframes aparecer {

@@ -17,23 +17,31 @@
     </div>
   </div>
 
-  <!-- ── MODO NARRADOR: ve imagen + nombre + rol de cada jugador ── -->
+  <!-- ── MODO NARRADOR ── -->
   <div
     v-else-if="modoVista === 'narrador'"
     class="carta-mesa carta-narrador"
-    :class="{ muerto: !jugador.estaVivo, alcalde: jugador.alcalde, 'turno-activo': modoEventos && jugadorSeleccionado?.idUsuario === jugador.idUsuario }"
+    :class="{
+      muerto: !jugador.estaVivo,
+      alcalde: jugador.alcalde,
+      'turno-activo': modoEventos && jugadorSeleccionado?.idUsuario === jugador.idUsuario,
+    }"
     :style="{ borderColor: getColorBando(rolJugador) }"
     @click="$emit('seleccionar', jugador)"
   >
     <div class="carta-mesa-imagen">
       <img :src="getImagenRol(nombreRolJugador)" :alt="jugador.nombre" />
-      <span v-if="!jugador.estaVivo" class="overlay-muerto">💀</span>
+      <span v-if="jugador.muerteConfirmada" class="overlay-muerto">
+        <i class="fa-solid fa-skull"></i>
+      </span>
+      <span v-else-if="!jugador.estaVivo && !jugador.muerteConfirmada" class="overlay-semimuerto">
+        <i class="fa-solid fa-user-injured"></i>
+      </span>
     </div>
 
     <div class="carta-mesa-datos">
       <p class="carta-mesa-nombre">
         {{ jugador.nombre }}
-
         <span v-if="jugador.alcalde" class="alcalde-inline" title="Alcalde">
           <i class="fa-solid fa-medal"></i>
         </span>
@@ -53,7 +61,7 @@
     </div>
   </div>
 
-  <!-- ── MODO JUGADOR: ve nombre pero NO el rol de los demás ── -->
+  <!-- ── MODO JUGADOR ── -->
   <div
     v-else-if="modoVista === 'jugador'"
     class="carta-mesa carta-jugador"
@@ -66,13 +74,17 @@
   >
     <div class="carta-mesa-imagen carta-imagen-oculta">
       <i class="fa-solid fa-person"></i>
-      <span v-if="!jugador.estaVivo" class="overlay-muerto">💀</span>
+      <span v-if="jugador.muerteConfirmada" class="overlay-muerto">
+        <i class="fa-solid fa-skull"></i>
+      </span>
+      <span v-else-if="!jugador.estaVivo && !jugador.muerteConfirmada" class="overlay-semimuerto">
+        <i class="fa-solid fa-user-injured"></i>
+      </span>
     </div>
 
     <div class="carta-mesa-datos">
       <p class="carta-mesa-nombre">
         {{ jugador.nombre }}
-
         <span v-if="jugador.alcalde" class="alcalde-inline" title="Alcalde">
           <i class="fa-solid fa-medal"></i>
         </span>
@@ -84,7 +96,9 @@
       <span v-if="jugador.alcalde" class="alcalde-badge" title="Alcalde">
         <i class="fa-solid fa-medal"></i>
       </span>
-      <span v-if="jugador.votos > 0" title="Votos">🗳 {{ jugador.votos }}</span>
+      <span v-if="jugador.votos > 0" title="Votos">
+        <i class="fa-solid fa-box-ballot"></i> {{ jugador.votos }}
+      </span>
     </div>
   </div>
 </template>
@@ -96,56 +110,27 @@ export default {
   name: 'CartaRol',
 
   props: {
-    // 'carga' | 'miRol' | 'narrador' | 'jugador'
-    modoVista: {
-      type: String,
-      default: 'jugador',
-    },
-    // Para modos 'carga' y 'miRol' — datos del propio jugador desde el store
-    nombreRol: {
-      type: String,
-      default: null,
-    },
-    descripcion: {
-      type: String,
-      default: '',
-    },
-    bando: {
-      type: String,
-      default: null,
-    },
-    // Para modos 'narrador' y 'jugador' — objeto jugador completo
-    // Soporta tanto JugadorDto (jugador.rol) como JugadorRolDto (jugador.nombreRol)
-    jugador: {
-      type: Object,
-      default: () => ({}),
-    },
-    jugadorSeleccionado: {
-      type: Object,
-      default: null,
-    },
+    modoVista: { type: String, default: 'jugador' },
+    nombreRol: { type: String, default: null },
+    descripcion: { type: String, default: '' },
+    bando: { type: String, default: null },
+    jugador: { type: Object, default: () => ({}) },
+    jugadorSeleccionado: { type: Object, default: null },
     modoEventos: { type: Boolean, default: false },
   },
 
   emits: ['seleccionar'],
 
   computed: {
-    // Imagen para modos carga/miRol
     imagen() {
       return getImagenRol(this.nombreRol)
     },
-
-    // Color del bando para modos carga/miRol
     colorBando() {
       return getColorBando(this.bando)
     },
-
-    // Nombre del rol del jugador — compatible con JugadorDto y JugadorRolDto
     nombreRolJugador() {
       return this.jugador?.rol || this.jugador?.nombreRol || null
     },
-
-    // Bando del jugador — compatible con JugadorDto y JugadorRolDto
     rolJugador() {
       return this.jugador?.bando || null
     },
@@ -232,9 +217,7 @@ export default {
   border: 3px solid #333;
   border-radius: 10px;
   cursor: pointer;
-  transition:
-    transform 0.15s ease,
-    border-color 0.2s ease;
+  transition: transform 0.15s ease, border-color 0.2s ease;
   font-family: 'Raleway', Arial, sans-serif;
   position: relative;
 }
@@ -258,42 +241,6 @@ export default {
   border-radius: 8px;
 }
 
-.carta-mesa.seleccionado {
-  transform: scale(0.92);
-  border: 5px solid white !important;
-  box-shadow:
-    0 0 10px white,
-    0 0 20px rgba(255, 255, 255, 0.8),
-    0 0 30px rgba(255, 255, 255, 0.4);
-  transition: all 0.2s ease;
-}
-
-.carta-mesa.turno-activo {
-transform: scale(0.93);
-  border: 4px solid white !important;
-  box-shadow:
-    0 0 10px rgba(255, 255, 255, 0.9),
-    0 0 25px rgba(255, 255, 255, 0.6),
-    0 0 45px rgba(255, 255, 255, 0.3);
-  transition: all 0.25s ease;
-}
-
-@keyframes flashVoto {
-  0% {
-    box-shadow: 0 0 0px white;
-  }
-  50% {
-    box-shadow: 0 0 25px white;
-  }
-  100% {
-    box-shadow: 0 0 10px white;
-  }
-}
-
-.carta-mesa.seleccionado {
-  animation: flashVoto 0.4s ease;
-}
-
 .carta-imagen-oculta {
   background: #2a2a2a;
   aspect-ratio: 3 / 4;
@@ -304,7 +251,7 @@ transform: scale(0.93);
   width: 100%;
 }
 
-.carta-imagen-oculta i {
+.carta-imagen-oculta > i {
   font-size: 2.5rem;
   color: #444;
 }
@@ -318,6 +265,60 @@ transform: scale(0.93);
   justify-content: center;
   font-size: 2rem;
   border-radius: 8px;
+  color: white;
+}
+
+.overlay-semimuerto {
+  position: absolute;
+  inset: 0;
+  background: rgba(139, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  border-radius: 8px;
+  color: #ff4444;
+}
+
+.carta-mesa.seleccionado {
+  transform: scale(0.92);
+  border: 5px solid white !important;
+  box-shadow:
+    0 0 10px white,
+    0 0 20px rgba(255, 255, 255, 0.8),
+    0 0 30px rgba(255, 255, 255, 0.4);
+  transition: all 0.2s ease;
+  animation: flashVoto 0.4s ease;
+}
+
+@keyframes flashVoto {
+  0% { box-shadow: 0 0 0px white; }
+  50% { box-shadow: 0 0 25px white; }
+  100% { box-shadow: 0 0 10px white; }
+}
+
+.carta-mesa.alcalde {
+  border: 4px solid #e4ba03 !important;
+  box-shadow:
+    0 0 8px rgba(228, 186, 3, 0.5),
+    0 0 18px rgba(228, 186, 3, 0.25);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.carta-mesa.alcalde:hover {
+  box-shadow:
+    0 0 12px rgba(228, 186, 3, 0.8),
+    0 0 25px rgba(228, 186, 3, 0.4);
+}
+
+.carta-mesa.turno-activo {
+  transform: scale(0.93);
+  border: 4px solid white !important;
+  box-shadow:
+    0 0 10px rgba(255, 255, 255, 0.9),
+    0 0 25px rgba(255, 255, 255, 0.6),
+    0 0 45px rgba(255, 255, 255, 0.3);
+  transition: all 0.25s ease;
 }
 
 .carta-mesa-datos {
@@ -368,33 +369,6 @@ transform: scale(0.93);
 
 .alcalde-inline i {
   color: #e4ba03;
-}
-
-/* borde dorado + glow SOLO cuando es alcalde */
-.carta-mesa.alcalde {
-  border: 4px solid #e4ba03 !important;
-  box-shadow:
-    0 0 8px rgba(228, 186, 3, 0.5),
-    0 0 18px rgba(228, 186, 3, 0.25);
-  transition:
-    box-shadow 0.3s ease,
-    border-color 0.3s ease;
-}
-
-.carta-mesa.alcalde:hover {
-  box-shadow:
-    0 0 12px rgba(228, 186, 3, 0.8),
-    0 0 25px rgba(228, 186, 3, 0.4);
-}
-
-.carta-mesa.turno-activo {
-  transform: scale(0.93);
-  border: 4px solid white !important;
-  box-shadow:
-    0 0 10px rgba(255, 255, 255, 0.9),
-    0 0 25px rgba(255, 255, 255, 0.6),
-    0 0 45px rgba(255, 255, 255, 0.3);
-  transition: all 0.25s ease;
 }
 
 .badge-votos {

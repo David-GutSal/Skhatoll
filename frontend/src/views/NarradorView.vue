@@ -19,6 +19,10 @@
           </p>
         </div>
       </div>
+      <div v-if="avisoSesion" class="aviso-sesion">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        {{ avisoSesion }}
+      </div>
 
       <PanelControlNarrador
         :esDia="esDia"
@@ -93,6 +97,8 @@ export default {
       lunaImg,
       modoEventos: false,
       jugadorSeleccionado: null,
+      sesionActualTipo: null,
+      avisoSesion: null,
     }
   },
 
@@ -159,72 +165,80 @@ export default {
       }
     },
 
-    conectarWebSocket() {
-      const token = this.$store.getters['auth/token']
-      const cliente = new Client({
-        webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
-        connectHeaders: { Authorization: `Bearer ${token}` },
-      })
-      cliente.onConnect = () => {
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/fase`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          this.esDia = payload.fase === 'DIA'
-          this.$store.dispatch('sala/setFase', payload.fase)
-        })
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/muerte`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          this.$store.dispatch('sala/marcarMuerto', payload.nombreJugador)
-        })
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/alcalde`, (msg) => {
-          const payload = JSON.parse(msg.body)
-
-          console.log('👑 ALCALDE ELEGIDO:', payload)
-
-          if (payload.tipo === 'ALCALDE_ELEGIDO') {
-            this.$store.dispatch('sala/designarAlcalde', payload.nombreAlcalde)
-          }
-        })
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/votos`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          this.$store.dispatch('sala/actualizarVotos', payload.votos)
-        })
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/fin`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          this.$store.dispatch('sala/setResultado', {
-            bandoGanador: payload.bandoGanador,
-            mensaje: payload.mensaje,
-          })
-          this.$router.push({ name: 'resultados' })
-        })
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/votacion`, (msg) => {
-          const payload = JSON.parse(msg.body)
-
-          console.log('📩 VOTACION WS:', payload)
-
-          // 🟢 VOTACION ABIERTA
-          if (payload.tipo === 'VOTACION_ABIERTA') {
-            this.idSesionActual = payload.idSesion
-            console.log('✅ SESION ABIERTA:', this.idSesionActual)
-          }
-
-          // 🔴 VOTACION CERRADA
-          if (payload.tipo === 'VOTACION_CERRADA') {
-            console.log('❌ SESION CERRADA')
-            this.idSesionActual = null
-          }
-
-          // 🏁 RESULTADO FINAL (ej: alcalde o linchamiento)
-          if (payload.tipo === 'ALCALDE' || payload.tipo === 'DIA' || payload.tipo === 'LOBOS') {
-            console.log('🏁 RESULTADO:', payload)
-
-            // aquí puedes luego mostrar UI si quieres
-            this.idSesionActual = null
-          }
-        })
+conectarWebSocket() {
+  const token = this.$store.getters['auth/token']
+  const cliente = new Client({
+    webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+    connectHeaders: { Authorization: `Bearer ${token}` },
+  })
+  cliente.onConnect = () => {
+    cliente.subscribe(`/topic/partida/${this.codigoSala}/fase`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      this.esDia = payload.fase === 'DIA'
+      this.$store.dispatch('sala/setFase', payload.fase)
+    })
+    cliente.subscribe(`/topic/partida/${this.codigoSala}/muerte`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      this.$store.dispatch('sala/marcarMuerto', payload.nombreJugador)
+    })
+    cliente.subscribe(`/topic/partida/${this.codigoSala}/alcalde`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      if (payload.tipo === 'ALCALDE_ELEGIDO') {
+        this.$store.dispatch('sala/designarAlcalde', payload.nombreAlcalde)
       }
-      cliente.activate()
-      this.stompClient = cliente
-    },
+    })
+    cliente.subscribe(`/topic/partida/${this.codigoSala}/votos`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      this.$store.dispatch('sala/actualizarVotos', payload.votos)
+    })
+    cliente.subscribe(`/topic/partida/${this.codigoSala}/fin`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      this.$store.dispatch('sala/setResultado', {
+        bandoGanador: payload.bandoGanador,
+        mensaje: payload.mensaje,
+      })
+      this.$router.push({ name: 'resultados' })
+    })
+    cliente.subscribe(`/topic/partida/${this.codigoSala}/votacion`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      console.log('📩 VOTACION WS:', payload)
+
+      if (payload.tipo === 'VOTACION_ABIERTA') {
+        this.idSesionActual = payload.idSesion
+      }
+      if (payload.tipo === 'VOTACION_CERRADA') {
+        this.idSesionActual = null
+      }
+      if (payload.tipo === 'ALCALDE' || payload.tipo === 'DIA' || payload.tipo === 'LOBOS') {
+        this.idSesionActual = null
+      }
+    })
+
+    // ✅ DENTRO del onConnect
+    cliente.subscribe(`/topic/partida/${this.codigoSala}/turno`, (msg) => {
+      const payload = JSON.parse(msg.body)
+
+      if (payload.tipo === 'TURNO_FINALIZADO') {
+        this.avisoSesion = `${payload.nombreJugador} ha finalizado su turno`
+        setTimeout(() => { this.avisoSesion = null }, 4000)
+
+        if (this.idSesionActual) {
+          axiosInstance
+            .put(`/partida/${this.codigoSala}/votacion/${this.idSesionActual}/cerrar`)
+            .then(() => {
+              this.idSesionActual = null
+              this.sesionActualTipo = null
+              this.jugadorSeleccionado = null
+            })
+            .catch(() => {})
+        }
+      }
+    })
+  }
+
+  cliente.activate()
+  this.stompClient = cliente
+},
 
     /* CODIGO DE PRUEBAS DE FUNCIONAMIENTO- BORRAR AL TERMINAR
     conectarWebSocket() {
@@ -337,7 +351,6 @@ async iniciarVotacionAlcalde() {
     iniciarEventos() {
       this.modoEventos = !this.modoEventos
 
-      // Notificar a los jugadores por WebSocket
       this.stompClient.publish({
         destination: `/topic/partida/${this.codigoSala}/turno`,
         body: JSON.stringify({
@@ -348,6 +361,7 @@ async iniciarVotacionAlcalde() {
 
       if (!this.modoEventos) {
         this.jugadorSeleccionado = null
+        this.avisoSesion = null
         this.$store.dispatch('sala/setTurnoActivo', null)
       }
     },
@@ -367,20 +381,74 @@ async iniciarVotacionAlcalde() {
       }
     },
 
-activarTurnoJugador(jugador) {
-  if (!this.modoEventos) return
-  this.jugadorSeleccionado = jugador
-  this.$store.dispatch('sala/setTurnoActivo', jugador)
+    async activarTurnoJugador(jugador) {
+      if (!this.modoEventos) return
 
-  // Notificar al jugador concreto por WebSocket
-  this.stompClient.publish({
-    destination: `/topic/partida/${this.codigoSala}/turno`,
-    body: JSON.stringify({
-      tipo: 'TURNO_JUGADOR',
-      nombreJugador: jugador.nombre,
-    }),
-  })
-},
+      // Si hay sesión abierta, avisar y no permitir cambiar
+      if (this.idSesionActual) {
+        this.avisoSesion = `Cierra el turno de ${this.jugadorSeleccionado?.nombre} antes de activar otro jugador`
+        setTimeout(() => {
+          this.avisoSesion = null
+        }, 4000)
+        return
+      }
+
+      this.jugadorSeleccionado = jugador
+      this.$store.dispatch('sala/setTurnoActivo', jugador)
+
+      const esLobo = jugador.nombreRol === 'Lobo'
+
+      if (esLobo) {
+        // Abrir sesión LOBOS y notificar a todos los lobos
+        try {
+          const res = await axiosInstance.post(`/partida/${this.codigoSala}/votacion/abrir`, {
+            tipo: 'LOBOS',
+          })
+          this.idSesionActual = res.data
+          this.sesionActualTipo = 'LOBOS'
+
+          const lobosVivos = this.jugadoresConRol.filter(
+            (j) => j.nombreRol === 'Lobo' && j.estaVivo,
+          )
+          this.stompClient.publish({
+            destination: `/topic/partida/${this.codigoSala}/turno`,
+            body: JSON.stringify({
+              tipo: 'TURNO_LOBOS',
+              nombresLobos: lobosVivos.map((j) => j.nombre),
+            }),
+          })
+        } catch (error) {
+          alert(
+            error.response?.status === 409
+              ? 'Ya hay una votación abierta'
+              : 'Error al iniciar turno de lobos',
+          )
+        }
+      } else {
+        // Abrir sesión HABILIDAD y notificar al jugador concreto
+        try {
+          const res = await axiosInstance.post(`/partida/${this.codigoSala}/votacion/abrir`, {
+            tipo: 'HABILIDAD',
+          })
+          this.idSesionActual = res.data
+          this.sesionActualTipo = 'HABILIDAD'
+
+          this.stompClient.publish({
+            destination: `/topic/partida/${this.codigoSala}/turno`,
+            body: JSON.stringify({
+              tipo: 'TURNO_JUGADOR',
+              nombreJugador: jugador.nombre,
+            }),
+          })
+        } catch (error) {
+          alert(
+            error.response?.status === 409
+              ? 'Ya hay una votación abierta'
+              : 'Error al iniciar turno',
+          )
+        }
+      }
+    },
   },
 }
 </script>
@@ -581,6 +649,32 @@ activarTurnoJugador(jugador) {
   }
   .nombre-box {
     font-size: 1rem;
+  }
+}
+
+.aviso-sesion {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 2px solid #e4ba03;
+  color: #e4ba03;
+  font-family: 'Raleway', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  animation: aparecer 0.4s ease;
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 </style>

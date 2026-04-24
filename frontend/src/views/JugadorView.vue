@@ -41,10 +41,7 @@
         </button>
       </div>
 
-      <div
-        class="mesa-wrapper-outer"
-        :class="{ 'mesa-turno-activo': !esDia && esMiTurno }"
-      >
+      <div class="mesa-wrapper-outer" :class="{ 'mesa-turno-activo': !esDia && esMiTurno }">
         <MesaJugadores
           :jugadores="jugadoresVisibles"
           :esDia="esDia"
@@ -64,6 +61,7 @@
         :esDia="esDia"
         @devorar="devorarJugador"
         @premonicion="usarPremonicion"
+        @finalizarTurno="finalizarTurno"
       />
     </div>
 
@@ -242,7 +240,9 @@ export default {
               this.mensajeEvento = 'LOS LOBOS DECIDEN'
             }
 
-            setTimeout(() => { this.mensajeEvento = null }, 30000)
+            setTimeout(() => {
+              this.mensajeEvento = null
+            }, 30000)
           } else {
             this.tipoVotacion = null
           }
@@ -251,23 +251,50 @@ export default {
           const payload = JSON.parse(msg.body)
 
           if (payload.tipo === 'EVENTOS_INICIADOS') {
-            this.mensajeEvento = '¡Llegó la noche! Presta atención, puede que el narrador te llame para que utilices tus poderes'
-            setTimeout(() => { this.mensajeEvento = null }, 10000)
+            this.mensajeEvento =
+              '¡Llegó la noche! Presta atención, puede que el narrador te llame para que utilices tus poderes'
+            setTimeout(() => {
+              this.mensajeEvento = null
+            }, 10000)
             return
           }
 
           if (payload.tipo === 'EVENTOS_FINALIZADOS') {
             this.mensajeEvento = null
             this.esMiTurno = false
+            this.jugadorSeleccionado = null
             return
           }
 
-          this.esMiTurno = payload.nombreJugador === this.nombre
-          if (this.esMiTurno) {
-            this.mensajeEvento = `Es tu turno, ${this.nombre}. Activa tu poder.`
-            setTimeout(() => { this.mensajeEvento = null }, 30000)
-          } else {
-            this.esMiTurno = false
+          // ✅ Ignorar mensajes que el jugador mismo envió
+          if (payload.tipo === 'TURNO_FINALIZADO') {
+            return
+          }
+
+          if (payload.tipo === 'TURNO_LOBOS') {
+            const soyLobo = payload.nombresLobos?.includes(this.nombre)
+            this.esMiTurno = soyLobo
+            if (soyLobo) {
+              this.mensajeEvento =
+                '¡Es hora de cazar! Decide junto a los tuyos a quién devoráis esta noche'
+              setTimeout(() => {
+                this.mensajeEvento = null
+              }, 30000)
+            }
+            return
+          }
+
+          // TURNO_JUGADOR — turno individual
+          if (payload.tipo === 'TURNO_JUGADOR') {
+            this.esMiTurno = payload.nombreJugador === this.nombre
+            if (this.esMiTurno) {
+              this.mensajeEvento = `Es tu turno, ${this.nombre}. Activa tu poder.`
+              setTimeout(() => {
+                this.mensajeEvento = null
+              }, 30000)
+            } else {
+              this.esMiTurno = false
+            }
           }
         })
         cliente.subscribe(`/topic/partida/${this.codigoSala}/fin`, (msg) => {
@@ -281,6 +308,19 @@ export default {
       }
       cliente.activate()
       this.stompClient = cliente
+    },
+    finalizarTurno() {
+      this.esMiTurno = false
+      this.jugadorSeleccionado = null
+
+      // Notificar al narrador por WebSocket que el turno ha terminado
+      this.stompClient.publish({
+        destination: `/topic/partida/${this.codigoSala}/turno`,
+        body: JSON.stringify({
+          tipo: 'TURNO_FINALIZADO',
+          nombreJugador: this.nombre,
+        }),
+      })
     },
   },
 }
@@ -385,7 +425,9 @@ export default {
   font-size: 0.85rem;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .btn-ir-poderes:hover {

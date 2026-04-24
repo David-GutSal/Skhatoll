@@ -14,6 +14,7 @@ export default {
     fase: 'DIA',
     narradorActual: null,
     turnoActivo: null,
+    semiMuertos: [],
   }),
 
   mutations: {
@@ -41,6 +42,14 @@ export default {
       if (j1) j1.estaVivo = false
       const j2 = state.jugadoresConRol.find((j) => j.nombre === nombreJugador)
       if (j2) j2.estaVivo = false
+    },
+    MARCAR_SEMIMUERTO(state, nombreJugador) {
+      if (!state.semiMuertos.includes(nombreJugador)) {
+        state.semiMuertos.push(nombreJugador)
+      }
+    },
+    QUITAR_SEMIMUERTO(state, nombreJugador) {
+      state.semiMuertos = state.semiMuertos.filter((n) => n !== nombreJugador)
     },
     ACTUALIZAR_VOTOS(state, votos) {
       const actualizar = (lista) => {
@@ -87,7 +96,7 @@ export default {
       state.mensajeFin = mensaje
     },
     SET_MI_BANDO(state, bando) {
-      state.miBando = bando;
+      state.miBando = bando
     },
     CLEAR_SALA(state) {
       state.codigoSala = null
@@ -99,15 +108,16 @@ export default {
       state.miBando = null
       state.fase = 'DIA'
       state.turnoActivo = null
+      state.semiMuertos = []
     },
 
     SET_NARRADOR(state, nombreNarrador) {
-      state.narradorActual = nombreNarrador;
+      state.narradorActual = nombreNarrador
     },
 
     SET_TURNO_ACTIVO(state, jugador) {
-  state.turnoActivo = jugador
-},
+      state.turnoActivo = jugador
+    },
   },
 
   actions: {
@@ -155,25 +165,32 @@ export default {
       commit('CLEAR_SALA')
     },
     setNarrador({ commit }, nombreNarrador) {
-      commit('SET_NARRADOR', nombreNarrador);
+      commit('SET_NARRADOR', nombreNarrador)
     },
     setTurnoActivo({ commit }, jugador) {
-  commit('SET_TURNO_ACTIVO', jugador)
-},
+      commit('SET_TURNO_ACTIVO', jugador)
+    },
+    marcarSemimuerto({ commit }, nombreJugador) {
+      commit('MARCAR_SEMIMUERTO', nombreJugador)
+    },
+    quitarSemimuerto({ commit }, nombreJugador) {
+      commit('QUITAR_SEMIMUERTO', nombreJugador)
+    },
   },
 
   getters: {
-    codigoSala:       (state) => state.codigoSala,
-    esCreador:        (state) => state.esCreador,
-    jugadores:        (state) => state.jugadores,
-    jugadoresConRol:  (state) => state.jugadoresConRol,
-    miRol:            (state) => state.miRol,
+    codigoSala: (state) => state.codigoSala,
+    esCreador: (state) => state.esCreador,
+    jugadores: (state) => state.jugadores,
+    jugadoresConRol: (state) => state.jugadoresConRol,
+    miRol: (state) => state.miRol,
     miRolDescripcion: (state) => state.miRolDescripcion,
-    miBando:          (state) => state.miBando,
-    fase:             (state) => state.fase,
-    bandoGanador:     (state) => state.bandoGanador,
-    mensajeFin:       (state) => state.mensajeFin,
+    miBando: (state) => state.miBando,
+    fase: (state) => state.fase,
+    bandoGanador: (state) => state.bandoGanador,
+    mensajeFin: (state) => state.mensajeFin,
     narradorActual: (state) => state.narradorActual,
     turnoActivo: (state) => state.turnoActivo,
+    semiMuertos: (state) => state.semiMuertos,
   },
 }

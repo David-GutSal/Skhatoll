@@ -20,15 +20,11 @@
       {{ poderUsado ? 'Ya has usado tu visión esta noche' : 'Revelar identidad' }}
     </button>
 
-    <!-- Resultado de la premonición -->
     <div v-if="jugadorRevelado" class="revelacion">
       <p class="revelacion-titulo">
         <i class="fa-solid fa-eye"></i>
         {{ jugadorRevelado.nombre }} es...
       </p>
-
-      <!-- ZONA VISIBLE PROVISIONAL — borrar después -->
-      <!-- Simulación: cogemos los datos del jugador directamente del store -->
       <CartaRol
         modoVista="narrador"
         :jugador="jugadorRevelado"
@@ -37,29 +33,13 @@
         :jugadorSeleccionado="null"
         class="carta-revelada"
       />
-      <!-- FIN ZONA PROVISIONAL -->
-
-      <!-- ZONA COMENTADA — sustituir por endpoint cuando esté listo -->
-      <!--
-      Endpoint a usar:
-      GET /partida/{codigoSala}/poder/vidente?idObjetivo={jugadorSeleccionado.idUsuario}
-
-      Respuesta esperada:
-      { nombre: "Juan", nombreRol: "Lobo", bando: "lobo" }
-
-      Código a descomentar:
-      const res = await axiosInstance.get(
-        `/partida/${this.codigoSala}/poder/vidente`,
-        { params: { idObjetivo: this.jugadorSeleccionado.idUsuario } }
-      )
-      this.jugadorRevelado = res.data
-      -->
     </div>
 
   </div>
 </template>
 
 <script>
+import axiosInstance from '@/plugins/axios'
 import { mapGetters } from 'vuex'
 import CartaRol from '@/components/juego/roles/CartaRol.vue'
 
@@ -80,28 +60,32 @@ export default {
   },
 
   computed: {
-    ...mapGetters('sala', ['jugadores']),
-  },
-
-  watch: {
-    // Cuando cambia esMiTurno a false (turno terminado), reseteamos
-    // Esto lo controla el padre pasando esMiTurno como prop
+    ...mapGetters('sala', ['codigoSala']),
   },
 
   methods: {
-    usarPremonicion() {
+    async usarPremonicion() {
       if (!this.jugadorSeleccionado || this.poderUsado) return
 
-      // ZONA VISIBLE PROVISIONAL — borrar después
-      // Buscamos el jugador en el store para obtener sus datos completos
-      const jugadorEnStore = this.jugadores.find(
-        (j) => j.idUsuario === this.jugadorSeleccionado.idUsuario
-      )
-      this.jugadorRevelado = jugadorEnStore || this.jugadorSeleccionado
-      // FIN ZONA PROVISIONAL
+      try {
+        const res = await axiosInstance.post(`/partida/${this.codigoSala}/habilidad`, {
+          nombreHabilidad: 'vision',
+          objetivos: [this.jugadorSeleccionado.idUsuario],
+        })
 
-      this.poderUsado = true
-      this.$emit('premonicion', this.jugadorSeleccionado)
+        // res.data.detalle = { nombreRol, bando }
+        this.jugadorRevelado = {
+          nombre: this.jugadorSeleccionado.nombre,
+          nombreRol: res.data.detalle.nombreRol,
+          bando: res.data.detalle.bando,
+          estaVivo: true,
+        }
+
+        this.poderUsado = true
+        this.$emit('premonicion', this.jugadorSeleccionado)
+      } catch (error) {
+        alert('Error al usar la visión')
+      }
     },
 
     resetear() {

@@ -1,8 +1,6 @@
 package com.skhatoll.backend.service.interfaces.partida;
 
-import com.skhatoll.backend.dto.partida.AbrirVotacionRequest;
-import com.skhatoll.backend.dto.partida.ResultadoVotacionDto;
-import com.skhatoll.backend.dto.partida.VotarRequest;
+import com.skhatoll.backend.dto.partida.*;
 import com.skhatoll.backend.entities.SesionVotacion;
 
 public interface IPartidaService {
@@ -17,4 +15,6 @@ public interface IPartidaService {
     void cambiarFase(String codigo);
 
     SesionVotacion getSesionActiva(String codigo);
+
+    HabilidadResultadoDto usarHabilidad(String codigo, HabilidadRequest request);
 }

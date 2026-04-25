@@ -58,6 +58,9 @@
       <span v-if="jugador.votos > 0" class="badge-votos">
         <i class="fa-solid fa-check"></i> {{ jugador.votos }}
       </span>
+      <span v-if="jugador.esEnamorado" class="badge-enamorado" title="Enamorado">
+        <i class="fa-solid fa-heart"></i>
+      </span>
     </div>
   </div>
 
@@ -117,6 +120,7 @@ export default {
     jugador: { type: Object, default: () => ({}) },
     jugadorSeleccionado: { type: Object, default: null },
     modoEventos: { type: Boolean, default: false },
+    esEnamorado: { type: Boolean, default: false },
   },
 
   emits: ['seleccionar'],
@@ -217,7 +221,9 @@ export default {
   border: 3px solid #333;
   border-radius: 10px;
   cursor: pointer;
-  transition: transform 0.15s ease, border-color 0.2s ease;
+  transition:
+    transform 0.15s ease,
+    border-color 0.2s ease;
   font-family: 'Raleway', Arial, sans-serif;
   position: relative;
 }
@@ -292,9 +298,15 @@ export default {
 }
 
 @keyframes flashVoto {
-  0% { box-shadow: 0 0 0px white; }
-  50% { box-shadow: 0 0 25px white; }
-  100% { box-shadow: 0 0 10px white; }
+  0% {
+    box-shadow: 0 0 0px white;
+  }
+  50% {
+    box-shadow: 0 0 25px white;
+  }
+  100% {
+    box-shadow: 0 0 10px white;
+  }
 }
 
 .carta-mesa.alcalde {
@@ -302,7 +314,9 @@ export default {
   box-shadow:
     0 0 8px rgba(228, 186, 3, 0.5),
     0 0 18px rgba(228, 186, 3, 0.25);
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  transition:
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .carta-mesa.alcalde:hover {

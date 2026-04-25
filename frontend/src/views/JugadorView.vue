@@ -29,7 +29,6 @@
         @votarCulpable="votarCulpable"
       />
 
-      <!-- Aviso de turno — justo antes del tablero -->
       <div v-if="!esDia && esMiTurno" class="cuadro-turno">
         <div class="cuadro-turno-texto">
           <i class="fa-solid fa-moon"></i>
@@ -61,6 +60,7 @@
         :esDia="esDia"
         @devorar="devorarJugador"
         @premonicion="usarPremonicion"
+        @flechazo="manejarFlechazo"
         @finalizarTurno="finalizarTurno"
       />
     </div>
@@ -104,7 +104,7 @@ export default {
 
   computed: {
     ...mapGetters('auth', ['nombre']),
-    ...mapGetters('sala', ['codigoSala', 'jugadores', 'miRol']),
+    ...mapGetters('sala', ['codigoSala', 'jugadores', 'miRol', 'enamorados']),
 
     nombreNarrador() {
       const narrador = this.jugadores.find((j) => j.esNarrador === true)
@@ -157,6 +157,17 @@ export default {
     },
 
     seleccionarJugador(j) {
+      // No permitir seleccionar al enamorado para votaciones
+      if (this.enamorados) {
+        const miNombre = this.nombre
+        const { jugador1, jugador2 } = this.enamorados
+        const soyEnamorado = jugador1 === miNombre || jugador2 === miNombre
+        if (soyEnamorado) {
+          const nombrePareja = jugador1 === miNombre ? jugador2 : jugador1
+          if (j.nombre === nombrePareja) return
+        }
+      }
+
       if (!this.votacionActiva && !this.esMiTurno) return
       this.jugadorSeleccionado = j
     },
@@ -198,32 +209,90 @@ export default {
       if (!this.jugadorSeleccionado) return
     },
 
+    manejarFlechazo(pareja) {
+      // Notificar a todos por WebSocket
+      this.stompClient.publish({
+        destination: `/topic/partida/${this.codigoSala}/turno`,
+        body: JSON.stringify({
+          tipo: 'FLECHAZO',
+          jugador1: pareja.jugador1.nombre,
+          jugador2: pareja.jugador2.nombre,
+        }),
+      })
+      // Finalizar turno de Cupido
+      this.finalizarTurno()
+    },
+
+    finalizarTurno() {
+      this.esMiTurno = false
+      this.jugadorSeleccionado = null
+
+      this.stompClient.publish({
+        destination: `/topic/partida/${this.codigoSala}/turno`,
+        body: JSON.stringify({
+          tipo: 'TURNO_FINALIZADO',
+          nombreJugador: this.nombre,
+        }),
+      })
+    },
+
     conectarWebSocket() {
       const token = this.$store.getters['auth/token']
       const cliente = new Client({
         webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
         connectHeaders: { Authorization: `Bearer ${token}` },
       })
+
       cliente.onConnect = () => {
         cliente.subscribe(`/topic/partida/${this.codigoSala}/fase`, (msg) => {
           const payload = JSON.parse(msg.body)
           this.esDia = payload.fase === 'DIA'
           this.$store.dispatch('sala/setFase', payload.fase)
         })
+
         cliente.subscribe(`/topic/partida/${this.codigoSala}/muerte`, (msg) => {
           const payload = JSON.parse(msg.body)
           this.$store.dispatch('sala/marcarMuerto', payload.nombreJugador)
+
+          // Muerte en cadena si era enamorado
+          const enamorados = this.$store.getters['sala/enamorados']
+          if (enamorados) {
+            const { jugador1, jugador2 } = enamorados
+            if (
+              payload.nombreJugador === jugador1 ||
+              payload.nombreJugador === jugador2
+            ) {
+              const nombrePareja =
+                payload.nombreJugador === jugador1 ? jugador2 : jugador1
+              const jugadorPareja = this.jugadores.find(
+                (j) => j.nombre === nombrePareja
+              )
+              if (jugadorPareja && jugadorPareja.estaVivo) {
+                // Notificar al narrador para que confirme la muerte
+                this.stompClient.publish({
+                  destination: `/topic/partida/${this.codigoSala}/turno`,
+                  body: JSON.stringify({
+                    tipo: 'MUERTE_ENAMORADO',
+                    nombreJugador: nombrePareja,
+                  }),
+                })
+              }
+            }
+          }
         })
+
         cliente.subscribe(`/topic/partida/${this.codigoSala}/votos`, (msg) => {
           const payload = JSON.parse(msg.body)
           this.$store.dispatch('sala/actualizarVotos', payload.votos)
         })
+
         cliente.subscribe(`/topic/partida/${this.codigoSala}/alcalde`, (msg) => {
           const payload = JSON.parse(msg.body)
           if (payload.tipo === 'ALCALDE_ELEGIDO') {
             this.$store.dispatch('sala/designarAlcalde', payload.nombreAlcalde)
           }
         })
+
         cliente.subscribe(`/topic/partida/${this.codigoSala}/votacion`, (msg) => {
           const payload = JSON.parse(msg.body)
 
@@ -240,22 +309,18 @@ export default {
               this.mensajeEvento = 'LOS LOBOS DECIDEN'
             }
 
-            setTimeout(() => {
-              this.mensajeEvento = null
-            }, 30000)
+            setTimeout(() => { this.mensajeEvento = null }, 30000)
           } else {
             this.tipoVotacion = null
           }
         })
+
         cliente.subscribe(`/topic/partida/${this.codigoSala}/turno`, (msg) => {
           const payload = JSON.parse(msg.body)
 
           if (payload.tipo === 'EVENTOS_INICIADOS') {
-            this.mensajeEvento =
-              '¡Llegó la noche! Presta atención, puede que el narrador te llame para que utilices tus poderes'
-            setTimeout(() => {
-              this.mensajeEvento = null
-            }, 10000)
+            this.mensajeEvento = '¡Llegó la noche! Presta atención, puede que el narrador te llame para que utilices tus poderes'
+            setTimeout(() => { this.mensajeEvento = null }, 10000)
             return
           }
 
@@ -266,8 +331,33 @@ export default {
             return
           }
 
-          // ✅ Ignorar mensajes que el jugador mismo envió
           if (payload.tipo === 'TURNO_FINALIZADO') {
+            return
+          }
+
+          if (payload.tipo === 'MUERTE_ENAMORADO') {
+            return
+          }
+
+          if (payload.tipo === 'FLECHAZO') {
+            const soyEnamorado =
+              payload.jugador1 === this.nombre ||
+              payload.jugador2 === this.nombre
+
+            if (soyEnamorado) {
+              const nombrePareja =
+                payload.jugador1 === this.nombre
+                  ? payload.jugador2
+                  : payload.jugador1
+
+              this.$store.dispatch('sala/setEnamorados', {
+                jugador1: payload.jugador1,
+                jugador2: payload.jugador2,
+              })
+
+              this.mensajeEvento = `¡Estás enamorado de ${nombrePareja}!`
+              setTimeout(() => { this.mensajeEvento = null }, 8000)
+            }
             return
           }
 
@@ -275,28 +365,23 @@ export default {
             const soyLobo = payload.nombresLobos?.includes(this.nombre)
             this.esMiTurno = soyLobo
             if (soyLobo) {
-              this.mensajeEvento =
-                '¡Es hora de cazar! Decide junto a los tuyos a quién devoráis esta noche'
-              setTimeout(() => {
-                this.mensajeEvento = null
-              }, 30000)
+              this.mensajeEvento = '¡Es hora de cazar! Decide junto a los tuyos a quién devoráis esta noche'
+              setTimeout(() => { this.mensajeEvento = null }, 30000)
             }
             return
           }
 
-          // TURNO_JUGADOR — turno individual
           if (payload.tipo === 'TURNO_JUGADOR') {
             this.esMiTurno = payload.nombreJugador === this.nombre
             if (this.esMiTurno) {
               this.mensajeEvento = `Es tu turno, ${this.nombre}. Activa tu poder.`
-              setTimeout(() => {
-                this.mensajeEvento = null
-              }, 30000)
+              setTimeout(() => { this.mensajeEvento = null }, 30000)
             } else {
               this.esMiTurno = false
             }
           }
         })
+
         cliente.subscribe(`/topic/partida/${this.codigoSala}/fin`, (msg) => {
           const payload = JSON.parse(msg.body)
           this.$store.dispatch('sala/setResultado', {
@@ -306,21 +391,9 @@ export default {
           this.$router.push({ name: 'resultados' })
         })
       }
+
       cliente.activate()
       this.stompClient = cliente
-    },
-    finalizarTurno() {
-      this.esMiTurno = false
-      this.jugadorSeleccionado = null
-
-      // Notificar al narrador por WebSocket que el turno ha terminado
-      this.stompClient.publish({
-        destination: `/topic/partida/${this.codigoSala}/turno`,
-        body: JSON.stringify({
-          tipo: 'TURNO_FINALIZADO',
-          nombreJugador: this.nombre,
-        }),
-      })
     },
   },
 }
@@ -425,9 +498,7 @@ export default {
   font-size: 0.85rem;
   cursor: pointer;
   white-space: nowrap;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .btn-ir-poderes:hover {

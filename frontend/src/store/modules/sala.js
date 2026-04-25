@@ -15,6 +15,8 @@ export default {
     narradorActual: null,
     turnoActivo: null,
     semiMuertos: [],
+    enamorados: null,
+    cupidoUsado: false,
   }),
 
   mutations: {
@@ -109,14 +111,20 @@ export default {
       state.fase = 'DIA'
       state.turnoActivo = null
       state.semiMuertos = []
+      state.enamorados = null
+      state.cupidoUsado = false
     },
-
     SET_NARRADOR(state, nombreNarrador) {
       state.narradorActual = nombreNarrador
     },
-
     SET_TURNO_ACTIVO(state, jugador) {
       state.turnoActivo = jugador
+    },
+    SET_ENAMORADOS(state, { jugador1, jugador2 }) {
+      state.enamorados = { jugador1, jugador2 }
+    },
+    SET_CUPIDO_USADO(state) {
+      state.cupidoUsado = true
     },
   },
 
@@ -176,6 +184,12 @@ export default {
     quitarSemimuerto({ commit }, nombreJugador) {
       commit('QUITAR_SEMIMUERTO', nombreJugador)
     },
+    setEnamorados({ commit }, pareja) {
+      commit('SET_ENAMORADOS', pareja)
+    },
+    setCupidoUsado({ commit }) {
+      commit('SET_CUPIDO_USADO')
+    },
   },
 
   getters: {
@@ -192,5 +206,7 @@ export default {
     narradorActual: (state) => state.narradorActual,
     turnoActivo: (state) => state.turnoActivo,
     semiMuertos: (state) => state.semiMuertos,
+    enamorados: (state) => state.enamorados,
+    cupidoUsado: (state) => state.cupidoUsado,
   },
 }

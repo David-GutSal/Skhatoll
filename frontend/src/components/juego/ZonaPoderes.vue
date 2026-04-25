@@ -21,16 +21,25 @@
       </button>
     </div>
 
+    <PoderCupido
+      v-if="miRol === 'Cupido' && esMiTurno && !esDia"
+      ref="poderCupido"
+      :jugadorSeleccionado="jugadorSeleccionado"
+      @flechazo="(pareja) => $emit('flechazo', pareja)"
+      @finalizarTurno="$emit('finalizarTurno')"
+    />
+
   </div>
 </template>
 
 <script>
 import PoderLobo from './poderes/PoderLobo.vue'
 import PoderVidente from './poderes/PoderVidente.vue'
+import PoderCupido from './poderes/PoderCupido.vue'
 
 export default {
   name: 'ZonaPoderes',
-  components: { PoderLobo, PoderVidente },
+  components: { PoderLobo, PoderVidente, PoderCupido },
 
   props: {
     miRol: { type: String, default: null },
@@ -39,13 +48,21 @@ export default {
     esDia: { type: Boolean, default: true },
   },
 
-  emits: ['devorar', 'premonicion', 'finalizarTurno'],
+  emits: ['devorar', 'premonicion', 'flechazo', 'finalizarTurno'],
 
   watch: {
     esMiTurno(nuevoValor) {
       if (!nuevoValor) {
         if (this.$refs.poderVidente) this.$refs.poderVidente.resetear()
         if (this.$refs.poderLobo) this.$refs.poderLobo.resetear()
+        if (this.$refs.poderCupido) this.$refs.poderCupido.resetear()
+      }
+    },
+
+    // Resetear vidente al inicio de cada nueva noche
+    esDia(nuevoValor) {
+      if (!nuevoValor) {
+        if (this.$refs.poderVidente) this.$refs.poderVidente.resetear()
       }
     },
   },

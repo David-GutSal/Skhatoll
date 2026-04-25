@@ -19,6 +19,7 @@
           </p>
         </div>
       </div>
+
       <div v-if="avisoSesion" class="aviso-sesion">
         <i class="fa-solid fa-triangle-exclamation"></i>
         {{ avisoSesion }}
@@ -37,7 +38,7 @@
 
       <div class="mesa-wrapper-outer">
         <MesaJugadores
-          :jugadores="jugadoresConRol"
+          :jugadores="jugadoresConRolConEnamorados"
           :esDia="esDia"
           :modoNarrador="true"
           :modoEventos="modoEventos"
@@ -99,19 +100,31 @@ export default {
       jugadorSeleccionado: null,
       sesionActualTipo: null,
       avisoSesion: null,
+      jugadoresYaActuadosEstaNoche: [],
+      eventosYaUsadosEstaNoche: false,
     }
   },
 
   computed: {
     ...mapGetters('auth', ['nombre']),
-    ...mapGetters('sala', ['codigoSala', 'jugadoresConRol']),
+    ...mapGetters('sala', ['codigoSala', 'jugadoresConRol', 'enamorados', 'cupidoUsado']),
+
     hayAlcalde() {
       return this.jugadoresConRol.some((j) => j.alcalde)
+    },
+
+    jugadoresConRolConEnamorados() {
+      if (!this.enamorados) return this.jugadoresConRol
+      return this.jugadoresConRol.map((j) => ({
+        ...j,
+        esEnamorado:
+          j.nombre === this.enamorados.jugador1 ||
+          j.nombre === this.enamorados.jugador2,
+      }))
     },
   },
 
   async created() {
-    // 🟢 RECUPERAR SALA SI SE PERDIÓ
     if (!this.codigoSala) {
       const codigoGuardado = localStorage.getItem('codigoSala')
       if (codigoGuardado) {
@@ -122,7 +135,7 @@ export default {
         return
       }
     }
-    // 1. Cargar jugadores
+
     try {
       const res = await axiosInstance.get(`/salas/${this.codigoSala}/roles`)
       this.$store.dispatch('sala/setJugadoresConRol', res.data)
@@ -130,21 +143,15 @@ export default {
       alert('Error al cargar jugadores')
     }
 
-    // 2. 🔥 NUEVO: comprobar sesión activa
     try {
       const res = await axiosInstance.get(`/partida/${this.codigoSala}/sesion-activa`)
-
-      console.log('📡 SESION ACTIVA:', res.data)
-
       if (res.data?.abierta) {
         this.idSesionActual = res.data.idSesion
-        console.log('🟢 SESION RECUPERADA:', this.idSesionActual)
       }
-    } catch (error) {
-      console.log('ℹ️ No hay sesión activa (normal)')
+    } catch {
+      // No hay sesión activa, es normal
     }
 
-    // 3. Conectar WS
     this.conectarWebSocket()
   },
 
@@ -158,139 +165,134 @@ export default {
   methods: {
     async cambiarFase(fase) {
       try {
-        this.esDia = fase === 'DIA'
-        await axiosInstance.put(`/partida/${this.codigoSala}/fase`, { fase })
+        // IndicadorDiaNoche emite 'dia' o 'noche' en minúsculas
+        this.esDia = fase === 'dia'
+        if (fase === 'noche') {
+          this.eventosYaUsadosEstaNoche = false
+          this.jugadoresYaActuadosEstaNoche = []
+        }
+        await axiosInstance.put(`/partida/${this.codigoSala}/fase`)
       } catch (error) {
-        alert('Error al cambiar la fase')
+        alert(
+          error.response?.status === 409
+            ? 'Cierra la votación antes de cambiar la fase'
+            : 'Error al cambiar la fase',
+        )
       }
     },
 
-conectarWebSocket() {
-  const token = this.$store.getters['auth/token']
-  const cliente = new Client({
-    webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
-    connectHeaders: { Authorization: `Bearer ${token}` },
-  })
-  cliente.onConnect = () => {
-    cliente.subscribe(`/topic/partida/${this.codigoSala}/fase`, (msg) => {
-      const payload = JSON.parse(msg.body)
-      this.esDia = payload.fase === 'DIA'
-      this.$store.dispatch('sala/setFase', payload.fase)
-    })
-    cliente.subscribe(`/topic/partida/${this.codigoSala}/muerte`, (msg) => {
-      const payload = JSON.parse(msg.body)
-      this.$store.dispatch('sala/marcarMuerto', payload.nombreJugador)
-    })
-    cliente.subscribe(`/topic/partida/${this.codigoSala}/alcalde`, (msg) => {
-      const payload = JSON.parse(msg.body)
-      if (payload.tipo === 'ALCALDE_ELEGIDO') {
-        this.$store.dispatch('sala/designarAlcalde', payload.nombreAlcalde)
-      }
-    })
-    cliente.subscribe(`/topic/partida/${this.codigoSala}/votos`, (msg) => {
-      const payload = JSON.parse(msg.body)
-      this.$store.dispatch('sala/actualizarVotos', payload.votos)
-    })
-    cliente.subscribe(`/topic/partida/${this.codigoSala}/fin`, (msg) => {
-      const payload = JSON.parse(msg.body)
-      this.$store.dispatch('sala/setResultado', {
-        bandoGanador: payload.bandoGanador,
-        mensaje: payload.mensaje,
-      })
-      this.$router.push({ name: 'resultados' })
-    })
-    cliente.subscribe(`/topic/partida/${this.codigoSala}/votacion`, (msg) => {
-      const payload = JSON.parse(msg.body)
-      console.log('📩 VOTACION WS:', payload)
-
-      if (payload.tipo === 'VOTACION_ABIERTA') {
-        this.idSesionActual = payload.idSesion
-      }
-      if (payload.tipo === 'VOTACION_CERRADA') {
-        this.idSesionActual = null
-      }
-      if (payload.tipo === 'ALCALDE' || payload.tipo === 'DIA' || payload.tipo === 'LOBOS') {
-        this.idSesionActual = null
-      }
-    })
-
-    // ✅ DENTRO del onConnect
-    cliente.subscribe(`/topic/partida/${this.codigoSala}/turno`, (msg) => {
-      const payload = JSON.parse(msg.body)
-
-      if (payload.tipo === 'TURNO_FINALIZADO') {
-        this.avisoSesion = `${payload.nombreJugador} ha finalizado su turno`
-        setTimeout(() => { this.avisoSesion = null }, 4000)
-
-        if (this.idSesionActual) {
-          axiosInstance
-            .put(`/partida/${this.codigoSala}/votacion/${this.idSesionActual}/cerrar`)
-            .then(() => {
-              this.idSesionActual = null
-              this.sesionActualTipo = null
-              this.jugadorSeleccionado = null
-            })
-            .catch(() => {})
-        }
-      }
-    })
-  }
-
-  cliente.activate()
-  this.stompClient = cliente
-},
-
-    /* CODIGO DE PRUEBAS DE FUNCIONAMIENTO- BORRAR AL TERMINAR
     conectarWebSocket() {
-  const token = this.$store.getters['auth/token']
+      const token = this.$store.getters['auth/token']
+      const cliente = new Client({
+        webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+        connectHeaders: { Authorization: `Bearer ${token}` },
+      })
 
-  const cliente = new Client({
-    webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
-    connectHeaders: { Authorization: `Bearer ${token}` },
-  })
+      cliente.onConnect = () => {
+        cliente.subscribe(`/topic/partida/${this.codigoSala}/fase`, (msg) => {
+          const payload = JSON.parse(msg.body)
+          this.esDia = payload.fase === 'DIA'
+          this.$store.dispatch('sala/setFase', payload.fase)
+          if (payload.fase === 'NOCHE') {
+            this.eventosYaUsadosEstaNoche = false
+            this.jugadoresYaActuadosEstaNoche = []
+          }
+        })
 
-  cliente.onConnect = () => {
-    console.log("🟢 WS CONECTADO")
+        cliente.subscribe(`/topic/partida/${this.codigoSala}/muerte`, (msg) => {
+          const payload = JSON.parse(msg.body)
+          this.$store.dispatch('sala/marcarMuerto', payload.nombreJugador)
+        })
 
-    cliente.subscribe(`/topic/partida/${this.codigoSala}/votacion`, (msg) => {
-      console.log("📩 VOTACION WS:", msg.body)
+        cliente.subscribe(`/topic/partida/${this.codigoSala}/alcalde`, (msg) => {
+          const payload = JSON.parse(msg.body)
+          if (payload.tipo === 'ALCALDE_ELEGIDO') {
+            this.$store.dispatch('sala/designarAlcalde', payload.nombreAlcalde)
+          }
+        })
 
-      const payload = JSON.parse(msg.body)
-      if (payload.idSesion) {
-        this.idSesionActual = payload.idSesion
-        console.log("✅ ID SESION ACTUAL:", this.idSesionActual)
+        cliente.subscribe(`/topic/partida/${this.codigoSala}/votos`, (msg) => {
+          const payload = JSON.parse(msg.body)
+          this.$store.dispatch('sala/actualizarVotos', payload.votos)
+        })
+
+        cliente.subscribe(`/topic/partida/${this.codigoSala}/fin`, (msg) => {
+          const payload = JSON.parse(msg.body)
+          this.$store.dispatch('sala/setResultado', {
+            bandoGanador: payload.bandoGanador,
+            mensaje: payload.mensaje,
+          })
+          this.$router.push({ name: 'resultados' })
+        })
+
+        cliente.subscribe(`/topic/partida/${this.codigoSala}/votacion`, (msg) => {
+          const payload = JSON.parse(msg.body)
+          if (payload.tipo === 'VOTACION_ABIERTA') {
+            this.idSesionActual = payload.idSesion
+          }
+          if (payload.tipo === 'VOTACION_CERRADA') {
+            this.idSesionActual = null
+          }
+          if (payload.tipo === 'ALCALDE' || payload.tipo === 'DIA' || payload.tipo === 'LOBOS') {
+            this.idSesionActual = null
+          }
+        })
+
+        cliente.subscribe(`/topic/partida/${this.codigoSala}/turno`, (msg) => {
+          const payload = JSON.parse(msg.body)
+
+          if (payload.tipo === 'TURNO_FINALIZADO') {
+            if (
+              this.jugadorSeleccionado &&
+              !this.jugadoresYaActuadosEstaNoche.includes(this.jugadorSeleccionado.nombre)
+            ) {
+              this.jugadoresYaActuadosEstaNoche.push(this.jugadorSeleccionado.nombre)
+            }
+
+            this.avisoSesion = `${payload.nombreJugador} ha finalizado su turno`
+            setTimeout(() => { this.avisoSesion = null }, 4000)
+
+            if (this.idSesionActual) {
+              axiosInstance
+                .put(`/partida/${this.codigoSala}/votacion/${this.idSesionActual}/cerrar`)
+                .then(() => {
+                  this.idSesionActual = null
+                  this.sesionActualTipo = null
+                  this.jugadorSeleccionado = null
+                })
+                .catch(() => {})
+            }
+          }
+
+          if (payload.tipo === 'FLECHAZO') {
+            this.$store.dispatch('sala/setEnamorados', {
+              jugador1: payload.jugador1,
+              jugador2: payload.jugador2,
+            })
+            this.$store.dispatch('sala/setCupidoUsado')
+          }
+
+          if (payload.tipo === 'MUERTE_ENAMORADO') {
+            const jugador = this.jugadoresConRol.find((j) => j.nombre === payload.nombreJugador)
+            if (jugador) {
+              axiosInstance
+                .put(`/partida/${this.codigoSala}/jugador/${jugador.idUsuario}/confirmar-muerte`)
+                .catch(() => {})
+            }
+          }
+        })
       }
-    })
 
-    cliente.subscribe(`/topic/partida/${this.codigoSala}/fase`, (msg) => {
-      console.log("📩 FASE WS:", msg.body)
-    })
-
-    cliente.subscribe(`/topic/partida/${this.codigoSala}/muerte`, (msg) => {
-      console.log("📩 MUERTE WS:", msg.body)
-    })
-  }
-
-  cliente.onStompError = (frame) => {
-    console.error("❌ ERROR WS:", frame)
-  }
-
-  cliente.activate()
-  this.stompClient = cliente
-},
-*/
+      cliente.activate()
+      this.stompClient = cliente
+    },
 
     async iniciarVotacionLinchamiento() {
       try {
         const res = await axiosInstance.post(`/partida/${this.codigoSala}/votacion/abrir`, {
           tipo: 'DIA',
         })
-
-        console.log('🟢 RESPUESTA ABRIR VOTACION:', res.data)
-
         this.idSesionActual = res.data
-
-        // 🔥 AÑADE ESTO
         this.votacionActiva = true
         this.tipoVotacion = 'DIA'
       } catch (error) {
@@ -317,26 +319,15 @@ conectarWebSocket() {
       }
     },
 
-    /* VOTACION DE ALCALDE DESACTIVADA TEMPORALMENTE
-async iniciarVotacionAlcalde() {
-  console.log("🔥🔥🔥 ALCALDE CLICK 🔥🔥🔥")
-
-  try {
-    const res = await axiosInstance.post(
-      `/partida/${this.codigoSala}/votacion/abrir`,
-      { tipo: 'ALCALDE' }
-    )
-
-    this.idSesionActual = res.data
-  } catch (error) {
-    console.log(error.response?.data)
-  }
-},
-*/
     async finalizarVotacion() {
       if (!this.idSesionActual) {
-        alert('No hay ninguna votación activa')
-        return
+        try {
+          const sesion = await axiosInstance.get(`/partida/${this.codigoSala}/sesion-activa`)
+          this.idSesionActual = sesion.data.idSesion
+        } catch {
+          alert('No hay ninguna votación activa')
+          return
+        }
       }
       try {
         await axiosInstance.put(
@@ -349,7 +340,22 @@ async iniciarVotacionAlcalde() {
     },
 
     iniciarEventos() {
+      if (!this.modoEventos && this.eventosYaUsadosEstaNoche) {
+        this.avisoSesion = 'Los eventos nocturnos ya han terminado esta noche'
+        setTimeout(() => { this.avisoSesion = null }, 4000)
+        return
+      }
+
       this.modoEventos = !this.modoEventos
+
+      if (this.modoEventos) {
+        this.jugadoresYaActuadosEstaNoche = []
+      } else {
+        this.eventosYaUsadosEstaNoche = true
+        this.jugadorSeleccionado = null
+        this.avisoSesion = null
+        this.$store.dispatch('sala/setTurnoActivo', null)
+      }
 
       this.stompClient.publish({
         destination: `/topic/partida/${this.codigoSala}/turno`,
@@ -358,38 +364,29 @@ async iniciarVotacionAlcalde() {
           nombreJugador: null,
         }),
       })
-
-      if (!this.modoEventos) {
-        this.jugadorSeleccionado = null
-        this.avisoSesion = null
-        this.$store.dispatch('sala/setTurnoActivo', null)
-      }
-    },
-
-    async iniciarVotacionNoche() {
-      try {
-        const res = await axiosInstance.post(`/partida/${this.codigoSala}/votacion/abrir`, {
-          tipo: 'LOBOS',
-        })
-        this.idSesionActual = res.data
-      } catch (error) {
-        alert(
-          error.response?.status === 409
-            ? 'Ya hay una votación abierta'
-            : 'Error al iniciar eventos nocturnos',
-        )
-      }
     },
 
     async activarTurnoJugador(jugador) {
       if (!this.modoEventos) return
 
-      // Si hay sesión abierta, avisar y no permitir cambiar
+      if (jugador.nombreRol === 'Cupido' && this.cupidoUsado) {
+        this.avisoSesion = '¡Cupido ya usó sus poderes, no puede volver a usarlos en esta partida!'
+        setTimeout(() => { this.avisoSesion = null }, 4000)
+        return
+      }
+
+      if (
+        jugador.nombreRol === 'Vidente' &&
+        this.jugadoresYaActuadosEstaNoche.includes(jugador.nombre)
+      ) {
+        this.avisoSesion = '¡La Vidente ya usó su poder esta noche!'
+        setTimeout(() => { this.avisoSesion = null }, 4000)
+        return
+      }
+
       if (this.idSesionActual) {
         this.avisoSesion = `Cierra el turno de ${this.jugadorSeleccionado?.nombre} antes de activar otro jugador`
-        setTimeout(() => {
-          this.avisoSesion = null
-        }, 4000)
+        setTimeout(() => { this.avisoSesion = null }, 4000)
         return
       }
 
@@ -399,7 +396,6 @@ async iniciarVotacionAlcalde() {
       const esLobo = jugador.nombreRol === 'Lobo'
 
       if (esLobo) {
-        // Abrir sesión LOBOS y notificar a todos los lobos
         try {
           const res = await axiosInstance.post(`/partida/${this.codigoSala}/votacion/abrir`, {
             tipo: 'LOBOS',
@@ -425,7 +421,6 @@ async iniciarVotacionAlcalde() {
           )
         }
       } else {
-        // Abrir sesión HABILIDAD y notificar al jugador concreto
         try {
           const res = await axiosInstance.post(`/partida/${this.codigoSala}/votacion/abrir`, {
             tipo: 'HABILIDAD',
@@ -463,12 +458,8 @@ async iniciarVotacionAlcalde() {
   background-attachment: fixed;
 }
 
-.dia {
-  background-image: url('@/assets/imgs/fondodia.png');
-}
-.noche {
-  background-image: url('@/assets/imgs/fondonoche.png');
-}
+.dia { background-image: url('@/assets/imgs/fondodia.png'); }
+.noche { background-image: url('@/assets/imgs/fondonoche.png'); }
 
 .contenido {
   width: 90%;
@@ -501,12 +492,8 @@ async iniciarVotacionAlcalde() {
   align-self: flex-start;
 }
 
-.nombre-dia {
-  background: #000;
-}
-.nombre-noche {
-  background: white;
-}
+.nombre-dia { background: #000; }
+.nombre-noche { background: white; }
 
 .carta-fase {
   display: flex;
@@ -521,14 +508,8 @@ async iniciarVotacionAlcalde() {
   margin-left: 23px;
 }
 
-.carta-dia {
-  background: white;
-  border: 8px solid #e4ba03;
-}
-.carta-noche {
-  background: #000;
-  border: 8px solid #cc0000;
-}
+.carta-dia { background: white; border: 8px solid #e4ba03; }
+.carta-noche { background: #000; border: 8px solid #cc0000; }
 
 .carta-fase-titulo {
   font-family: 'Cinzel', Arial, sans-serif;
@@ -538,12 +519,8 @@ async iniciarVotacionAlcalde() {
   text-align: center;
 }
 
-.carta-dia .carta-fase-titulo {
-  color: #e4ba03;
-}
-.carta-noche .carta-fase-titulo {
-  color: #cc0000;
-}
+.carta-dia .carta-fase-titulo { color: #e4ba03; }
+.carta-noche .carta-fase-titulo { color: #cc0000; }
 
 .carta-fase-img {
   width: 100%;
@@ -552,12 +529,8 @@ async iniciarVotacionAlcalde() {
   border-radius: 10px;
 }
 
-.carta-dia .carta-fase-img {
-  border: 5px solid #e4ba03;
-}
-.carta-noche .carta-fase-img {
-  border: 5px solid #cc0000;
-}
+.carta-dia .carta-fase-img { border: 5px solid #e4ba03; }
+.carta-noche .carta-fase-img { border: 5px solid #cc0000; }
 
 .carta-fase-texto {
   font-family: 'Raleway', Arial, sans-serif;
@@ -569,12 +542,8 @@ async iniciarVotacionAlcalde() {
   font-style: italic;
 }
 
-.carta-dia .carta-fase-texto {
-  color: #e4ba03;
-}
-.carta-noche .carta-fase-texto {
-  color: #cc0000;
-}
+.carta-dia .carta-fase-texto { color: #e4ba03; }
+.carta-noche .carta-fase-texto { color: #cc0000; }
 
 .mesa-wrapper-outer :deep(.mesa-wrapper) {
   border-width: 10px;
@@ -596,20 +565,6 @@ async iniciarVotacionAlcalde() {
   border: 5px solid #cc0000;
 }
 
-.seccion-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
-  color: white;
-  font-size: 1.5rem;
-  margin: 0 0 12px 0;
-}
-
-.seccion-placeholder {
-  font-family: 'Raleway', Arial, sans-serif;
-  color: #aaa;
-  font-size: 0.9rem;
-  line-height: 1.6;
-}
-
 .footer-aldea {
   width: 100%;
   height: 900px;
@@ -618,17 +573,11 @@ async iniciarVotacionAlcalde() {
   background-repeat: no-repeat;
 }
 
-.footer-dia {
-  background-image: url('@/assets/imgs/footer-dia.png');
-}
-.footer-noche {
-  background-image: url('@/assets/imgs/footer-noche.png');
-}
+.footer-dia { background-image: url('@/assets/imgs/footer-dia.png'); }
+.footer-noche { background-image: url('@/assets/imgs/footer-noche.png'); }
 
 @media (max-width: 900px) {
-  .contenido {
-    width: 85%;
-  }
+  .contenido { width: 85%; }
 }
 
 @media (max-width: 768px) {
@@ -647,9 +596,7 @@ async iniciarVotacionAlcalde() {
     width: 95%;
     padding-top: 20px;
   }
-  .nombre-box {
-    font-size: 1rem;
-  }
+  .nombre-box { font-size: 1rem; }
 }
 
 .aviso-sesion {
@@ -668,13 +615,7 @@ async iniciarVotacionAlcalde() {
 }
 
 @keyframes aparecer {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>

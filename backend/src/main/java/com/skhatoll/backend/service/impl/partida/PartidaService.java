@@ -151,6 +151,22 @@ public class PartidaService implements IPartidaService {
 
             usuarioRepository.findByNombre(resultado.getNombreEliminado()).ifPresent(eliminado -> confirmarMuerte(codigoSala, eliminado.getIdUsuario()));
         }
+        if (sesion.getTipo() == SesionVotacion.TipoVotacion.LOBOS
+                && !resultado.isEmpate()
+                && resultado.getNombreEliminado() != null) {
+
+            usuarioRepository.findByNombre(resultado.getNombreEliminado())
+                    .ifPresent(victima -> {
+                        salaUsuarioRepository
+                                .findBySala_IdSalaAndUsuario_IdUsuario(
+                                        sala.getIdSala(), victima.getIdUsuario())
+                                .ifPresent(su -> {
+                                    su.setEstaVivo(false);
+                                    su.setMuerteConfirmada(false);
+                                    salaUsuarioRepository.save(su);
+                                });
+                    });
+        }
 
         partidaSocketService.notificarVotacion(codigoSala, sesion.getIdSesion(), sesion.getTipo().name(), false);
         partidaSocketService.notificarResultadoVotacion(codigoSala, resultado);
@@ -216,6 +232,9 @@ public class PartidaService implements IPartidaService {
 
         if (!salaUsuario.getEstaVivo()) {
             throw new IllegalStateException("El jugador ya está eliminado");
+        }
+        if (salaUsuario.getMuerteConfirmada()) {
+            throw new IllegalStateException("La muerte de este jugador ya fue confirmada");
         }
 
         salaUsuario.setEstaVivo(false);
@@ -383,6 +402,9 @@ public class PartidaService implements IPartidaService {
 
         SalaUsuario objetivo = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), objetivos.getFirst()).orElseThrow(() -> new IllegalArgumentException("Jugador no encontrado en la sala"));
 
+        if (objetivo.getMuerteConfirmada()) {
+            throw new IllegalStateException("No puedes revivir a un jugador cuya muerte ya fue confirmada");
+        }
         if (objetivo.getEstaVivo()) {
             throw new IllegalStateException("El jugador ya está vivo");
         }

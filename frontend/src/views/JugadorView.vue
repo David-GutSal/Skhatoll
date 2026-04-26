@@ -6,6 +6,7 @@
         :esDia="esDia"
         :esNarrador="false"
         :nombreNarrador="nombreNarrador"
+        :alcaldeNombre="alcaldeNombre"
       />
 
       <div
@@ -13,9 +14,9 @@
         class="cuadro-evento"
         :class="esDia ? 'evento-dia' : 'evento-noche'"
       >
-        <i v-if="tipoVotacion === 'ALCALDE'" class="fa-solid fa-medal"></i>
-        <i v-else-if="tipoVotacion === 'DIA'" class="fa-solid fa-gavel"></i>
-        <i v-else-if="tipoVotacion === 'LOBOS'" class="fa-solid fa-skull"></i>
+        <i v-if="tipoVotacionLocal === 'ALCALDE'" class="fa-solid fa-medal"></i>
+        <i v-else-if="tipoVotacionLocal === 'DIA'" class="fa-solid fa-gavel"></i>
+        <i v-else-if="tipoVotacionLocal === 'LOBOS'" class="fa-solid fa-skull"></i>
         <i v-else class="fa-solid fa-bell"></i>
         {{ mensajeEvento }}
       </div>
@@ -23,7 +24,7 @@
       <PanelVotacionesJugador
         :esDia="esDia"
         :votacionActiva="votacionActiva"
-        :tipoVotacion="tipoVotacion"
+        :tipoVotacion="tipoVotacionLocal"
         :jugadorSeleccionado="jugadorSeleccionado"
         @votarAlcalde="votarAlcalde"
         @votarCulpable="votarCulpable"
@@ -94,11 +95,13 @@ export default {
     return {
       esDia: true,
       votacionActiva: false,
-      tipoVotacion: null,
+      // ✅ renombrado a tipoVotacionLocal para evitar conflicto con el getter del store
+      tipoVotacionLocal: null,
       esMiTurno: false,
       jugadorSeleccionado: null,
       stompClient: null,
       mensajeEvento: null,
+      alcaldeNombre: null,
     }
   },
 
@@ -135,7 +138,7 @@ export default {
       const sesion = await axiosInstance.get(`/partida/${this.codigoSala}/sesion-activa`)
       if (sesion.data?.abierta) {
         this.votacionActiva = true
-        this.tipoVotacion = sesion.data.tipo
+        this.tipoVotacionLocal = sesion.data.tipo
       }
     } catch {
       // No hay sesión activa, es normal
@@ -157,7 +160,6 @@ export default {
     },
 
     seleccionarJugador(j) {
-      // No permitir seleccionar al enamorado para votaciones
       if (this.enamorados) {
         const miNombre = this.nombre
         const { jugador1, jugador2 } = this.enamorados
@@ -210,7 +212,6 @@ export default {
     },
 
     manejarFlechazo(pareja) {
-      // Notificar a todos por WebSocket
       this.stompClient.publish({
         destination: `/topic/partida/${this.codigoSala}/turno`,
         body: JSON.stringify({
@@ -219,7 +220,6 @@ export default {
           jugador2: pareja.jugador2.nombre,
         }),
       })
-      // Finalizar turno de Cupido
       this.finalizarTurno()
     },
 
@@ -244,31 +244,31 @@ export default {
       })
 
       cliente.onConnect = () => {
+
         cliente.subscribe(`/topic/partida/${this.codigoSala}/fase`, (msg) => {
           const payload = JSON.parse(msg.body)
           this.esDia = payload.fase === 'DIA'
           this.$store.dispatch('sala/setFase', payload.fase)
+
+          if (payload.fase === 'DIA') {
+            this.$store.dispatch('sala/reiniciarVotos')
+            this.$store.dispatch('sala/setTipoVotacion', null)
+            this.tipoVotacionLocal = null
+          }
         })
 
         cliente.subscribe(`/topic/partida/${this.codigoSala}/muerte`, (msg) => {
           const payload = JSON.parse(msg.body)
           this.$store.dispatch('sala/marcarMuerto', payload.nombreJugador)
+          this.$store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
 
-          // Muerte en cadena si era enamorado
           const enamorados = this.$store.getters['sala/enamorados']
           if (enamorados) {
             const { jugador1, jugador2 } = enamorados
-            if (
-              payload.nombreJugador === jugador1 ||
-              payload.nombreJugador === jugador2
-            ) {
-              const nombrePareja =
-                payload.nombreJugador === jugador1 ? jugador2 : jugador1
-              const jugadorPareja = this.jugadores.find(
-                (j) => j.nombre === nombrePareja
-              )
+            if (payload.nombreJugador === jugador1 || payload.nombreJugador === jugador2) {
+              const nombrePareja = payload.nombreJugador === jugador1 ? jugador2 : jugador1
+              const jugadorPareja = this.jugadores.find((j) => j.nombre === nombrePareja)
               if (jugadorPareja && jugadorPareja.estaVivo) {
-                // Notificar al narrador para que confirme la muerte
                 this.stompClient.publish({
                   destination: `/topic/partida/${this.codigoSala}/turno`,
                   body: JSON.stringify({
@@ -283,6 +283,15 @@ export default {
 
         cliente.subscribe(`/topic/partida/${this.codigoSala}/votos`, (msg) => {
           const payload = JSON.parse(msg.body)
+          const tipoVotacionActual = this.$store.getters['sala/tipoVotacion']
+
+          if (tipoVotacionActual === 'LOBOS') {
+            if (this.miRol && this.miRol.toLowerCase() === 'lobo') {
+              this.$store.dispatch('sala/actualizarVotos', payload.votos)
+            }
+            return
+          }
+
           this.$store.dispatch('sala/actualizarVotos', payload.votos)
         })
 
@@ -290,28 +299,43 @@ export default {
           const payload = JSON.parse(msg.body)
           if (payload.tipo === 'ALCALDE_ELEGIDO') {
             this.$store.dispatch('sala/designarAlcalde', payload.nombreAlcalde)
+            // ✅ Guardar nombre del alcalde y resetear votos
+            this.alcaldeNombre = payload.nombreAlcalde
+            this.$store.dispatch('sala/reiniciarVotos')
           }
         })
 
         cliente.subscribe(`/topic/partida/${this.codigoSala}/votacion`, (msg) => {
           const payload = JSON.parse(msg.body)
 
-          this.votacionActiva = payload.abierta ?? false
+          if (payload.tipo === 'VOTACION_ABIERTA' || payload.tipo === 'VOTACION_CERRADA') {
+            this.votacionActiva = payload.abierta
 
-          if (payload.abierta) {
-            this.tipoVotacion = payload.tipoVotacion
+            if (payload.abierta) {
+              this.tipoVotacionLocal = payload.tipoVotacion
+              this.$store.dispatch('sala/setTipoVotacion', payload.tipoVotacion)
 
-            if (payload.tipoVotacion === 'ALCALDE') {
-              this.mensajeEvento = 'ELECCIONES ABIERTAS'
-            } else if (payload.tipoVotacion === 'DIA') {
-              this.mensajeEvento = 'VOTACIÓN DE LINCHAMIENTO'
-            } else if (payload.tipoVotacion === 'LOBOS') {
-              this.mensajeEvento = 'LOS LOBOS DECIDEN'
+              if (payload.tipoVotacion === 'ALCALDE') {
+                this.mensajeEvento = 'ELECCIONES ABIERTAS'
+              } else if (payload.tipoVotacion === 'DIA') {
+                this.mensajeEvento = 'VOTACIÓN DE LINCHAMIENTO'
+              } else if (payload.tipoVotacion === 'LOBOS') {
+                this.mensajeEvento = 'LOS LOBOS DECIDEN'
+              }
+
+              setTimeout(() => { this.mensajeEvento = null }, 30000)
+            } else {
+              this.tipoVotacionLocal = null
+              this.$store.dispatch('sala/setTipoVotacion', null)
             }
+            return
+          }
 
-            setTimeout(() => { this.mensajeEvento = null }, 30000)
-          } else {
-            this.tipoVotacion = null
+          // Resultado de votación de lobos — marcar semimuerto
+          if (payload.tipo === 'LOBOS' && payload.nombreEliminado) {
+            this.$store.dispatch('sala/marcarSemimuerto', payload.nombreEliminado)
+            this.mensajeEvento = `Los lobos han devorado a ${payload.nombreEliminado} esta noche...`
+            setTimeout(() => { this.mensajeEvento = null }, 8000)
           }
         })
 
@@ -331,24 +355,16 @@ export default {
             return
           }
 
-          if (payload.tipo === 'TURNO_FINALIZADO') {
-            return
-          }
-
-          if (payload.tipo === 'MUERTE_ENAMORADO') {
-            return
-          }
+          if (payload.tipo === 'TURNO_FINALIZADO') return
+          if (payload.tipo === 'MUERTE_ENAMORADO') return
 
           if (payload.tipo === 'FLECHAZO') {
             const soyEnamorado =
-              payload.jugador1 === this.nombre ||
-              payload.jugador2 === this.nombre
+              payload.jugador1 === this.nombre || payload.jugador2 === this.nombre
 
             if (soyEnamorado) {
               const nombrePareja =
-                payload.jugador1 === this.nombre
-                  ? payload.jugador2
-                  : payload.jugador1
+                payload.jugador1 === this.nombre ? payload.jugador2 : payload.jugador1
 
               this.$store.dispatch('sala/setEnamorados', {
                 jugador1: payload.jugador1,
@@ -409,12 +425,8 @@ export default {
   background-attachment: fixed;
 }
 
-.dia {
-  background-image: url('@/assets/imgs/fondodia.png');
-}
-.noche {
-  background-image: url('@/assets/imgs/fondonoche.png');
-}
+.dia { background-image: url('@/assets/imgs/fondodia.png'); }
+.noche { background-image: url('@/assets/imgs/fondonoche.png'); }
 
 .contenido {
   width: 90%;
@@ -514,17 +526,11 @@ export default {
   background-repeat: no-repeat;
 }
 
-.footer-dia {
-  background-image: url('@/assets/imgs/footer-dia.png');
-}
-.footer-noche {
-  background-image: url('@/assets/imgs/footer-noche.png');
-}
+.footer-dia { background-image: url('@/assets/imgs/footer-dia.png'); }
+.footer-noche { background-image: url('@/assets/imgs/footer-noche.png'); }
 
 @media (max-width: 900px) {
-  .contenido {
-    width: 85%;
-  }
+  .contenido { width: 85%; }
 }
 
 @media (max-width: 600px) {
@@ -536,16 +542,14 @@ export default {
     flex-direction: column;
     align-items: flex-start;
   }
+  .cuadro-alcalde {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 @keyframes aparecer {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>

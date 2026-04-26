@@ -24,6 +24,15 @@
           {{ eventosActivos ? 'Finalizar Eventos' : 'Iniciar Eventos' }}
         </button>
 
+        <button
+          v-if="sesionActiva && sesionActualTipo === 'LOBOS'"
+          class="btn-panel btn-finalizar-lobos"
+          @click="$emit('finalizarVotacion')"
+        >
+          <i class="fa-solid fa-calendar-check"></i>
+          Finalizar Votación Lobos
+        </button>
+
         <div v-if="eventosActivos" class="aviso-seleccion">
           <i class="fa-solid fa-hand-pointer"></i>
           Selecciona un jugador para activar sus poderes
@@ -50,6 +59,8 @@ export default {
   props: {
     esDia: { type: Boolean, default: true },
     hayAlcalde: { type: Boolean, default: false },
+    sesionActiva: { type: Boolean, default: false },
+    sesionActualTipo: { type: String, default: null },
   },
   emits: [
     'votarAlcalde',
@@ -155,6 +166,17 @@ export default {
 .noche .btn-eventos:hover {
   background: white;
   color: #cc0000;
+}
+
+.noche .btn-finalizar-lobos {
+  background: transparent;
+  color: #e4ba03;
+  border-color: #e4ba03;
+}
+
+.noche .btn-finalizar-lobos:hover {
+  background: #e4ba03;
+  color: #000;
 }
 
 .btns-info {

@@ -2,9 +2,18 @@
   <div class="contenedor-narrador" :class="esDia ? 'dia' : 'noche'">
     <div class="contenido">
       <div class="cabecera">
+        <div class="columna-izquierda">
         <div class="nombre-box" :class="esDia ? 'nombre-dia' : 'nombre-noche'">
           <i class="fa-solid fa-book-open-reader"></i>
           <span>Narrador: {{ nombre }}</span>
+        </div>
+        <div class="cuadro-alcalde">
+          <i class="fa-solid fa-medal"></i>
+          <span>
+            Nuestro alcalde es:
+            <strong>{{ textoAlcalde }}</strong>
+          </span>
+        </div>
         </div>
         <IndicadorDiaNoche :esDia="esDia" @cambiarFase="cambiarFase" />
         <div class="carta-fase" :class="esDia ? 'carta-dia' : 'carta-noche'">
@@ -28,6 +37,8 @@
       <PanelControlNarrador
         :esDia="esDia"
         :hayAlcalde="hayAlcalde"
+        :sesionActiva="!!idSesionActual"
+        :sesionActualTipo="sesionActualTipo"
         @votarLinchamiento="iniciarVotacionLinchamiento"
         @votarAlcalde="iniciarVotacionAlcalde"
         @finalizarVotacion="finalizarVotacion"
@@ -107,7 +118,13 @@ export default {
 
   computed: {
     ...mapGetters('auth', ['nombre']),
-    ...mapGetters('sala', ['codigoSala', 'jugadoresConRol', 'enamorados', 'cupidoUsado']),
+    ...mapGetters('sala', [
+      'codigoSala',
+      'jugadoresConRol',
+      'enamorados',
+      'cupidoUsado',
+      'semiMuertos',
+    ]),
 
     hayAlcalde() {
       return this.jugadoresConRol.some((j) => j.alcalde)
@@ -117,10 +134,13 @@ export default {
       if (!this.enamorados) return this.jugadoresConRol
       return this.jugadoresConRol.map((j) => ({
         ...j,
-        esEnamorado:
-          j.nombre === this.enamorados.jugador1 ||
-          j.nombre === this.enamorados.jugador2,
+        esEnamorado: j.nombre === this.enamorados.jugador1 || j.nombre === this.enamorados.jugador2,
       }))
+    },
+
+    textoAlcalde() {
+      const alcalde = this.jugadoresConRol.find((j) => j.alcalde)
+      return alcalde ? alcalde.nombre : 'Elecciones pendientes'
     },
   },
 
@@ -165,12 +185,20 @@ export default {
   methods: {
     async cambiarFase(fase) {
       try {
-        // IndicadorDiaNoche emite 'dia' o 'noche' en minúsculas
-        this.esDia = fase === 'dia'
-        if (fase === 'noche') {
+        const esNoche = fase === 'noche'
+        this.esDia = !esNoche
+
+        if (esNoche) {
           this.eventosYaUsadosEstaNoche = false
           this.jugadoresYaActuadosEstaNoche = []
+        } else {
+          // Al amanecer — confirmar muertes de semimuertos pendientes
+          await this.confirmarMuertesSemimuertos()
+          // Resetear votos al cambiar a día
+          this.$store.dispatch('sala/reiniciarVotos')
+          this.$store.dispatch('sala/setTipoVotacion', null)
         }
+
         await axiosInstance.put(`/partida/${this.codigoSala}/fase`)
       } catch (error) {
         alert(
@@ -178,6 +206,23 @@ export default {
             ? 'Cierra la votación antes de cambiar la fase'
             : 'Error al cambiar la fase',
         )
+      }
+    },
+
+    // Confirma la muerte definitiva de todos los semimuertos al amanecer
+    async confirmarMuertesSemimuertos() {
+      const semimuertos = [...this.semiMuertos]
+      for (const nombre of semimuertos) {
+        const jugador = this.jugadoresConRol.find((j) => j.nombre === nombre)
+        if (jugador) {
+          try {
+            await axiosInstance.put(
+              `/partida/${this.codigoSala}/jugador/${jugador.idUsuario}/confirmar-muerte`,
+            )
+          } catch {
+            // Si ya fue confirmada (bruja lo salvó) ignoramos el error
+          }
+        }
       }
     },
 
@@ -193,24 +238,35 @@ export default {
           const payload = JSON.parse(msg.body)
           this.esDia = payload.fase === 'DIA'
           this.$store.dispatch('sala/setFase', payload.fase)
+
           if (payload.fase === 'NOCHE') {
             this.eventosYaUsadosEstaNoche = false
             this.jugadoresYaActuadosEstaNoche = []
+          }
+
+          if (payload.fase === 'DIA') {
+            // Resetear votos al amanecer
+            this.$store.dispatch('sala/reiniciarVotos')
+            this.$store.dispatch('sala/setTipoVotacion', null)
           }
         })
 
         cliente.subscribe(`/topic/partida/${this.codigoSala}/muerte`, (msg) => {
           const payload = JSON.parse(msg.body)
           this.$store.dispatch('sala/marcarMuerto', payload.nombreJugador)
+          // Quitar de semimuertos si estaba
+          this.$store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
         })
 
         cliente.subscribe(`/topic/partida/${this.codigoSala}/alcalde`, (msg) => {
           const payload = JSON.parse(msg.body)
           if (payload.tipo === 'ALCALDE_ELEGIDO') {
             this.$store.dispatch('sala/designarAlcalde', payload.nombreAlcalde)
+            this.$store.dispatch('sala/reiniciarVotos')
           }
         })
 
+        // El narrador siempre actualiza votos (ve todo)
         cliente.subscribe(`/topic/partida/${this.codigoSala}/votos`, (msg) => {
           const payload = JSON.parse(msg.body)
           this.$store.dispatch('sala/actualizarVotos', payload.votos)
@@ -227,14 +283,25 @@ export default {
 
         cliente.subscribe(`/topic/partida/${this.codigoSala}/votacion`, (msg) => {
           const payload = JSON.parse(msg.body)
+          console.log('📩 VOTACION PAYLOAD COMPLETO:', JSON.stringify(payload))
+
           if (payload.tipo === 'VOTACION_ABIERTA') {
             this.idSesionActual = payload.idSesion
+            this.$store.dispatch('sala/setTipoVotacion', payload.tipoVotacion)
           }
+
           if (payload.tipo === 'VOTACION_CERRADA') {
             this.idSesionActual = null
+            this.$store.dispatch('sala/setTipoVotacion', null)
           }
-          if (payload.tipo === 'ALCALDE' || payload.tipo === 'DIA' || payload.tipo === 'LOBOS') {
-            this.idSesionActual = null
+
+          // Resultado de votación de lobos — marcar semimuerto
+          if (payload.tipo === 'LOBOS' && payload.nombreEliminado) {
+            this.$store.dispatch('sala/marcarSemimuerto', payload.nombreEliminado)
+            this.avisoSesion = `Los lobos han devorado a ${payload.nombreEliminado} esta noche`
+            setTimeout(() => {
+              this.avisoSesion = null
+            }, 6000)
           }
         })
 
@@ -250,7 +317,9 @@ export default {
             }
 
             this.avisoSesion = `${payload.nombreJugador} ha finalizado su turno`
-            setTimeout(() => { this.avisoSesion = null }, 4000)
+            setTimeout(() => {
+              this.avisoSesion = null
+            }, 4000)
 
             if (this.idSesionActual) {
               axiosInstance
@@ -321,19 +390,16 @@ export default {
 
     async finalizarVotacion() {
       if (!this.idSesionActual) {
-        try {
-          const sesion = await axiosInstance.get(`/partida/${this.codigoSala}/sesion-activa`)
-          this.idSesionActual = sesion.data.idSesion
-        } catch {
-          alert('No hay ninguna votación activa')
-          return
-        }
+        alert('No hay ninguna votación activa')
+        return
       }
       try {
         await axiosInstance.put(
           `/partida/${this.codigoSala}/votacion/${this.idSesionActual}/cerrar`,
         )
         this.idSesionActual = null
+        this.$store.dispatch('sala/reiniciarVotos')
+        this.$store.dispatch('sala/setTipoVotacion', null)
       } catch (error) {
         alert('Error al finalizar votación')
       }
@@ -342,7 +408,9 @@ export default {
     iniciarEventos() {
       if (!this.modoEventos && this.eventosYaUsadosEstaNoche) {
         this.avisoSesion = 'Los eventos nocturnos ya han terminado esta noche'
-        setTimeout(() => { this.avisoSesion = null }, 4000)
+        setTimeout(() => {
+          this.avisoSesion = null
+        }, 4000)
         return
       }
 
@@ -371,7 +439,9 @@ export default {
 
       if (jugador.nombreRol === 'Cupido' && this.cupidoUsado) {
         this.avisoSesion = '¡Cupido ya usó sus poderes, no puede volver a usarlos en esta partida!'
-        setTimeout(() => { this.avisoSesion = null }, 4000)
+        setTimeout(() => {
+          this.avisoSesion = null
+        }, 4000)
         return
       }
 
@@ -380,13 +450,17 @@ export default {
         this.jugadoresYaActuadosEstaNoche.includes(jugador.nombre)
       ) {
         this.avisoSesion = '¡La Vidente ya usó su poder esta noche!'
-        setTimeout(() => { this.avisoSesion = null }, 4000)
+        setTimeout(() => {
+          this.avisoSesion = null
+        }, 4000)
         return
       }
 
       if (this.idSesionActual) {
         this.avisoSesion = `Cierra el turno de ${this.jugadorSeleccionado?.nombre} antes de activar otro jugador`
-        setTimeout(() => { this.avisoSesion = null }, 4000)
+        setTimeout(() => {
+          this.avisoSesion = null
+        }, 4000)
         return
       }
 
@@ -458,8 +532,12 @@ export default {
   background-attachment: fixed;
 }
 
-.dia { background-image: url('@/assets/imgs/fondodia.png'); }
-.noche { background-image: url('@/assets/imgs/fondonoche.png'); }
+.dia {
+  background-image: url('@/assets/imgs/fondodia.png');
+}
+.noche {
+  background-image: url('@/assets/imgs/fondonoche.png');
+}
 
 .contenido {
   width: 90%;
@@ -492,8 +570,12 @@ export default {
   align-self: flex-start;
 }
 
-.nombre-dia { background: #000; }
-.nombre-noche { background: white; }
+.nombre-dia {
+  background: #000;
+}
+.nombre-noche {
+  background: white;
+}
 
 .carta-fase {
   display: flex;
@@ -508,8 +590,14 @@ export default {
   margin-left: 23px;
 }
 
-.carta-dia { background: white; border: 8px solid #e4ba03; }
-.carta-noche { background: #000; border: 8px solid #cc0000; }
+.carta-dia {
+  background: white;
+  border: 8px solid #e4ba03;
+}
+.carta-noche {
+  background: #000;
+  border: 8px solid #cc0000;
+}
 
 .carta-fase-titulo {
   font-family: 'Cinzel', Arial, sans-serif;
@@ -519,8 +607,12 @@ export default {
   text-align: center;
 }
 
-.carta-dia .carta-fase-titulo { color: #e4ba03; }
-.carta-noche .carta-fase-titulo { color: #cc0000; }
+.carta-dia .carta-fase-titulo {
+  color: #e4ba03;
+}
+.carta-noche .carta-fase-titulo {
+  color: #cc0000;
+}
 
 .carta-fase-img {
   width: 100%;
@@ -529,8 +621,12 @@ export default {
   border-radius: 10px;
 }
 
-.carta-dia .carta-fase-img { border: 5px solid #e4ba03; }
-.carta-noche .carta-fase-img { border: 5px solid #cc0000; }
+.carta-dia .carta-fase-img {
+  border: 5px solid #e4ba03;
+}
+.carta-noche .carta-fase-img {
+  border: 5px solid #cc0000;
+}
 
 .carta-fase-texto {
   font-family: 'Raleway', Arial, sans-serif;
@@ -542,8 +638,12 @@ export default {
   font-style: italic;
 }
 
-.carta-dia .carta-fase-texto { color: #e4ba03; }
-.carta-noche .carta-fase-texto { color: #cc0000; }
+.carta-dia .carta-fase-texto {
+  color: #e4ba03;
+}
+.carta-noche .carta-fase-texto {
+  color: #cc0000;
+}
 
 .mesa-wrapper-outer :deep(.mesa-wrapper) {
   border-width: 10px;
@@ -573,11 +673,17 @@ export default {
   background-repeat: no-repeat;
 }
 
-.footer-dia { background-image: url('@/assets/imgs/footer-dia.png'); }
-.footer-noche { background-image: url('@/assets/imgs/footer-noche.png'); }
+.footer-dia {
+  background-image: url('@/assets/imgs/footer-dia.png');
+}
+.footer-noche {
+  background-image: url('@/assets/imgs/footer-noche.png');
+}
 
 @media (max-width: 900px) {
-  .contenido { width: 85%; }
+  .contenido {
+    width: 85%;
+  }
 }
 
 @media (max-width: 768px) {
@@ -596,7 +702,9 @@ export default {
     width: 95%;
     padding-top: 20px;
   }
-  .nombre-box { font-size: 1rem; }
+  .nombre-box {
+    font-size: 1rem;
+  }
 }
 
 .aviso-sesion {
@@ -615,7 +723,56 @@ export default {
 }
 
 @keyframes aparecer {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.columna-izquierda {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cuadro-alcalde {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 250px;
+  padding: 14px 20px;
+  border-radius: 10px;
+  background: #e4ba03;
+  border: 3px white solid;
+  color: #000;
+  font-family: 'Raleway', Arial, sans-serif;
+  font-weight: bold;
+}
+
+.cuadro-alcalde i {
+  font-size: 3rem;
+  flex-shrink: 0;
+}
+
+.alcalde-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.alcalde-titulo {
+  font-size: 1.2rem;
+  font-weight: bolder;
+}
+
+.alcalde-frase {
+  font-size: 1rem;
+  font-style: italic;
+  font-weight: 400;
+  color: #ffffff;
 }
 </style>

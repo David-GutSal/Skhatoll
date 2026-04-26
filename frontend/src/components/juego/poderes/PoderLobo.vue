@@ -2,7 +2,7 @@
   <div class="poder-lobo">
 
     <div class="poder-titulo">
-      <i class="fa-solid fa-skull"></i>
+      <i class="fa-solid fa-bone"></i>
       Tu poder: Devorar
     </div>
 
@@ -21,7 +21,7 @@
       :disabled="!jugadorSeleccionado || poderUsado"
       @click="devorar"
     >
-      <i class="fa-solid fa-skull"></i>
+      <i class="fa-solid fa-bone"></i>
       {{ poderUsado ? 'Ya has votado esta noche' : 'Devorar' }}
     </button>
 
@@ -30,9 +30,9 @@
         <i class="fa-solid fa-paw"></i>
         Votos de la manada
       </p>
-      <div v-for="voto in votosLobos" :key="voto.nombreVotante" class="voto-item">
+      <div v-for="voto in votosLobos" :key="voto.nombreObjetivo" class="voto-item">
         <span class="voto-lobo">
-          <i class="fa-solid fa-wolf-pack-battalion"></i>
+          <i class="fa-solid fa-bone"></i>
           {{ voto.nombreVotante }}
         </span>
         <i class="fa-solid fa-arrow-right"></i>
@@ -68,7 +68,6 @@ export default {
   watch: {
     '$store.state.sala.jugadores': {
       handler(jugadores) {
-        // Construimos la lista de votos a partir del conteo por jugador
         const nuevosVotos = []
         jugadores.forEach((j) => {
           if (j.votos > 0) {

@@ -55,8 +55,12 @@
       <span v-if="jugador.alcalde" class="alcalde-badge" title="Alcalde">
         <i class="fa-solid fa-medal"></i>
       </span>
-      <span v-if="jugador.votos > 0" class="badge-votos">
-        <i class="fa-solid fa-check"></i> {{ jugador.votos }}
+      <span
+        v-else-if="jugador.votos > 0 && jugador.estaVivo"
+        :class="esVotacionLobos ? 'badge-votos-lobo' : 'badge-votos'"
+      >
+        <i :class="esVotacionLobos ? 'fa-solid fa-bone' : 'fa-solid fa-check'"></i>
+        {{ jugador.votos }}
       </span>
       <span v-if="jugador.esEnamorado" class="badge-enamorado" title="Enamorado">
         <i class="fa-solid fa-heart"></i>
@@ -99,8 +103,12 @@
       <span v-if="jugador.alcalde" class="alcalde-badge" title="Alcalde">
         <i class="fa-solid fa-medal"></i>
       </span>
-      <span v-if="jugador.votos > 0" title="Votos">
-        <i class="fa-solid fa-box-ballot"></i> {{ jugador.votos }}
+      <span
+        v-if="jugador.votos > 0 && jugador.estaVivo"
+        :class="esVotacionLobos ? 'badge-votos-lobo' : 'badge-votos'"
+      >
+        <i :class="esVotacionLobos ? 'fa-solid fa-bone' : 'fa-solid fa-check'"></i>
+        {{ jugador.votos }}
       </span>
     </div>
   </div>
@@ -108,6 +116,7 @@
 
 <script>
 import { getImagenRol, getColorBando } from '@/data/roles.js'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'CartaRol',
@@ -126,6 +135,8 @@ export default {
   emits: ['seleccionar'],
 
   computed: {
+    ...mapGetters('sala', ['tipoVotacion']),
+
     imagen() {
       return getImagenRol(this.nombreRol)
     },
@@ -137,6 +148,9 @@ export default {
     },
     rolJugador() {
       return this.jugador?.bando || null
+    },
+    esVotacionLobos() {
+      return this.tipoVotacion === 'LOBOS'
     },
   },
 
@@ -393,6 +407,17 @@ export default {
   border-radius: 6px;
   font-size: 1rem;
   font-weight: 700;
+}
+
+.badge-votos-lobo {
+  background: rgba(139, 0, 0, 0.8);
+  color: #ff4444;
+  border: 2px solid #cc0000;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 700;
+  box-shadow: 0 0 6px rgba(204, 0, 0, 0.5);
 }
 
 .carta-narrador {

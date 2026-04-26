@@ -1,6 +1,5 @@
 <template>
   <div class="cabecera">
-
     <!-- Columna izquierda: Nombre del jugador + Narrador -->
     <div class="columna-izquierda">
       <div class="nombre-box" :class="esDia ? 'nombre-dia' : 'nombre-noche'">
@@ -9,32 +8,43 @@
       </div>
 
       <!-- Cuadro del Narrador - Solo para jugadores normales -->
-      <div 
+      <div
         v-if="!esNarrador && nombreNarrador"
         class="narrador-box"
         :class="esDia ? 'narrador-dia' : 'narrador-noche'"
       >
         <i class="fa-solid fa-book-open-reader"></i>
-        <span>El Narrador es: <strong>{{ nombreNarrador }}</strong></span>
+        <span
+          >El Narrador es: <strong>{{ nombreNarrador }}</strong></span
+        >
+      </div>
+
+      <div v-if="alcaldeNombre" class="cuadro-alcalde">
+        <i class="fa-solid fa-medal"></i>
+        <div class="alcalde-texto">
+          <span class="alcalde-titulo"
+            >Nuestro alcalde es: <strong>{{ textoAlcalde }}</strong></span
+          >
+          <span class="alcalde-frase"
+            >"Es el vecino el que elige al alcalde y es el alcalde el que quiere que sean los
+            vecinos el alcalde"</span
+          >
+        </div>
       </div>
     </div>
 
     <!-- Carta de fase (derecha) -->
     <div class="carta-fase" :class="esDia ? 'carta-dia' : 'carta-noche'">
       <p class="carta-fase-titulo">{{ esDia ? 'EL DÍA' : 'LA NOCHE' }}</p>
-      <img
-        :src="esDia ? solImg : lunaImg"
-        :alt="esDia ? 'Sol' : 'Luna'"
-        class="carta-fase-img"
-      />
+      <img :src="esDia ? solImg : lunaImg" :alt="esDia ? 'Sol' : 'Luna'" class="carta-fase-img" />
       <p class="carta-fase-texto">
-        {{ esDia
-          ? 'La cálida luz del Sol ahuyenta a las bestias, pero no a las sospechas'
-          : 'La clara luz de la luna ilumina a las bestias que acechan entre las sombras'
+        {{
+          esDia
+            ? 'La cálida luz del Sol ahuyenta a las bestias, pero no a las sospechas'
+            : 'La clara luz de la luna ilumina a las bestias que acechan entre las sombras'
         }}
       </p>
     </div>
-
   </div>
 </template>
 
@@ -49,10 +59,16 @@ export default {
     esDia: { type: Boolean, default: true },
     esNarrador: { type: Boolean, default: false },
     nombreNarrador: { type: String, default: '' },
+    alcaldeNombre: { type: String, default: '' },
   },
   data() {
     return { solImg, lunaImg }
   },
+  computed: {
+  textoAlcalde() {
+    return this.alcaldeNombre || 'Elecciones pendientes'
+  }
+}
 }
 </script>
 
@@ -159,8 +175,12 @@ export default {
   text-align: center;
 }
 
-.carta-dia .carta-fase-titulo { color: #e4ba03; }
-.carta-noche .carta-fase-titulo { color: #cc0000; }
+.carta-dia .carta-fase-titulo {
+  color: #e4ba03;
+}
+.carta-noche .carta-fase-titulo {
+  color: #cc0000;
+}
 
 .carta-fase-img {
   width: 100%;
@@ -169,8 +189,12 @@ export default {
   border-radius: 10px;
 }
 
-.carta-dia .carta-fase-img { border: 5px solid #e4ba03; }
-.carta-noche .carta-fase-img { border: 5px solid #cc0000; }
+.carta-dia .carta-fase-img {
+  border: 5px solid #e4ba03;
+}
+.carta-noche .carta-fase-img {
+  border: 5px solid #cc0000;
+}
 
 .carta-fase-texto {
   font-family: 'Raleway', Arial, sans-serif;
@@ -182,8 +206,12 @@ export default {
   font-style: italic;
 }
 
-.carta-dia .carta-fase-texto { color: #e4ba03; }
-.carta-noche .carta-fase-texto { color: #cc0000; }
+.carta-dia .carta-fase-texto {
+  color: #e4ba03;
+}
+.carta-noche .carta-fase-texto {
+  color: #cc0000;
+}
 
 @media (max-width: 750px) {
   .cabecera {
@@ -200,5 +228,42 @@ export default {
     width: 100%;
     justify-content: center;
   }
+}
+
+.cuadro-alcalde {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 400px;
+  padding: 14px 20px;
+  border-radius: 10px;
+  background: #e4ba03;
+  border: 3px white solid;
+  color: #000;
+  font-family: 'Raleway', Arial, sans-serif;
+  font-weight: bold;
+}
+
+.cuadro-alcalde i {
+  font-size: 3rem;
+  flex-shrink: 0;
+}
+
+.alcalde-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.alcalde-titulo {
+  font-size: 1.2rem;
+  font-weight: bolder;
+}
+
+.alcalde-frase {
+  font-size: 1rem;
+  font-style: italic;
+  font-weight: 400;
+  color: #ffffff;
 }
 </style>

@@ -110,18 +110,6 @@ export default {
       this.stompClient = cliente
     },
   },
-
-  created() {
-    // PREVIEW — borra esto cuando termines
-    this.$store.dispatch('sala/setJugadores', [
-      { idUsuario: 1, nombre: 'User1', estaVivo: false },
-      { idUsuario: 2, nombre: 'User2', estaVivo: true },
-      { idUsuario: 3, nombre: 'User3', estaVivo: true },
-      { idUsuario: 4, nombre: 'User4', estaVivo: true },
-      { idUsuario: 5, nombre: 'User5', estaVivo: true },
-    ])
-    this.conectarWebSocket() // ya estaba, no lo dupliques
-  },
 }
 </script>
 

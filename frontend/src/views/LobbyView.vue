@@ -80,7 +80,7 @@
                 <input
                   class="input-jugador"
                   v-model="inputCodigo"
-                  placeholder="Código de sala"
+                  placeholder="######"
                   maxlength="20"
                 />
               </div>
@@ -148,13 +148,13 @@ export default {
     },
   },
   watch: {
-  codigoSala(nuevo) {
-    if (nuevo) {
-      this.cargarJugadores()
-      this.conectarWebSocket()
-    }
-  }
-},
+    codigoSala(nuevo) {
+      if (nuevo) {
+        this.cargarJugadores()
+        this.conectarWebSocket()
+      }
+    },
+  },
 
   created() {
     if (this.codigoSala) {
@@ -218,6 +218,16 @@ export default {
             ? 'Ya estás en esta sala o está llena'
             : 'Sala no encontrada',
         )
+      }
+    },
+
+    async salirSala() {
+      try {
+        await axiosInstance.post(`/salas/${this.codigoSala}/salir`)
+        this.salir() // Vuex
+        this.$router.push({ name: 'sala' })
+      } catch (error) {
+        alert('Error al salir de la sala')
       }
     },
 
@@ -346,11 +356,10 @@ export default {
   padding: 14px 20px;
   background: transparent;
   border: none;
-  font-size: 2.7rem;
-  font-family: 'Cinzel', Arial, sans-serif;
-  font-weight: 700;
+  font-size: 'Raleway', Arial, sans-serif;
+  font-weight: bold;
   color: #8b0000;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.4em;
   text-align: center;
   outline: none;
 }
@@ -358,7 +367,7 @@ export default {
 .boton-copiar {
   background: #8b0000;
   border: none;
-  padding: 14px 22px;
+  padding: 14px;
   cursor: pointer;
   color: white;
   font-size: 1.4rem;
@@ -473,14 +482,14 @@ export default {
   background: white;
   border: 5px solid #a30000;
   border-radius: 50px;
-  font-size: 1.2rem;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-size: 1.8rem;
+  font-family: Arial, sans-serif;
   font-weight: bolder;
   color: #111;
   padding: 14px 24px;
   text-align: center;
   outline: none;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.5em;
 }
 
 .input-jugador::placeholder {

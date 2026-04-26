@@ -25,6 +25,13 @@ export default {
       state.codigoSala = codigoSala
       state.esCreador = esCreador
     },
+    RESET_SALA(state) {
+      state.jugadores = []
+      state.jugadoresConRol = []
+      state.tipoVotacion = null
+      state.enamorados = null
+      state.semiMuertos = []
+    },
     SET_JUGADORES(state, jugadores) {
       state.jugadores = jugadores
     },
@@ -167,6 +174,9 @@ export default {
       localStorage.setItem('codigoSala', codigoSala)
       commit('SET_SALA', { codigoSala, esCreador: false })
     },
+    resetSala({ commit }) {
+      commit('RESET_SALA')
+    },
     setJugadores({ commit }, jugadores) {
       commit('SET_JUGADORES', jugadores)
     },
@@ -199,7 +209,7 @@ export default {
       commit('SET_RESULTADO', resultado)
     },
     salir({ commit }) {
-      localStorage.setItem('codigoSala')
+      localStorage.removeItem('codigoSala')
       commit('CLEAR_SALA')
     },
     setNarrador({ commit }, nombreNarrador) {
@@ -226,21 +236,21 @@ export default {
   },
 
   getters: {
-    codigoSala:       (state) => state.codigoSala,
-    esCreador:        (state) => state.esCreador,
-    jugadores:        (state) => state.jugadores,
-    jugadoresConRol:  (state) => state.jugadoresConRol,
-    miRol:            (state) => state.miRol,
+    codigoSala: (state) => state.codigoSala,
+    esCreador: (state) => state.esCreador,
+    jugadores: (state) => state.jugadores,
+    jugadoresConRol: (state) => state.jugadoresConRol,
+    miRol: (state) => state.miRol,
     miRolDescripcion: (state) => state.miRolDescripcion,
-    miBando:          (state) => state.miBando,
-    fase:             (state) => state.fase,
-    bandoGanador:     (state) => state.bandoGanador,
-    mensajeFin:       (state) => state.mensajeFin,
-    narradorActual:   (state) => state.narradorActual,
-    turnoActivo:      (state) => state.turnoActivo,
-    semiMuertos:      (state) => state.semiMuertos,
-    enamorados:       (state) => state.enamorados,
-    cupidoUsado:      (state) => state.cupidoUsado,
-    tipoVotacion:     (state) => state.tipoVotacion,
+    miBando: (state) => state.miBando,
+    fase: (state) => state.fase,
+    bandoGanador: (state) => state.bandoGanador,
+    mensajeFin: (state) => state.mensajeFin,
+    narradorActual: (state) => state.narradorActual,
+    turnoActivo: (state) => state.turnoActivo,
+    semiMuertos: (state) => state.semiMuertos,
+    enamorados: (state) => state.enamorados,
+    cupidoUsado: (state) => state.cupidoUsado,
+    tipoVotacion: (state) => state.tipoVotacion,
   },
 }

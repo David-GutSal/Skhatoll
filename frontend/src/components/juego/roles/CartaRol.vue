@@ -35,7 +35,7 @@
         <i class="fa-solid fa-skull"></i>
       </span>
       <span v-else-if="!jugador.estaVivo && !jugador.muerteConfirmada" class="overlay-semimuerto">
-        <i class="fa-solid fa-user-injured"></i>
+        <i class="fa-solid fa-user-injured colorear"></i>
       </span>
     </div>
 
@@ -85,7 +85,7 @@
         <i class="fa-solid fa-skull"></i>
       </span>
       <span v-else-if="!jugador.estaVivo && !jugador.muerteConfirmada" class="overlay-semimuerto">
-        <i class="fa-solid fa-user-injured"></i>
+        <i class="fa-solid fa-user-injured colorear"></i>
       </span>
     </div>
 
@@ -259,6 +259,7 @@ export default {
   object-fit: cover;
   display: block;
   border-radius: 8px;
+  color: white;
 }
 
 .carta-imagen-oculta {
@@ -285,7 +286,6 @@ export default {
   justify-content: center;
   font-size: 2rem;
   border-radius: 8px;
-  color: white;
 }
 
 .overlay-semimuerto {
@@ -422,5 +422,10 @@ export default {
 
 .carta-narrador {
   border-width: 2px;
+}
+
+.colorear{
+  color: white;
+  font-size: 5rem;
 }
 </style>

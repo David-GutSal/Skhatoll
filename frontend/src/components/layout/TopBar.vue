@@ -197,7 +197,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   letter-spacing: 0.05em;
 }
 
@@ -214,7 +214,7 @@ export default {
 .auth-link {
   color: white;
   text-decoration: none;
-  font-weight: 600;
+  font-weight: bold;
   cursor: pointer;
   transition: color 0.2s ease;
 
@@ -270,9 +270,10 @@ export default {
 .dropdown-input {
   width: 100%;
   padding: 10px 14px;
-  border: 1.5px solid #ccc;
+  border: 1.5px solid #5a5a5a;
   border-radius: 3px;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  font-weight: bold;
   box-sizing: border-box;
   background: #fff;
   color: #222;
@@ -317,7 +318,7 @@ export default {
 }
 
 .btn-login:hover {
-  background: #990000;
+  background: #000000;
 }
 
 .btn-registro {
@@ -326,7 +327,7 @@ export default {
 }
 
 .btn-registro:hover {
-  background: #e0e0e0;
+  background:  #990000;
 }
 
 .auth-bienvenido {

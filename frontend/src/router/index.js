@@ -82,8 +82,6 @@ const routes = [
     component: EliminadoView,
     meta: { sinLayout: true },
   },
-// borrar siguiente linea
-  { path: '/preview-eliminado', component: EliminadoView, meta: { sinLayout: true } },
 
   // Añade esto temporalmente en el router para previsualizar las pantallas de carga en CargaRolView
   /*{ path: '/preview-carga', component: CargaRolView, meta: { sinLayout: true } },

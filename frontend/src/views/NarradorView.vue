@@ -3,17 +3,17 @@
     <div class="contenido">
       <div class="cabecera">
         <div class="columna-izquierda">
-        <div class="nombre-box" :class="esDia ? 'nombre-dia' : 'nombre-noche'">
-          <i class="fa-solid fa-book-open-reader"></i>
-          <span>Narrador: {{ nombre }}</span>
-        </div>
-        <div class="cuadro-alcalde">
-          <i class="fa-solid fa-medal"></i>
-          <span>
-            Nuestro alcalde es:
-            <strong>{{ textoAlcalde }}</strong>
-          </span>
-        </div>
+          <div class="nombre-box" :class="esDia ? 'nombre-dia' : 'nombre-noche'">
+            <i class="fa-solid fa-book-open-reader"></i>
+            <span>Narrador: {{ nombre }}</span>
+          </div>
+          <div class="cuadro-alcalde">
+            <i class="fa-solid fa-medal"></i>
+            <span>
+              Nuestro alcalde es:
+              <strong>{{ textoAlcalde }}</strong>
+            </span>
+          </div>
         </div>
         <IndicadorDiaNoche :esDia="esDia" @cambiarFase="cambiarFase" />
         <div class="carta-fase" :class="esDia ? 'carta-dia' : 'carta-noche'">

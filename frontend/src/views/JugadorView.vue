@@ -260,12 +260,12 @@ export default {
           const payload = JSON.parse(msg.body)
           this.$store.dispatch('sala/marcarMuerto', payload.nombreJugador)
           this.$store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
-          
+
           if (payload.nombreJugador === this.nombre) {
             this.$router.push({ name: 'eliminado' })
             return
           }
-          
+
           const enamorados = this.$store.getters['sala/enamorados']
           if (enamorados) {
             const { jugador1, jugador2 } = enamorados

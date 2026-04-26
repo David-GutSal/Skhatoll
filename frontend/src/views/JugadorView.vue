@@ -244,7 +244,6 @@ export default {
       })
 
       cliente.onConnect = () => {
-
         cliente.subscribe(`/topic/partida/${this.codigoSala}/fase`, (msg) => {
           const payload = JSON.parse(msg.body)
           this.esDia = payload.fase === 'DIA'
@@ -261,7 +260,12 @@ export default {
           const payload = JSON.parse(msg.body)
           this.$store.dispatch('sala/marcarMuerto', payload.nombreJugador)
           this.$store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
-
+          
+          if (payload.nombreJugador === this.nombre) {
+            this.$router.push({ name: 'eliminado' })
+            return
+          }
+          
           const enamorados = this.$store.getters['sala/enamorados']
           if (enamorados) {
             const { jugador1, jugador2 } = enamorados
@@ -323,7 +327,9 @@ export default {
                 this.mensajeEvento = 'LOS LOBOS DECIDEN'
               }
 
-              setTimeout(() => { this.mensajeEvento = null }, 30000)
+              setTimeout(() => {
+                this.mensajeEvento = null
+              }, 30000)
             } else {
               this.tipoVotacionLocal = null
               this.$store.dispatch('sala/setTipoVotacion', null)
@@ -335,7 +341,9 @@ export default {
           if (payload.tipo === 'LOBOS' && payload.nombreEliminado) {
             this.$store.dispatch('sala/marcarSemimuerto', payload.nombreEliminado)
             this.mensajeEvento = `Los lobos han devorado a ${payload.nombreEliminado} esta noche...`
-            setTimeout(() => { this.mensajeEvento = null }, 8000)
+            setTimeout(() => {
+              this.mensajeEvento = null
+            }, 8000)
           }
         })
 
@@ -343,8 +351,11 @@ export default {
           const payload = JSON.parse(msg.body)
 
           if (payload.tipo === 'EVENTOS_INICIADOS') {
-            this.mensajeEvento = '¡Llegó la noche! Presta atención, puede que el narrador te llame para que utilices tus poderes'
-            setTimeout(() => { this.mensajeEvento = null }, 10000)
+            this.mensajeEvento =
+              '¡Llegó la noche! Presta atención, puede que el narrador te llame para que utilices tus poderes'
+            setTimeout(() => {
+              this.mensajeEvento = null
+            }, 10000)
             return
           }
 
@@ -372,7 +383,9 @@ export default {
               })
 
               this.mensajeEvento = `¡Estás enamorado de ${nombrePareja}!`
-              setTimeout(() => { this.mensajeEvento = null }, 8000)
+              setTimeout(() => {
+                this.mensajeEvento = null
+              }, 8000)
             }
             return
           }
@@ -381,8 +394,11 @@ export default {
             const soyLobo = payload.nombresLobos?.includes(this.nombre)
             this.esMiTurno = soyLobo
             if (soyLobo) {
-              this.mensajeEvento = '¡Es hora de cazar! Decide junto a los tuyos a quién devoráis esta noche'
-              setTimeout(() => { this.mensajeEvento = null }, 30000)
+              this.mensajeEvento =
+                '¡Es hora de cazar! Decide junto a los tuyos a quién devoráis esta noche'
+              setTimeout(() => {
+                this.mensajeEvento = null
+              }, 30000)
             }
             return
           }
@@ -391,7 +407,9 @@ export default {
             this.esMiTurno = payload.nombreJugador === this.nombre
             if (this.esMiTurno) {
               this.mensajeEvento = `Es tu turno, ${this.nombre}. Activa tu poder.`
-              setTimeout(() => { this.mensajeEvento = null }, 30000)
+              setTimeout(() => {
+                this.mensajeEvento = null
+              }, 30000)
             } else {
               this.esMiTurno = false
             }
@@ -425,8 +443,12 @@ export default {
   background-attachment: fixed;
 }
 
-.dia { background-image: url('@/assets/imgs/fondodia.png'); }
-.noche { background-image: url('@/assets/imgs/fondonoche.png'); }
+.dia {
+  background-image: url('@/assets/imgs/fondodia.png');
+}
+.noche {
+  background-image: url('@/assets/imgs/fondonoche.png');
+}
 
 .contenido {
   width: 90%;
@@ -510,7 +532,9 @@ export default {
   font-size: 0.85rem;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .btn-ir-poderes:hover {
@@ -526,11 +550,17 @@ export default {
   background-repeat: no-repeat;
 }
 
-.footer-dia { background-image: url('@/assets/imgs/footer-dia.png'); }
-.footer-noche { background-image: url('@/assets/imgs/footer-noche.png'); }
+.footer-dia {
+  background-image: url('@/assets/imgs/footer-dia.png');
+}
+.footer-noche {
+  background-image: url('@/assets/imgs/footer-noche.png');
+}
 
 @media (max-width: 900px) {
-  .contenido { width: 85%; }
+  .contenido {
+    width: 85%;
+  }
 }
 
 @media (max-width: 600px) {
@@ -549,7 +579,13 @@ export default {
 }
 
 @keyframes aparecer {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

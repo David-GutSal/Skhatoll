@@ -11,6 +11,7 @@ import NarradorView from '../views/NarradorView.vue'
 import JugadorView from '../views/JugadorView.vue'
 import ResultadosView from '../views/ResultadosView.vue'
 import EsperaNarradorView from '../views/EsperaNarradorView.vue'
+import EliminadoView from '../views/EliminadoView.vue'
 
 const routes = [
   {
@@ -40,7 +41,7 @@ const routes = [
     component: LobbyView,
   },
 
-   {
+  {
     path: '/carga-rol',
     name: 'cargaRol',
     component: CargaRolView,
@@ -67,7 +68,7 @@ const routes = [
     component: JugadorView,
     meta: { sinLayout: true },
   },
-  
+
   {
     path: '/resultados',
     name: 'resultados',
@@ -75,8 +76,17 @@ const routes = [
     meta: { sinLayout: true },
   },
 
+  {
+    path: '/eliminado',
+    name: 'eliminado',
+    component: EliminadoView,
+    meta: { sinLayout: true },
+  },
+// borrar siguiente linea
+  { path: '/preview-eliminado', component: EliminadoView, meta: { sinLayout: true } },
+
   // Añade esto temporalmente en el router para previsualizar las pantallas de carga en CargaRolView
-/*{ path: '/preview-carga', component: CargaRolView, meta: { sinLayout: true } },
+  /*{ path: '/preview-carga', component: CargaRolView, meta: { sinLayout: true } },
   { path: '/preview-espera', component: EsperaNarradorView, meta: { sinLayout: true } },
 // Igual para las opciones de victoria y derrota
   { path: '/preview-resultados', component: ResultadosView, meta: { sinLayout: true } }

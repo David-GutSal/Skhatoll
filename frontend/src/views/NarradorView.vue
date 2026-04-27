@@ -211,20 +211,22 @@ export default {
 
     // Confirma la muerte definitiva de todos los semimuertos al amanecer
     async confirmarMuertesSemimuertos() {
-      const semimuertos = [...this.semiMuertos]
-      for (const nombre of semimuertos) {
-        const jugador = this.jugadoresConRol.find((j) => j.nombre === nombre)
-        if (jugador) {
-          try {
-            await axiosInstance.put(
-              `/partida/${this.codigoSala}/jugador/${jugador.idUsuario}/confirmar-muerte`,
-            )
-          } catch {
-            // Si ya fue confirmada (bruja lo salvó) ignoramos el error
-          }
-        }
+  const semimuertos = [...this.semiMuertos]
+  console.log('🌅 Confirmando muertes al amanecer:', semimuertos)
+  for (const nombre of semimuertos) {
+    const jugador = this.jugadoresConRol.find((j) => j.nombre === nombre)
+    if (jugador) {
+      try {
+        await axiosInstance.put(
+          `/partida/${this.codigoSala}/jugador/${jugador.idUsuario}/confirmar-muerte`,
+        )
+        console.log('✅ Muerte confirmada:', nombre)
+      } catch (error) {
+        console.error('❌ Error confirmando muerte de', nombre, ':', error.response?.status, error.response?.data)
       }
-    },
+    }
+  }
+},
 
     conectarWebSocket() {
       const token = this.$store.getters['auth/token']

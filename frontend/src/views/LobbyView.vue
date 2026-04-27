@@ -356,7 +356,8 @@ export default {
   padding: 14px 20px;
   background: transparent;
   border: none;
-  font-size: 'Raleway', Arial, sans-serif;
+  font-family:Arial, sans-serif;
+  font-size: 2rem;
   font-weight: bold;
   color: #8b0000;
   letter-spacing: 0.4em;

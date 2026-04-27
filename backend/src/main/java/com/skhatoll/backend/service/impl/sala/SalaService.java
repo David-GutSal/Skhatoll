@@ -231,6 +231,10 @@ public class SalaService implements ISalaService {
                 usuario.getIdUsuario()).orElseThrow(() -> new IllegalArgumentException("No estás en esta sala"));
 
         salaUsuarioRepository.delete(salaUsuario);
+
+        // 1. Notificar a todos con la lista actualizada
+        List<JugadorDto> jugadoresActualizados = getJugadores(codigoSala);
+        salaSocketService.notificarNuevoJugador(codigoSala, jugadoresActualizados);
     }
 
     @Transactional

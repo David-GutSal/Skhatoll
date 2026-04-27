@@ -18,4 +18,6 @@ public interface ISalaService {
     List<JugadorRolDto> getJugadoresConRol(String codigo);
 
     void salirDeSala(String codigo);
+
+    void cerrarSala(String codigo);
 }

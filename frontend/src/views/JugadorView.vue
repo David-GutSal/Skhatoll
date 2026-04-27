@@ -95,12 +95,12 @@ export default {
   computed: {
     ...mapGetters('auth', ['nombre']),
     ...mapGetters('sala', ['codigoSala', 'jugadores', 'miRol']),
-//añadido 1
+    //añadido 1
     nombreNarrador() {
       const narrador = this.jugadores.find((j) => j.esNarrador === true)
       return narrador ? narrador.nombre : 'Esperando narrador...'
     },
-//añadido 2
+    //añadido 2
     soyNarrador() {
       return this.jugadores.some((j) => j.esNarrador === true && j.nombre === this.nombre)
     },
@@ -142,6 +142,7 @@ export default {
   },
 
   methods: {
+    /* añadido 1
     async salirPartida() {
       if (!confirm('¿Seguro que quieres salir de la partida?')) return
       if (this.stompClient) {
@@ -149,6 +150,17 @@ export default {
         this.stompClient = null
       }
       await this.$store.dispatch('sala/salir')
+      this.$router.push({ name: 'sala' })
+    },*/
+
+    //añadido 2
+    async salirPartida() {
+      if (!confirm('¿Seguro que quieres salir? Esto cerrará la sala para todos.')) return
+      if (this.stompClient) {
+        this.stompClient.deactivate()
+        this.stompClient = null
+      }
+      await this.$store.dispatch('sala/cerrarSala')
       this.$router.push({ name: 'sala' })
     },
 
@@ -264,6 +276,16 @@ export default {
             mensaje: payload.mensaje,
           })
           this.$router.push({ name: 'resultados' })
+        })
+
+        //añadido 2
+        cliente.subscribe(`/topic/sala/${this.codigoSala}/cerrada`, () => {
+          if (this.stompClient) {
+            this.stompClient.deactivate()
+            this.stompClient = null
+          }
+          this.$store.commit('sala/CLEAR_SALA')
+          this.$router.push({ name: 'sala' })
         })
       }
       cliente.activate()

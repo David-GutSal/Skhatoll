@@ -110,6 +110,18 @@ public class SalaController {
         }
     }
 
+    @DeleteMapping("/{codigo}/cerrar")
+    public ResponseEntity<?> cerrarSala(@PathVariable String codigo) {
+        try {
+            salaService.cerrarSala(codigo);
+            return ResponseEntity.ok("Sala cerrada");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
+    }
+
     // -------------------------------------------------------
     // GET /salas/{codigo}/roles
     // Solo accesible para el narrador

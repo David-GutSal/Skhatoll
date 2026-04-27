@@ -150,6 +150,7 @@ export default {
   },
 
   methods: {
+    /*Añadido 1
     async salirPartida() {
       if (!confirm('¿Seguro que quieres salir de la partida?')) return
       if (this.stompClient) {
@@ -157,6 +158,16 @@ export default {
         this.stompClient = null
       }
       await this.$store.dispatch('sala/salir')
+      this.$router.push({ name: 'sala' })
+    },*/
+//añadido 2
+    async salirPartida() {
+      if (!confirm('¿Seguro que quieres salir? Esto cerrará la sala para todos.')) return
+      if (this.stompClient) {
+        this.stompClient.deactivate()
+        this.stompClient = null
+      }
+      await this.$store.dispatch('sala/cerrarSala')
       this.$router.push({ name: 'sala' })
     },
 

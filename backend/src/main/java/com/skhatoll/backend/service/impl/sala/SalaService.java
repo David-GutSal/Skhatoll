@@ -233,6 +233,25 @@ public class SalaService implements ISalaService {
         salaUsuarioRepository.delete(salaUsuario);
     }
 
+    @Transactional
+    public void cerrarSala(String codigoSala) {
+        Usuario solicitante = getUsuarioAutenticado();
+
+        Sala sala = salaRepository.findByCodigoSala(codigoSala)
+                .orElseThrow(() -> new IllegalArgumentException("Sala no encontrada"));
+
+        if (!sala.getNarrador().getIdUsuario().equals(solicitante.getIdUsuario())) {
+            throw new IllegalStateException("Solo el narrador puede cerrar la sala");
+        }
+
+        // Notificar a todos antes de borrar
+        salaSocketService.notificarSalaCerrada(codigoSala);
+
+        // Borrar todos los jugadores y la sala
+        salaUsuarioRepository.deleteBySala_IdSala(sala.getIdSala());
+        salaRepository.delete(sala);
+    }
+
     // -------------------------------------------------------
     // Generar código de sala único de 6 caracteres
     // -------------------------------------------------------

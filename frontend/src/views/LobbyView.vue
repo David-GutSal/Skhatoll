@@ -148,13 +148,13 @@ export default {
     },
   },
   watch: {
-  codigoSala(nuevo) {
-    if (nuevo) {
-      this.cargarJugadores()
-      this.conectarWebSocket()
-    }
-  }
-},
+    codigoSala(nuevo) {
+      if (nuevo) {
+        this.cargarJugadores()
+        this.conectarWebSocket()
+      }
+    },
+  },
 
   created() {
     if (this.codigoSala) {
@@ -227,13 +227,17 @@ export default {
       )
       alert('¡Código copiado! Pégalo en Discord')
     },
-
-    salirSala() {
+    //añadido 2
+    async salirSala() {
       if (this.stompClient) {
         this.stompClient.deactivate()
         this.stompClient = null
       }
-      this.salir()
+      if (this.esCreador) {
+        await this.$store.dispatch('sala/cerrarSala')
+      } else {
+        await this.$store.dispatch('sala/salir')
+      }
       this.$router.push({ name: 'sala' })
     },
 
@@ -260,6 +264,15 @@ export default {
               bando: payload.bando,
             })
           }
+        })
+        //añadido 2
+        cliente.subscribe(`/topic/sala/${this.codigoSala}/cerrada`, () => {
+          if (this.stompClient) {
+            this.stompClient.deactivate()
+            this.stompClient = null
+          }
+          this.$store.commit('sala/CLEAR_SALA')
+          this.$router.push({ name: 'sala' })
         })
       }
       cliente.activate()

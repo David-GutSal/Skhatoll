@@ -8,6 +8,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +34,13 @@ public class SalaSocketService {
         messagingTemplate.convertAndSend(
                 "/topic/sala/" + codigoSala + "/inicio",
                 new PartidaIniciadaEvent("PARTIDA_INICIADA"));
+    }
+//añadido 2 MAP?
+    public void notificarSalaCerrada(String codigoSala) {
+        messagingTemplate.convertAndSend(
+                "/topic/sala/" + codigoSala + "/cerrada",
+                Map.<Object, Object>of("tipo", "SALA_CERRADA")
+        );
     }
 
     // -------------------------------------------------------

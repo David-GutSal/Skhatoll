@@ -1,3 +1,6 @@
+// Al principio de sala.js, añadir el import
+import axiosInstance from '@/plugins/axios'
+
 export default {
   namespaced: true,
 
@@ -144,6 +147,7 @@ export default {
     setResultado({ commit }, resultado) {
       commit('SET_RESULTADO', resultado)
     },
+    /*Añadido 1
     salir({ commit, state }) {
       const codigo = state.codigoSala
       if (codigo) {
@@ -154,7 +158,32 @@ export default {
         })
       }
       commit('CLEAR_SALA')
+    },*/
+    //añadido 2
+    async salir({ commit, state }) {
+      const codigo = state.codigoSala
+      if (codigo) {
+        localStorage.removeItem('codigoSala')
+        try {
+          await axiosInstance.delete(`/salas/${codigo}/salir`)
+        } catch (e) {
+          // Ignoramos errores (ej: ya no existe la sala)
+        }
+      }
+      commit('CLEAR_SALA')
     },
+//añadido 2
+    async cerrarSala({ commit, state }) {
+      const codigo = state.codigoSala
+      if (codigo) {
+        localStorage.removeItem('codigoSala')
+        try {
+          await axiosInstance.delete(`/salas/${codigo}/cerrar`)
+        } catch (e) {}
+      }
+      commit('CLEAR_SALA')
+    },
+
     setNarrador({ commit }, nombreNarrador) {
       commit('SET_NARRADOR', nombreNarrador)
     },

@@ -64,6 +64,20 @@ public class SalaSocketService {
         private String tipo;
         private List<JugadorDto> jugadores;
     }
+//Añadido 3
+    @Data
+    @AllArgsConstructor
+    public static class NarradorAsignadoEvent {
+        private String tipo;
+        private List<JugadorDto> jugadores;
+    }
+
+    public void notificarNarradorAsignado(String codigoSala, List<JugadorDto> jugadores) {
+        messagingTemplate.convertAndSend(
+                "/topic/sala/" + codigoSala,
+                new NarradorAsignadoEvent("NARRADOR_ASIGNADO", jugadores));
+    }
+
 
     @Data
     @AllArgsConstructor

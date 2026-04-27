@@ -146,6 +146,9 @@ public class SalaService implements ISalaService {
 
         sala.setNarrador(nuevoNarrador);
         salaRepository.save(sala);
+
+        List<JugadorDto> jugadoresActualizados = getJugadores(codigoSala);
+        salaSocketService.notificarNarradorAsignado(codigoSala, jugadoresActualizados);
     }
 
     // -------------------------------------------------------
@@ -232,7 +235,6 @@ public class SalaService implements ISalaService {
 
         salaUsuarioRepository.delete(salaUsuario);
 
-        // 1. Notificar a todos con la lista actualizada
         List<JugadorDto> jugadoresActualizados = getJugadores(codigoSala);
         salaSocketService.notificarNuevoJugador(codigoSala, jugadoresActualizados);
     }

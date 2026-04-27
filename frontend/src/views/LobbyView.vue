@@ -250,7 +250,27 @@ export default {
       cliente.onConnect = () => {
         cliente.subscribe(`/topic/sala/${this.codigoSala}`, (msg) => {
           const payload = JSON.parse(msg.body)
-          if (payload.tipo === 'JUGADOR_UNIDO') this.setJugadores(payload.jugadores)
+          if (payload.tipo === 'JUGADOR_UNIDO') {
+            this.setJugadores(payload.jugadores)
+          }
+          // Añadir esto:
+          if (payload.tipo === 'NARRADOR_ASIGNADO') {
+            this.setJugadores(payload.jugadores)
+            // Si yo soy el nuevo narrador, actualizo mi estado en el store
+            const nuevoNarrador = payload.jugadores.find((j) => j.esNarrador)
+            if (nuevoNarrador && nuevoNarrador.nombre === this.nombre) {
+              this.$store.commit('sala/SET_SALA', {
+                codigoSala: this.codigoSala,
+                esCreador: true,
+              })
+            } else {
+              // Si era creador y ya no lo es, actualizar también
+              this.$store.commit('sala/SET_SALA', {
+                codigoSala: this.codigoSala,
+                esCreador: false,
+              })
+            }
+          }
         })
         cliente.subscribe(`/topic/sala/${this.codigoSala}/inicio`, () => {
           this.$router.push({ name: 'cargaRol' })

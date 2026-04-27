@@ -7,21 +7,6 @@
         :esNarrador="false"
         :nombreNarrador="nombreNarrador"
       />
-      <div
-        v-if="mensajeEvento"
-        class="cuadro-evento"
-        :class="esDia ? 'evento-dia' : 'evento-noche'"
-      >
-        <i v-if="tipoVotacion === 'ALCALDE'" class="fa-solid fa-medal"></i>
-
-        <i v-else-if="tipoVotacion === 'DIA'" class="fa-solid fa-gavel"></i>
-
-        <i v-else-if="tipoVotacion === 'LOBOS'" class="fa-solid fa-skull"></i>
-
-        <i v-else class="fa-solid fa-bell"></i>
-
-        {{ mensajeEvento }}
-      </div>
 
       <PanelVotacionesJugador
         :esDia="esDia"
@@ -37,9 +22,17 @@
           :jugadores="jugadoresVisibles"
           :esDia="esDia"
           :modoNarrador="false"
-          :jugadorSeleccionado="jugadorSeleccionado"
           @seleccionarJugador="seleccionarJugador"
         />
+      </div>
+
+      <div
+        v-if="mensajeEvento"
+        class="cuadro-evento"
+        :class="esDia ? 'evento-dia' : 'evento-noche'"
+      >
+        <i class="fa-solid fa-bell"></i>
+        {{ mensajeEvento }}
       </div>
 
       <div v-if="!esDia && esMiTurno" class="cuadro-evento evento-noche">
@@ -56,6 +49,10 @@
         @devorar="devorarJugador"
         @premonicion="usarPremonicion"
       />
+
+      <button class="boton-salir" @click="salirPartida">
+        <i class="fa-solid fa-door-open"></i> Salir de la partida
+      </button>
     </div>
 
     <div class="footer-aldea" :class="esDia ? 'footer-dia' : 'footer-noche'"></div>
@@ -98,12 +95,12 @@ export default {
   computed: {
     ...mapGetters('auth', ['nombre']),
     ...mapGetters('sala', ['codigoSala', 'jugadores', 'miRol']),
-
+//añadido 1
     nombreNarrador() {
       const narrador = this.jugadores.find((j) => j.esNarrador === true)
       return narrador ? narrador.nombre : 'Esperando narrador...'
     },
-
+//añadido 2
     soyNarrador() {
       return this.jugadores.some((j) => j.esNarrador === true && j.nombre === this.nombre)
     },
@@ -145,6 +142,16 @@ export default {
   },
 
   methods: {
+    async salirPartida() {
+      if (!confirm('¿Seguro que quieres salir de la partida?')) return
+      if (this.stompClient) {
+        this.stompClient.deactivate()
+        this.stompClient = null
+      }
+      await this.$store.dispatch('sala/salir')
+      this.$router.push({ name: 'sala' })
+    },
+
     seleccionarJugador(j) {
       this.jugadorSeleccionado = j
     },
@@ -274,6 +281,25 @@ export default {
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
+}
+
+.boton-salir {
+  background: #3a3a3a;
+  color: #ccc;
+  border: 2px solid #555;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-family: 'Cinzel', Arial, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  align-self: flex-end;
+  transition: background 0.2s ease;
+}
+.boton-salir:hover {
+  background: #8b0000;
+  border-color: #8b0000;
+  color: white;
 }
 
 .dia {

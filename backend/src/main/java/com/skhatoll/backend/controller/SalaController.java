@@ -96,6 +96,21 @@ public class SalaController {
     }
 
     // -------------------------------------------------------
+    // DELETE /salas/{codigo}/salir
+    // Elimina al usuario autenticado de la sala
+    // Cualquier jugador puede llamarlo para abandonar la sala
+    // -------------------------------------------------------
+    @DeleteMapping("/{codigo}/salir")
+    public ResponseEntity<?> salirDeSala(@PathVariable String codigo) {
+        try {
+            salaService.salirDeSala(codigo);
+            return ResponseEntity.ok("Has salido de la sala");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    // -------------------------------------------------------
     // GET /salas/{codigo}/roles
     // Solo accesible para el narrador
     // -------------------------------------------------------

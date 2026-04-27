@@ -52,6 +52,10 @@
           <ListaReglas />
         </div>
       </div>
+
+      <button class="boton-salir" @click="salirPartida">
+        <i class="fa-solid fa-door-open"></i> Salir de la partida
+      </button>
     </div>
 
     <div class="footer-aldea" :class="esDia ? 'footer-dia' : 'footer-noche'"></div>
@@ -73,7 +77,13 @@ import ListaReglas from '@/components/juego/ListaReglas.vue'
 
 export default {
   name: 'NarradorView',
-  components: { IndicadorDiaNoche, PanelControlNarrador, MesaJugadores, ListaPersonajes, ListaReglas },
+  components: {
+    IndicadorDiaNoche,
+    PanelControlNarrador,
+    MesaJugadores,
+    ListaPersonajes,
+    ListaReglas,
+  },
 
   data() {
     return {
@@ -140,6 +150,16 @@ export default {
   },
 
   methods: {
+    async salirPartida() {
+      if (!confirm('¿Seguro que quieres salir de la partida?')) return
+      if (this.stompClient) {
+        this.stompClient.deactivate()
+        this.stompClient = null
+      }
+      await this.$store.dispatch('sala/salir')
+      this.$router.push({ name: 'sala' })
+    },
+
     async cambiarFase(fase) {
       try {
         this.esDia = fase === 'DIA'
@@ -256,29 +276,27 @@ export default {
 },
 */
 
-async iniciarVotacionLinchamiento() {
-  try {
-    const res = await axiosInstance.post(
-      `/partida/${this.codigoSala}/votacion/abrir`,
-      { tipo: 'DIA' }
-    )
+    async iniciarVotacionLinchamiento() {
+      try {
+        const res = await axiosInstance.post(`/partida/${this.codigoSala}/votacion/abrir`, {
+          tipo: 'DIA',
+        })
 
-    console.log('🟢 RESPUESTA ABRIR VOTACION:', res.data)
+        console.log('🟢 RESPUESTA ABRIR VOTACION:', res.data)
 
-    this.idSesionActual = res.data
+        this.idSesionActual = res.data
 
-    // 🔥 AÑADE ESTO
-    this.votacionActiva = true
-    this.tipoVotacion = 'DIA'
-
-  } catch (error) {
-    alert(
-      error.response?.status === 409
-        ? 'Ya hay una votación abierta'
-        : 'Error al iniciar votación'
-    )
-  }
-},
+        // 🔥 AÑADE ESTO
+        this.votacionActiva = true
+        this.tipoVotacion = 'DIA'
+      } catch (error) {
+        alert(
+          error.response?.status === 409
+            ? 'Ya hay una votación abierta'
+            : 'Error al iniciar votación',
+        )
+      }
+    },
 
     async iniciarVotacionAlcalde() {
       try {
@@ -366,6 +384,25 @@ async iniciarVotacionAlcalde() {
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
+}
+
+.boton-salir {
+  background: #3a3a3a;
+  color: #ccc;
+  border: 2px solid #555;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-family: 'Cinzel', Arial, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  align-self: flex-end;
+  transition: background 0.2s ease;
+}
+.boton-salir:hover {
+  background: #8b0000;
+  border-color: #8b0000;
+  color: white;
 }
 
 .dia {

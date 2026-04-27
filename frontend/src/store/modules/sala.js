@@ -86,7 +86,7 @@ export default {
       state.mensajeFin = mensaje
     },
     SET_MI_BANDO(state, bando) {
-      state.miBando = bando;
+      state.miBando = bando
     },
     CLEAR_SALA(state) {
       state.codigoSala = null
@@ -100,7 +100,7 @@ export default {
     },
 
     SET_NARRADOR(state, nombreNarrador) {
-      state.narradorActual = nombreNarrador;
+      state.narradorActual = nombreNarrador
     },
   },
 
@@ -144,26 +144,33 @@ export default {
     setResultado({ commit }, resultado) {
       commit('SET_RESULTADO', resultado)
     },
-    salir({ commit }) {
-      localStorage.setItem('codigoSala')
+    salir({ commit, state }) {
+      const codigo = state.codigoSala
+      if (codigo) {
+        localStorage.removeItem('codigoSala')
+        // Llamada al backend — fire and forget, no bloqueamos la navegación
+        import('@/plugins/axios').then(({ default: axiosInstance }) => {
+          axiosInstance.delete(`/salas/${codigo}/salir`).catch(() => {})
+        })
+      }
       commit('CLEAR_SALA')
     },
     setNarrador({ commit }, nombreNarrador) {
-      commit('SET_NARRADOR', nombreNarrador);
+      commit('SET_NARRADOR', nombreNarrador)
     },
   },
 
   getters: {
-    codigoSala:       (state) => state.codigoSala,
-    esCreador:        (state) => state.esCreador,
-    jugadores:        (state) => state.jugadores,
-    jugadoresConRol:  (state) => state.jugadoresConRol,
-    miRol:            (state) => state.miRol,
+    codigoSala: (state) => state.codigoSala,
+    esCreador: (state) => state.esCreador,
+    jugadores: (state) => state.jugadores,
+    jugadoresConRol: (state) => state.jugadoresConRol,
+    miRol: (state) => state.miRol,
     miRolDescripcion: (state) => state.miRolDescripcion,
-    miBando:          (state) => state.miBando,
-    fase:             (state) => state.fase,
-    bandoGanador:     (state) => state.bandoGanador,
-    mensajeFin:       (state) => state.mensajeFin,
+    miBando: (state) => state.miBando,
+    fase: (state) => state.fase,
+    bandoGanador: (state) => state.bandoGanador,
+    mensajeFin: (state) => state.mensajeFin,
     narradorActual: (state) => state.narradorActual,
   },
 }

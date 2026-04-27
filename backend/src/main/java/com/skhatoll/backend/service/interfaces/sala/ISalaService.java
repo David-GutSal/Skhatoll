@@ -16,4 +16,6 @@ public interface ISalaService {
     void iniciarPartida(String codigo);
 
     List<JugadorRolDto> getJugadoresConRol(String codigo);
+
+    void salirDeSala(String codigo);
 }

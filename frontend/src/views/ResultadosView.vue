@@ -1,22 +1,19 @@
 <template>
   <div class="contenedor-resultados" :class="fondoClase">
-
     <div class="cuadro" :class="bordeClase">
-
       <template v-if="esEnamorados">
         <h1 class="titulo titulo-enamorados">
           ¡TRIUNFÓ EL AMOR! <i class="fa-solid fa-heart"></i>
         </h1>
         <p class="subtitulo subtitulo-enamorados">
-          Los enamorados se salieron con la suya y ahora huirán a un nuevo pueblo 
-          a crear su nidito de amor <i class="fa-solid fa-heart"></i> <i class="fa-solid fa-heart"> </i> <i class="fa-solid fa-heart"></i> 
+          Los enamorados se salieron con la suya y ahora huirán a un nuevo pueblo a crear su nidito
+          de amor <i class="fa-solid fa-heart"></i> <i class="fa-solid fa-heart"> </i>
+          <i class="fa-solid fa-heart"></i>
         </p>
       </template>
 
       <template v-else-if="esEmpate">
-        <h1 class="titulo titulo-empate">
-          EMPATE <i class="fa-regular fa-face-meh-blank"></i>
-        </h1>
+        <h1 class="titulo titulo-empate">EMPATE <i class="fa-regular fa-face-meh-blank"></i></h1>
         <p class="subtitulo subtitulo-empate">
           Upps... Hubo empate... ¡Habrá que echar otra partida para ver quién gana!
         </p>
@@ -24,9 +21,16 @@
 
       <template v-else-if="esNarrador">
         <h1 class="titulo titulo-narrador">
-          Los ganadores son: 
-          <span :class="bandoGanador === 'lobo' ? 'texto-lobos' : 
-                         bandoGanador === 'enamorados' ? 'texto-enamorados' : 'texto-aldeanos'">
+          Los ganadores son:
+          <span
+            :class="
+              bandoGanador === 'lobo'
+                ? 'texto-lobos'
+                : bandoGanador === 'enamorados'
+                  ? 'texto-enamorados'
+                  : 'texto-aldeanos'
+            "
+          >
             {{ nombreBando(bandoGanador) }}
           </span>
         </h1>
@@ -41,7 +45,8 @@
 
         <p class="subtitulo" :class="victoria ? 'subtitulo-victoria' : 'subtitulo-derrota'">
           <span v-if="victoria">
-            ¡Enhorabuena! ¡¡El equipo de {{ nombreBando(bandoGanador) }} se ha alzado con la victoria!!
+            ¡Enhorabuena! ¡¡El equipo de {{ nombreBando(bandoGanador) }} se ha alzado con la
+            victoria!!
           </span>
           <span v-else>
             ¡Lo sentimos! El equipo de {{ nombreBando(bandoGanador) }} ha ganado la partida...
@@ -64,7 +69,6 @@
           ¡OTRA PARTIDA!
         </router-link>
       </div>
-
     </div>
   </div>
 </template>
@@ -133,10 +137,10 @@ export default {
     imagenCelebracion() {
       if (this.esEnamorados) return enamoradoscelebrandoImg
       if (this.esEmpate) return empatadoscelebrandoImg
-      return this.bandoGanador?.toLowerCase() === 'lobo' 
-        ? loboscelebrandoImg 
+      return this.bandoGanador?.toLowerCase() === 'lobo'
+        ? loboscelebrandoImg
         : aldeanoscelebrandoImg
-    }
+    },
   },
 
   methods: {
@@ -144,18 +148,18 @@ export default {
       const nombres = {
         lobo: 'Los Lobos',
         aldea: 'Los Aldeanos',
-        enamorados: 'Los Enamorados'
+        enamorados: 'Los Enamorados',
       }
       return nombres[bando?.toLowerCase()] || bando
     },
 
-    limpiarSala() {
-      this.$store.dispatch('sala/salir')
-    }
+    async limpiarSala() {
+      await this.$store.dispatch('sala/salir')
+    },
   },
 
-// ====================== PREVISUALIZACIÓN ======================
-//Descomentar para ver
+  // ====================== PREVISUALIZACIÓN ======================
+  //Descomentar para ver
   /*created() {
     // ==================== ACTIVAR / DESACTIVAR PREVISUALIZACIÓN ====================
     const PREVIEW_ACTIVADA = true   // ← Cambia a `true` para activar previsualización
@@ -169,9 +173,9 @@ export default {
       esCreador: false              // true = ver como Narrador
     }
 
-    this.$store.commit('sala/SET_RESULTADO', { 
-      bandoGanador: config.bandoGanador, 
-      mensajeFin: '' 
+    this.$store.commit('sala/SET_RESULTADO', {
+      bandoGanador: config.bandoGanador,
+      mensajeFin: ''
     })
     this.$store.commit('sala/SET_MI_BANDO', config.miBando)
     this.$store.commit('sala/SET_SALA', { codigoSala: 'PREVIEW', esCreador: config.esCreador })
@@ -181,7 +185,6 @@ export default {
 </script>
 
 <style scoped>
-
 .contenedor-resultados {
   min-height: 100vh;
   display: flex;
@@ -193,10 +196,18 @@ export default {
   background-position: center;
 }
 
-.fondo-victoria { background-image: url('@/assets/imgs/fondovictoria.png'); }
-.fondo-derrota { background-image: url('@/assets/imgs/fondonoche.png'); }
-.fondo-empate { background-image: url('@/assets/imgs/fondodia.png'); }
-.fondo-enamorados { background-image: url('@/assets/imgs/fondoenamorado.png'); }
+.fondo-victoria {
+  background-image: url('@/assets/imgs/fondovictoria.png');
+}
+.fondo-derrota {
+  background-image: url('@/assets/imgs/fondonoche.png');
+}
+.fondo-empate {
+  background-image: url('@/assets/imgs/fondodia.png');
+}
+.fondo-enamorados {
+  background-image: url('@/assets/imgs/fondoenamorado.png');
+}
 
 .cuadro {
   width: 95%;
@@ -217,12 +228,23 @@ export default {
   pointer-events: none;
 }
 
-.cuadro-victoria { border: 8px solid white; }
-.cuadro-derrota { border: 8px solid #cc0000; }
-.cuadro-empate { border: 8px solid white; }
-.cuadro-enamorados { border: 8px solid #531e8f; }
+.cuadro-victoria {
+  border: 8px solid white;
+}
+.cuadro-derrota {
+  border: 8px solid #cc0000;
+}
+.cuadro-empate {
+  border: 8px solid white;
+}
+.cuadro-enamorados {
+  border: 8px solid #531e8f;
+}
 
-.titulo, .subtitulo, .imagen-celebracion, .botones {
+.titulo,
+.subtitulo,
+.imagen-celebracion,
+.botones {
   position: relative;
   z-index: 1;
 }
@@ -235,15 +257,32 @@ export default {
   margin: 24px 15px 8px;
 }
 
-.titulo-victoria { color: #e4ba03; }
-.titulo-derrota { color: #cc0000; }
-.titulo-empate { color: #4a90d9; }
-.titulo-enamorados { color: #ff69b4; }
-.titulo-narrador { color: #e4ba03; font-size: clamp(2rem, 4vw, 2.5rem); }
+.titulo-victoria {
+  color: #e4ba03;
+}
+.titulo-derrota {
+  color: #cc0000;
+}
+.titulo-empate {
+  color: #4a90d9;
+}
+.titulo-enamorados {
+  color: #ff69b4;
+}
+.titulo-narrador {
+  color: #e4ba03;
+  font-size: clamp(2rem, 4vw, 2.5rem);
+}
 
-.texto-lobos { color: #cc0000; }
-.texto-aldeanos { color: #2d9e2d; }
-.texto-enamorados { color: #ff69b4; }
+.texto-lobos {
+  color: #cc0000;
+}
+.texto-aldeanos {
+  color: #2d9e2d;
+}
+.texto-enamorados {
+  color: #ff69b4;
+}
 
 .subtitulo {
   font-family: 'Raleway', Arial, sans-serif;
@@ -253,11 +292,22 @@ export default {
   font-weight: 700;
 }
 
-.subtitulo-victoria, .subtitulo-narrador { color: #e4ba03; }
-.subtitulo-derrota { color: #cc0000; }
-.subtitulo-empate { color: #4a90d9; }
-.subtitulo-enamorados { color: white; }
-.fa-heart{color:#ff69b4;}
+.subtitulo-victoria,
+.subtitulo-narrador {
+  color: #e4ba03;
+}
+.subtitulo-derrota {
+  color: #cc0000;
+}
+.subtitulo-empate {
+  color: #4a90d9;
+}
+.subtitulo-enamorados {
+  color: white;
+}
+.fa-heart {
+  color: #ff69b4;
+}
 
 .imagen-celebracion {
   width: 100%;
@@ -266,12 +316,29 @@ export default {
   max-height: 380px;
 }
 
-.imagen-victoria { border-top: 5px solid #e4ba03; border-bottom: 5px solid #e4ba03; }
-.imagen-derrota { border-top: 5px solid #cc0000; border-bottom: 5px solid #cc0000; }
-.imagen-empate { border-top: 5px solid #4a90d9; border-bottom: 5px solid #4a90d9; }
-.imagen-enamorados { border-top: 5px solid #531e8f; border-bottom: 5px solid #5b2d8e; }
+.imagen-victoria {
+  border-top: 5px solid #e4ba03;
+  border-bottom: 5px solid #e4ba03;
+}
+.imagen-derrota {
+  border-top: 5px solid #cc0000;
+  border-bottom: 5px solid #cc0000;
+}
+.imagen-empate {
+  border-top: 5px solid #4a90d9;
+  border-bottom: 5px solid #4a90d9;
+}
+.imagen-enamorados {
+  border-top: 5px solid #531e8f;
+  border-bottom: 5px solid #5b2d8e;
+}
 
-.botones { display: flex; gap: 16px; justify-content: center; padding: 24px 15px; }
+.botones {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  padding: 24px 15px;
+}
 
 .btn-resultado {
   background: #cc0000;
@@ -283,9 +350,22 @@ export default {
   transition: all 0.2s ease;
 }
 
-.btn-resultado:hover { background: white; color: #cc0000; }
-.btn-empate { background: #4a90d9; }
-.btn-empate:hover { color: #4a90d9; background: white; }
-.btn-enamorados { background: #531e8f; }
-.btn-enamorados:hover { color: #531e8f; background: white; }
+.btn-resultado:hover {
+  background: white;
+  color: #cc0000;
+}
+.btn-empate {
+  background: #4a90d9;
+}
+.btn-empate:hover {
+  color: #4a90d9;
+  background: white;
+}
+.btn-enamorados {
+  background: #531e8f;
+}
+.btn-enamorados:hover {
+  color: #531e8f;
+  background: white;
+}
 </style>

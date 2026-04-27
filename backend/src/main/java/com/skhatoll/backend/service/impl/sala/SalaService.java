@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -184,32 +183,15 @@ public class SalaService implements ISalaService {
         // Obtener roles de BD
         Rol rolLobo = rolRepository.findByNombre("Lobo")
                 .orElseThrow(() -> new IllegalStateException("Rol Lobo no encontrado en BD"));
-
-        List<Rol> rolesAldea = rolRepository.findByBando(Rol.Bando.aldea);
-
         Rol rolAldeano = rolRepository.findByNombre("Aldeano")
                 .orElseThrow(() -> new IllegalStateException("Rol Aldeano no encontrado en BD"));
 
-        rolesAldea = rolesAldea.stream()
-                .filter(rol -> !rol.getNombre().equals("Aldeano"))
-                .collect(Collectors.toList());
-
-        Collections.shuffle(rolesAldea);
-
-        int numRolesAldea = totalJugadores - numLobos;
-
+        // Construir lista de roles a repartir
         List<Rol> rolesARepartir = new ArrayList<>();
+        for (int i = 0; i < numLobos; i++) rolesARepartir.add(rolLobo);
+        for (int i = 0; i < totalJugadores - numLobos; i++) rolesARepartir.add(rolAldeano);
 
-        for (int i = 0; i < Math.min(numRolesAldea, rolesAldea.size()); i++) {
-            rolesARepartir.add(rolesAldea.get(i));
-        }
-        while (rolesARepartir.size() < numRolesAldea) {
-            rolesARepartir.add(rolAldeano);
-        }
-        for (int i = 0; i < numLobos; i++) {
-            rolesARepartir.add(rolLobo);
-        }
-
+        // Mezclar aleatoriamente
         Collections.shuffle(rolesARepartir);
 
         // Asignar roles y notificar a cada jugador por WebSocket privado
@@ -235,6 +217,20 @@ public class SalaService implements ISalaService {
         salaRepository.save(sala);
 
         salaSocketService.notificarInicio(codigoSala);
+    }
+
+    //Verificar la salida del jugador/sala
+    @Transactional
+    public void salirDeSala(String codigoSala) {
+        Usuario usuario = getUsuarioAutenticado();
+
+        Sala sala = salaRepository.findByCodigoSala(codigoSala)
+                .orElseThrow(() -> new IllegalArgumentException("Sala no encontrada"));
+
+        SalaUsuario salaUsuario = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(),
+                usuario.getIdUsuario()).orElseThrow(() -> new IllegalArgumentException("No estás en esta sala"));
+
+        salaUsuarioRepository.delete(salaUsuario);
     }
 
     // -------------------------------------------------------

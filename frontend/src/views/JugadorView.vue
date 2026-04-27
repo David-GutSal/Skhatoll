@@ -48,6 +48,7 @@
           :modoNarrador="false"
           :jugadorSeleccionado="jugadorSeleccionado"
           @seleccionarJugador="seleccionarJugador"
+          :jugadorEnvenenado="jugadorEnvenenado"
         />
       </div>
 
@@ -63,6 +64,8 @@
         @premonicion="usarPremonicion"
         @flechazo="manejarFlechazo"
         @finalizarTurno="finalizarTurno"
+        @envenenar="manejarEnvenenar"
+        @vidaUsada="manejarVidaUsada"
       />
     </div>
 
@@ -102,6 +105,7 @@ export default {
       stompClient: null,
       mensajeEvento: null,
       alcaldeNombre: null,
+      jugadorEnvenenado: null,
     }
   },
 
@@ -221,6 +225,21 @@ export default {
         }),
       })
       this.finalizarTurno()
+    },
+
+    manejarEnvenenar(jugador) {
+      this.jugadorEnvenenado = jugador
+    },
+
+    manejarVidaUsada(nombreJugador) {
+      // Publicar por STOMP para que el narrador también actualice su store
+      this.stompClient?.publish({
+        destination: `/topic/partida/${this.codigoSala}/turno`,
+        body: JSON.stringify({
+          tipo: 'BRUJA_VIDA',
+          nombreJugador,
+        }),
+      })
     },
 
     finalizarTurno() {

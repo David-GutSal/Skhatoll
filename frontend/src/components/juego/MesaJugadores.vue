@@ -11,6 +11,7 @@
         :jugadorSeleccionado="jugadorSeleccionado"
         :modoEventos="modoEventos"
         @seleccionar="$emit('seleccionarJugador', j)"
+        :esEnvenenado="jugadorEnvenenado?.idUsuario === j.idUsuario"
       />
     </div>
   </div>
@@ -31,6 +32,7 @@ export default {
     modoNarrador: { type: Boolean, default: false },
     jugadorSeleccionado: Object,
     modoEventos: { type: Boolean, default: false },
+    jugadorEnvenenado: { type: Object, default: null },
   },
 
   emits: ['seleccionarJugador'],

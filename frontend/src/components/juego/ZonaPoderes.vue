@@ -1,14 +1,16 @@
 <template>
   <div class="zona">
 
+    <!-- LOBO -->
     <PoderLobo
-      v-if="miRol === 'Lobo' && esMiTurno && !esDia"
+      v-if="esRol('lobo') && esMiTurno && !esDia"
       ref="poderLobo"
       :jugadorSeleccionado="jugadorSeleccionado"
       @devorar="$emit('devorar')"
     />
 
-    <div v-if="miRol === 'Vidente' && esMiTurno && !esDia" class="zona-vidente">
+    <!-- VIDENTE -->
+    <div v-if="esRol('vidente') && esMiTurno && !esDia" class="zona-vidente">
       <PoderVidente
         ref="poderVidente"
         :jugadorSeleccionado="jugadorSeleccionado"
@@ -21,12 +23,23 @@
       </button>
     </div>
 
+    <!-- CUPIDO -->
     <PoderCupido
-      v-if="miRol === 'Cupido' && esMiTurno && !esDia"
+      v-if="esRol('cupido') && esMiTurno && !esDia"
       ref="poderCupido"
       :jugadorSeleccionado="jugadorSeleccionado"
       @flechazo="(pareja) => $emit('flechazo', pareja)"
       @finalizarTurno="$emit('finalizarTurno')"
+    />
+
+    <!-- BRUJA -->
+    <PoderBruja
+      v-if="esRol('bruja') && esMiTurno && !esDia"
+      ref="poderBruja"
+      :jugadorSeleccionado="jugadorSeleccionado"
+      @finalizarTurno="$emit('finalizarTurno')"
+      @envenenar="(j) => $emit('envenenar', j)"
+      @vidaUsada="(nombre) => $emit('vidaUsada', nombre)"
     />
 
   </div>
@@ -36,10 +49,11 @@
 import PoderLobo from './poderes/PoderLobo.vue'
 import PoderVidente from './poderes/PoderVidente.vue'
 import PoderCupido from './poderes/PoderCupido.vue'
+import PoderBruja from './poderes/PoderBruja.vue'
 
 export default {
   name: 'ZonaPoderes',
-  components: { PoderLobo, PoderVidente, PoderCupido },
+  components: { PoderLobo, PoderVidente, PoderCupido, PoderBruja },
 
   props: {
     miRol: { type: String, default: null },
@@ -48,28 +62,33 @@ export default {
     esDia: { type: Boolean, default: true },
   },
 
-  emits: ['devorar', 'premonicion', 'flechazo', 'finalizarTurno'],
+  emits: ['devorar', 'premonicion', 'flechazo', 'finalizarTurno', 'envenenar', 'vidaUsada'],
 
   watch: {
     esMiTurno(nuevoValor) {
       if (!nuevoValor) {
-        if (this.$refs.poderVidente) this.$refs.poderVidente.resetear()
-        if (this.$refs.poderLobo) this.$refs.poderLobo.resetear()
-        if (this.$refs.poderCupido) this.$refs.poderCupido.resetear()
+        this.$refs.poderVidente?.resetear()
+        this.$refs.poderLobo?.resetear()
+        this.$refs.poderCupido?.resetear()
+        this.$refs.poderBruja?.resetear()
       }
     },
-
-    // Resetear vidente al inicio de cada nueva noche
     esDia(nuevoValor) {
+      // Al inicio de cada nueva noche, resetear vidente
       if (!nuevoValor) {
-        if (this.$refs.poderVidente) this.$refs.poderVidente.resetear()
+        this.$refs.poderVidente?.resetear()
       }
     },
   },
 
   methods: {
+    // Comparación insensible a mayúsculas para evitar problemas con el backend
+    esRol(rol) {
+      return (this.miRol || '').toLowerCase() === rol.toLowerCase()
+    },
+
     finalizarPremonicion() {
-      if (this.$refs.poderVidente) this.$refs.poderVidente.resetear()
+      this.$refs.poderVidente?.resetear()
       this.$emit('finalizarTurno')
     },
   },
@@ -104,7 +123,9 @@ export default {
   font-weight: 700;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .btn-finalizar:hover {

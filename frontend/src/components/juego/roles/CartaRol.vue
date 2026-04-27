@@ -76,6 +76,7 @@
       muerto: !jugador.estaVivo,
       alcalde: jugador.alcalde,
       seleccionado: jugadorSeleccionado?.idUsuario === jugador.idUsuario,
+      envenenado: esEnvenenado,
     }"
     @click="$emit('seleccionar', jugador)"
   >
@@ -130,6 +131,7 @@ export default {
     jugadorSeleccionado: { type: Object, default: null },
     modoEventos: { type: Boolean, default: false },
     esEnamorado: { type: Boolean, default: false },
+    esEnvenenado: { type: Boolean, default: false },
   },
 
   emits: ['seleccionar'],
@@ -275,6 +277,19 @@ export default {
 .carta-imagen-oculta > i {
   font-size: 2.5rem;
   color: #444;
+}
+
+.carta-mesa.envenenado {
+  border: 3px solid #9b59b6 !important;
+  box-shadow:
+    0 0 8px rgba(155, 89, 182, 0.5),
+    0 0 20px rgba(155, 89, 182, 0.2);
+  animation: pulsoVeneno 1.5s ease-in-out infinite;
+}
+
+@keyframes pulsoVeneno {
+  0%, 100% { box-shadow: 0 0 8px rgba(155, 89, 182, 0.5); }
+  50%       { box-shadow: 0 0 18px rgba(155, 89, 182, 0.9); }
 }
 
 .overlay-muerto {

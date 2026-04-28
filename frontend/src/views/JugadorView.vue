@@ -66,6 +66,7 @@
         @finalizarTurno="finalizarTurno"
         @envenenar="manejarEnvenenar"
         @vidaUsada="manejarVidaUsada"
+        @disparo="manejarDisparo"
       />
     </div>
 
@@ -106,6 +107,7 @@ export default {
       mensajeEvento: null,
       alcaldeNombre: null,
       jugadorEnvenenado: null,
+      soyElCazadorMuerto: false,
     }
   },
 
@@ -253,7 +255,19 @@ export default {
           nombreJugador: this.nombre,
         }),
       })
+
+      if (this.soyElCazadorMuerto) {
+        setTimeout(() => {
+          this.$router.push({ name: 'eliminado' })
+        }, 1500)
+      }
     },
+
+    manejarDisparo(jugador) {
+  // El backend ya emite WS /muerte para la víctima del disparo
+  // Solo necesitamos loguear; el finalizarTurno lo emite PoderCazador tras 2.5s
+  console.log('🔫 Cazador disparó a:', jugador.nombre)
+},
 
     conectarWebSocket() {
       const token = this.$store.getters['auth/token']
@@ -281,6 +295,12 @@ export default {
           this.$store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
 
           if (payload.nombreJugador === this.nombre) {
+            if ((this.miRol || '').toLowerCase() === 'cazador') {
+              this.soyElCazadorMuerto = true
+              this.mensajeEvento =
+                '¡Has sido eliminado! El Narrador activará tu poder de Cazador en breve...'
+              return
+            }
             this.$router.push({ name: 'eliminado' })
             return
           }

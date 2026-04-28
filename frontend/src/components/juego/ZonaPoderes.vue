@@ -42,6 +42,15 @@
       @vidaUsada="(nombre) => $emit('vidaUsada', nombre)"
     />
 
+     <!-- CAZADOR — sin restricción de fase: puede usarlo de día o de noche al morir -->
+    <PoderCazador
+      v-if="esRol('cazador') && esMiTurno"
+      ref="poderCazador"
+      :jugadorSeleccionado="jugadorSeleccionado"
+      @disparo="(j) => $emit('disparo', j)"
+      @finalizarTurno="$emit('finalizarTurno')"
+    />
+
   </div>
 </template>
 
@@ -50,6 +59,7 @@ import PoderLobo from './poderes/PoderLobo.vue'
 import PoderVidente from './poderes/PoderVidente.vue'
 import PoderCupido from './poderes/PoderCupido.vue'
 import PoderBruja from './poderes/PoderBruja.vue'
+import PoderCazador from './poderes/PoderCazador.vue'
 
 export default {
   name: 'ZonaPoderes',
@@ -71,6 +81,7 @@ export default {
         this.$refs.poderLobo?.resetear()
         this.$refs.poderCupido?.resetear()
         this.$refs.poderBruja?.resetear()
+        this.$refs.poderCazador?.resetear()
       }
     },
     esDia(nuevoValor) {

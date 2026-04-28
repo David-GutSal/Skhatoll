@@ -454,6 +454,15 @@ export default {
     async activarTurnoJugador(jugador) {
       if (!this.modoEventos) return
 
+      // Permitir activar al Cazador aunque esté muerto
+      const esCazadorMuerto =
+        (jugador.nombreRol || '').toLowerCase() === 'cazador' && !jugador.estaVivo
+
+      if (!jugador.estaVivo && !esCazadorMuerto) {
+        // No activar jugadores muertos que no sean el Cazador
+        return
+      }
+
       if (jugador.nombreRol === 'Cupido' && this.cupidoUsado) {
         this.avisoSesion = '¡Cupido ya usó sus poderes, no puede volver a usarlos en esta partida!'
         setTimeout(() => {

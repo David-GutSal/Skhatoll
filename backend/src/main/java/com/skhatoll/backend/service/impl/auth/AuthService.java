@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+import static com.skhatoll.backend.util.constants.ErrorMessages.USUARIO_NO_ENCONTRADO;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService implements IAuthService {
@@ -50,7 +52,7 @@ public class AuthService implements IAuthService {
                         request.getPassword()));
 
         Usuario usuario = usuarioRepository.findByNombre(request.getNombre())
-                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+                .orElseThrow(() -> new IllegalArgumentException(USUARIO_NO_ENCONTRADO));
 
         String token = jwtUtil.generarToken(usuario.getNombre());
         return new AuthResponse(token, usuario.getNombre(), usuario.getCodigoUuid());

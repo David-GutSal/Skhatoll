@@ -1,7 +1,9 @@
 package com.skhatoll.backend.controller;
 
 import com.skhatoll.backend.dto.sala.*;
+import com.skhatoll.backend.service.interfaces.jugador.IJugadorService;
 import com.skhatoll.backend.service.interfaces.sala.ISalaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,20 +17,16 @@ import java.util.List;
 public class SalaController {
 
     private final ISalaService salaService;
+    private final  IJugadorService jugadorService;
 
     // -------------------------------------------------------
     // POST /salas/crear
     // Crea una sala y devuelve el código
     // -------------------------------------------------------
     @PostMapping("/crear")
-    public ResponseEntity<?> crearSala() {
-        try {
+    public ResponseEntity<CrearSalaResponse> crearSala() {
             CrearSalaResponse response = salaService.crearSala();
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error al crear la sala");
-        }
     }
 
     // -------------------------------------------------------
@@ -36,15 +34,9 @@ public class SalaController {
     // Body: { "codigoSala": "ABC123" }
     // -------------------------------------------------------
     @PostMapping("/unirse")
-    public ResponseEntity<?> unirse(@RequestBody UnirseRequest request) {
-        try {
+    public ResponseEntity<String> unirse(@Valid @RequestBody UnirseRequest request) {
             salaService.unirse(request);
             return ResponseEntity.ok("Te has unido a la sala correctamente");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        }
     }
 
     // -------------------------------------------------------
@@ -52,13 +44,8 @@ public class SalaController {
     // Devuelve la lista de jugadores en la sala
     // -------------------------------------------------------
     @GetMapping("/{codigo}/jugadores")
-    public ResponseEntity<?> getJugadores(@PathVariable String codigo) {
-        try {
-            List<JugadorDto> jugadores = salaService.getJugadores(codigo);
-            return ResponseEntity.ok(jugadores);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+    public ResponseEntity<List<JugadorDto>> getJugadores(@PathVariable String codigo) {
+        return ResponseEntity.ok(jugadorService.getJugadores(codigo));
     }
 
     // -------------------------------------------------------
@@ -67,16 +54,10 @@ public class SalaController {
     // Solo el creador puede llamar a este endpoint
     // -------------------------------------------------------
     @PutMapping("/{codigo}/narrador")
-    public ResponseEntity<?> asignarNarrador(@PathVariable String codigo,
-                                             @RequestBody AsignarNarradorRequest request) {
-        try {
+    public ResponseEntity<String> asignarNarrador(@PathVariable String codigo,
+                                                  @Valid @RequestBody AsignarNarradorRequest request) {
             salaService.asignarNarrador(codigo, request);
             return ResponseEntity.ok("Narrador asignado correctamente");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
-        }
     }
 
     // -------------------------------------------------------
@@ -84,15 +65,9 @@ public class SalaController {
     // Solo el narrador puede llamar a este endpoint
     // -------------------------------------------------------
     @PostMapping("/{codigo}/iniciar")
-    public ResponseEntity<?> iniciarPartida(@PathVariable String codigo) {
-        try {
+    public ResponseEntity<String> iniciarPartida(@PathVariable String codigo) {
             salaService.iniciarPartida(codigo);
             return ResponseEntity.ok("Partida iniciada");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        }
     }
 
     // -------------------------------------------------------
@@ -100,14 +75,14 @@ public class SalaController {
     // Solo accesible para el narrador
     // -------------------------------------------------------
     @GetMapping("/{codigo}/roles")
-    public ResponseEntity<?> getJugadoresConRol(@PathVariable String codigo) {
-        try {
+    public ResponseEntity<List<JugadorRolDto>> getJugadoresConRol(@PathVariable String codigo) {
             List<JugadorRolDto> jugadores = salaService.getJugadoresConRol(codigo);
             return ResponseEntity.ok(jugadores);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
-        }
+    }
+
+    @DeleteMapping("/{codigo}/salir")
+    public ResponseEntity<String> salirDeSala(@PathVariable String codigo) {
+        salaService.salirDeSala(codigo);
+        return ResponseEntity.ok("Has salido de la sala");
     }
 }

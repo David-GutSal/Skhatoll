@@ -13,12 +13,24 @@ export default {
     mensajeFin: null,
     fase: 'DIA',
     narradorActual: null,
+    turnoActivo: null,
+    semiMuertos: [],
+    enamorados: null,
+    cupidoUsado: false,
+    tipoVotacion: null,
   }),
 
   mutations: {
     SET_SALA(state, { codigoSala, esCreador }) {
       state.codigoSala = codigoSala
       state.esCreador = esCreador
+    },
+    RESET_SALA(state) {
+      state.jugadores = []
+      state.jugadoresConRol = []
+      state.tipoVotacion = null
+      state.enamorados = null
+      state.semiMuertos = []
     },
     SET_JUGADORES(state, jugadores) {
       state.jugadores = jugadores
@@ -35,11 +47,44 @@ export default {
       state.fase = fase
     },
     MARCAR_MUERTO(state, nombreJugador) {
-      // Actualiza en ambas listas
       const j1 = state.jugadores.find((j) => j.nombre === nombreJugador)
-      if (j1) j1.estaVivo = false
+      if (j1) {
+        j1.estaVivo = false
+        j1.muerteConfirmada = true
+      }
       const j2 = state.jugadoresConRol.find((j) => j.nombre === nombreJugador)
-      if (j2) j2.estaVivo = false
+      if (j2) {
+        j2.estaVivo = false
+        j2.muerteConfirmada = true
+      }
+    },
+    MARCAR_SEMIMUERTO(state, nombreJugador) {
+      if (!state.semiMuertos.includes(nombreJugador)) {
+        state.semiMuertos.push(nombreJugador)
+      }
+      const j1 = state.jugadores.find((j) => j.nombre === nombreJugador)
+      if (j1) {
+        j1.estaVivo = false
+        j1.muerteConfirmada = false
+      }
+      const j2 = state.jugadoresConRol.find((j) => j.nombre === nombreJugador)
+      if (j2) {
+        j2.estaVivo = false
+        j2.muerteConfirmada = false
+      }
+    },
+    QUITAR_SEMIMUERTO(state, nombreJugador) {
+      state.semiMuertos = state.semiMuertos.filter((n) => n !== nombreJugador)
+      const j1 = state.jugadores.find((j) => j.nombre === nombreJugador)
+      if (j1) {
+        j1.estaVivo = true
+        j1.muerteConfirmada = false
+      }
+      const j2 = state.jugadoresConRol.find((j) => j.nombre === nombreJugador)
+      if (j2) {
+        j2.estaVivo = true
+        j2.muerteConfirmada = false
+      }
     },
     ACTUALIZAR_VOTOS(state, votos) {
       const actualizar = (lista) => {
@@ -86,7 +131,7 @@ export default {
       state.mensajeFin = mensaje
     },
     SET_MI_BANDO(state, bando) {
-      state.miBando = bando;
+      state.miBando = bando
     },
     CLEAR_SALA(state) {
       state.codigoSala = null
@@ -97,10 +142,26 @@ export default {
       state.miRolDescripcion = null
       state.miBando = null
       state.fase = 'DIA'
+      state.turnoActivo = null
+      state.semiMuertos = []
+      state.enamorados = null
+      state.cupidoUsado = false
+      state.tipoVotacion = null
     },
-
     SET_NARRADOR(state, nombreNarrador) {
-      state.narradorActual = nombreNarrador;
+      state.narradorActual = nombreNarrador
+    },
+    SET_TURNO_ACTIVO(state, jugador) {
+      state.turnoActivo = jugador
+    },
+    SET_ENAMORADOS(state, { jugador1, jugador2 }) {
+      state.enamorados = { jugador1, jugador2 }
+    },
+    SET_CUPIDO_USADO(state) {
+      state.cupidoUsado = true
+    },
+    SET_TIPO_VOTACION(state, tipo) {
+      state.tipoVotacion = tipo
     },
   },
 
@@ -112,6 +173,9 @@ export default {
     unirse({ commit }, codigoSala) {
       localStorage.setItem('codigoSala', codigoSala)
       commit('SET_SALA', { codigoSala, esCreador: false })
+    },
+    resetSala({ commit }) {
+      commit('RESET_SALA')
     },
     setJugadores({ commit }, jugadores) {
       commit('SET_JUGADORES', jugadores)
@@ -145,25 +209,48 @@ export default {
       commit('SET_RESULTADO', resultado)
     },
     salir({ commit }) {
-      localStorage.setItem('codigoSala')
+      localStorage.removeItem('codigoSala')
       commit('CLEAR_SALA')
     },
     setNarrador({ commit }, nombreNarrador) {
-      commit('SET_NARRADOR', nombreNarrador);
+      commit('SET_NARRADOR', nombreNarrador)
+    },
+    setTurnoActivo({ commit }, jugador) {
+      commit('SET_TURNO_ACTIVO', jugador)
+    },
+    marcarSemimuerto({ commit }, nombreJugador) {
+      commit('MARCAR_SEMIMUERTO', nombreJugador)
+    },
+    quitarSemimuerto({ commit }, nombreJugador) {
+      commit('QUITAR_SEMIMUERTO', nombreJugador)
+    },
+    setEnamorados({ commit }, pareja) {
+      commit('SET_ENAMORADOS', pareja)
+    },
+    setCupidoUsado({ commit }) {
+      commit('SET_CUPIDO_USADO')
+    },
+    setTipoVotacion({ commit }, tipo) {
+      commit('SET_TIPO_VOTACION', tipo)
     },
   },
 
   getters: {
-    codigoSala:       (state) => state.codigoSala,
-    esCreador:        (state) => state.esCreador,
-    jugadores:        (state) => state.jugadores,
-    jugadoresConRol:  (state) => state.jugadoresConRol,
-    miRol:            (state) => state.miRol,
+    codigoSala: (state) => state.codigoSala,
+    esCreador: (state) => state.esCreador,
+    jugadores: (state) => state.jugadores,
+    jugadoresConRol: (state) => state.jugadoresConRol,
+    miRol: (state) => state.miRol,
     miRolDescripcion: (state) => state.miRolDescripcion,
-    miBando:          (state) => state.miBando,
-    fase:             (state) => state.fase,
-    bandoGanador:     (state) => state.bandoGanador,
-    mensajeFin:       (state) => state.mensajeFin,
+    miBando: (state) => state.miBando,
+    fase: (state) => state.fase,
+    bandoGanador: (state) => state.bandoGanador,
+    mensajeFin: (state) => state.mensajeFin,
     narradorActual: (state) => state.narradorActual,
+    turnoActivo: (state) => state.turnoActivo,
+    semiMuertos: (state) => state.semiMuertos,
+    enamorados: (state) => state.enamorados,
+    cupidoUsado: (state) => state.cupidoUsado,
+    tipoVotacion: (state) => state.tipoVotacion,
   },
 }

@@ -24,6 +24,11 @@ import { mapActions } from 'vuex'
 
 export default {
   name: 'SalaView',
+
+  created() {
+    this.$store.dispatch('sala/resetSala')
+  },
+  
   methods: {
     ...mapActions('sala', ['crearSala']),
     async handleCrearSala() {

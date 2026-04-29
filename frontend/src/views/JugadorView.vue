@@ -6,55 +6,67 @@
         :esDia="esDia"
         :esNarrador="false"
         :nombreNarrador="nombreNarrador"
+        :alcaldeNombre="alcaldeNombre"
       />
+
       <div
         v-if="mensajeEvento"
         class="cuadro-evento"
         :class="esDia ? 'evento-dia' : 'evento-noche'"
       >
-        <i v-if="tipoVotacion === 'ALCALDE'" class="fa-solid fa-medal"></i>
-
-        <i v-else-if="tipoVotacion === 'DIA'" class="fa-solid fa-gavel"></i>
-
-        <i v-else-if="tipoVotacion === 'LOBOS'" class="fa-solid fa-skull"></i>
-
+        <i v-if="tipoVotacionLocal === 'ALCALDE'" class="fa-solid fa-medal"></i>
+        <i v-else-if="tipoVotacionLocal === 'DIA'" class="fa-solid fa-gavel"></i>
+        <i v-else-if="tipoVotacionLocal === 'LOBOS'" class="fa-solid fa-skull"></i>
         <i v-else class="fa-solid fa-bell"></i>
-
         {{ mensajeEvento }}
       </div>
 
       <PanelVotacionesJugador
         :esDia="esDia"
         :votacionActiva="votacionActiva"
-        :tipoVotacion="tipoVotacion"
+        :tipoVotacion="tipoVotacionLocal"
         :jugadorSeleccionado="jugadorSeleccionado"
         @votarAlcalde="votarAlcalde"
         @votarCulpable="votarCulpable"
       />
 
-      <div class="mesa-wrapper-outer">
+      <div v-if="!esDia && esMiTurno" class="cuadro-turno">
+        <div class="cuadro-turno-texto">
+          <i class="fa-solid fa-moon"></i>
+          ¡Es tu turno! Selecciona un jugador y activa tu poder
+        </div>
+        <button class="btn-ir-poderes" @click="scrollAPoderes">
+          <i class="fa-solid fa-arrow-down"></i>
+          Ver mis poderes
+        </button>
+      </div>
+
+      <div class="mesa-wrapper-outer" :class="{ 'mesa-turno-activo': !esDia && esMiTurno }">
         <MesaJugadores
           :jugadores="jugadoresVisibles"
           :esDia="esDia"
           :modoNarrador="false"
           :jugadorSeleccionado="jugadorSeleccionado"
           @seleccionarJugador="seleccionarJugador"
+          :jugadorEnvenenado="jugadorEnvenenado"
         />
-      </div>
-
-      <div v-if="!esDia && esMiTurno" class="cuadro-evento evento-noche">
-        <i class="fa-solid fa-moon"></i>
-        Es tu turno — activa tu poder
       </div>
 
       <BotonMiRol />
 
       <ZonaPoderes
+        ref="zonaPoderes"
         :miRol="miRol"
         :jugadorSeleccionado="jugadorSeleccionado"
         :esMiTurno="esMiTurno"
+        :esDia="esDia"
         @devorar="devorarJugador"
         @premonicion="usarPremonicion"
+        @flechazo="manejarFlechazo"
+        @finalizarTurno="finalizarTurno"
+        @envenenar="manejarEnvenenar"
+        @vidaUsada="manejarVidaUsada"
+        @disparo="manejarDisparo"
       />
     </div>
 
@@ -87,17 +99,21 @@ export default {
     return {
       esDia: true,
       votacionActiva: false,
-      tipoVotacion: null,
+      // ✅ renombrado a tipoVotacionLocal para evitar conflicto con el getter del store
+      tipoVotacionLocal: null,
       esMiTurno: false,
       jugadorSeleccionado: null,
       stompClient: null,
       mensajeEvento: null,
+      alcaldeNombre: null,
+      jugadorEnvenenado: null,
+      soyElCazadorMuerto: false,
     }
   },
 
   computed: {
     ...mapGetters('auth', ['nombre']),
-    ...mapGetters('sala', ['codigoSala', 'jugadores', 'miRol']),
+    ...mapGetters('sala', ['codigoSala', 'jugadores', 'miRol', 'enamorados']),
 
     nombreNarrador() {
       const narrador = this.jugadores.find((j) => j.esNarrador === true)
@@ -128,7 +144,7 @@ export default {
       const sesion = await axiosInstance.get(`/partida/${this.codigoSala}/sesion-activa`)
       if (sesion.data?.abierta) {
         this.votacionActiva = true
-        this.tipoVotacion = sesion.data.tipo
+        this.tipoVotacionLocal = sesion.data.tipo
       }
     } catch {
       // No hay sesión activa, es normal
@@ -145,7 +161,22 @@ export default {
   },
 
   methods: {
+    scrollAPoderes() {
+      this.$refs.zonaPoderes.$el.scrollIntoView({ behavior: 'smooth' })
+    },
+
     seleccionarJugador(j) {
+      if (this.enamorados) {
+        const miNombre = this.nombre
+        const { jugador1, jugador2 } = this.enamorados
+        const soyEnamorado = jugador1 === miNombre || jugador2 === miNombre
+        if (soyEnamorado) {
+          const nombrePareja = jugador1 === miNombre ? jugador2 : jugador1
+          if (j.nombre === nombrePareja) return
+        }
+      }
+
+      if (!this.votacionActiva && !this.esMiTurno) return
       this.jugadorSeleccionado = j
     },
 
@@ -184,8 +215,59 @@ export default {
 
     usarPremonicion() {
       if (!this.jugadorSeleccionado) return
-      alert('Has usado tu premonición sobre: ' + this.jugadorSeleccionado.nombre)
     },
+
+    manejarFlechazo(pareja) {
+      this.stompClient.publish({
+        destination: `/topic/partida/${this.codigoSala}/turno`,
+        body: JSON.stringify({
+          tipo: 'FLECHAZO',
+          jugador1: pareja.jugador1.nombre,
+          jugador2: pareja.jugador2.nombre,
+        }),
+      })
+      this.finalizarTurno()
+    },
+
+    manejarEnvenenar(jugador) {
+      this.jugadorEnvenenado = jugador
+    },
+
+    manejarVidaUsada(nombreJugador) {
+      // Publicar por STOMP para que el narrador también actualice su store
+      this.stompClient?.publish({
+        destination: `/topic/partida/${this.codigoSala}/turno`,
+        body: JSON.stringify({
+          tipo: 'BRUJA_VIDA',
+          nombreJugador,
+        }),
+      })
+    },
+
+    finalizarTurno() {
+      this.esMiTurno = false
+      this.jugadorSeleccionado = null
+
+      this.stompClient.publish({
+        destination: `/topic/partida/${this.codigoSala}/turno`,
+        body: JSON.stringify({
+          tipo: 'TURNO_FINALIZADO',
+          nombreJugador: this.nombre,
+        }),
+      })
+
+      if (this.soyElCazadorMuerto) {
+        setTimeout(() => {
+          this.$router.push({ name: 'eliminado' })
+        }, 1500)
+      }
+    },
+
+    manejarDisparo(jugador) {
+  // El backend ya emite WS /muerte para la víctima del disparo
+  // Solo necesitamos loguear; el finalizarTurno lo emite PoderCazador tras 2.5s
+  console.log('🔫 Cazador disparó a:', jugador.nombre)
+},
 
     conectarWebSocket() {
       const token = this.$store.getters['auth/token']
@@ -193,63 +275,186 @@ export default {
         webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
         connectHeaders: { Authorization: `Bearer ${token}` },
       })
+
       cliente.onConnect = () => {
         cliente.subscribe(`/topic/partida/${this.codigoSala}/fase`, (msg) => {
           const payload = JSON.parse(msg.body)
           this.esDia = payload.fase === 'DIA'
           this.$store.dispatch('sala/setFase', payload.fase)
+
+          if (payload.fase === 'DIA') {
+            this.$store.dispatch('sala/reiniciarVotos')
+            this.$store.dispatch('sala/setTipoVotacion', null)
+            this.tipoVotacionLocal = null
+          }
         })
+
         cliente.subscribe(`/topic/partida/${this.codigoSala}/muerte`, (msg) => {
           const payload = JSON.parse(msg.body)
           this.$store.dispatch('sala/marcarMuerto', payload.nombreJugador)
-        })
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/votos`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          this.$store.dispatch('sala/actualizarVotos', payload.votos)
-        })
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/alcalde`, (msg) => {
-          const payload = JSON.parse(msg.body)
+          this.$store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
 
-          console.log('👑 ALCALDE RECIBIDO:', payload)
+          if (payload.nombreJugador === this.nombre) {
+            if ((this.miRol || '').toLowerCase() === 'cazador') {
+              this.soyElCazadorMuerto = true
+              this.mensajeEvento =
+                '¡Has sido eliminado! El Narrador activará tu poder de Cazador en breve...'
+              return
+            }
+            this.$router.push({ name: 'eliminado' })
+            return
+          }
 
-          if (payload.tipo === 'ALCALDE_ELEGIDO') {
-            this.$store.dispatch('sala/designarAlcalde', payload.nombreAlcalde)
+          const enamorados = this.$store.getters['sala/enamorados']
+          if (enamorados) {
+            const { jugador1, jugador2 } = enamorados
+            if (payload.nombreJugador === jugador1 || payload.nombreJugador === jugador2) {
+              const nombrePareja = payload.nombreJugador === jugador1 ? jugador2 : jugador1
+              const jugadorPareja = this.jugadores.find((j) => j.nombre === nombrePareja)
+              if (jugadorPareja && jugadorPareja.estaVivo) {
+                this.stompClient.publish({
+                  destination: `/topic/partida/${this.codigoSala}/turno`,
+                  body: JSON.stringify({
+                    tipo: 'MUERTE_ENAMORADO',
+                    nombreJugador: nombrePareja,
+                  }),
+                })
+              }
+            }
           }
         })
+
+        cliente.subscribe(`/topic/partida/${this.codigoSala}/votos`, (msg) => {
+          const payload = JSON.parse(msg.body)
+          const tipoVotacionActual = this.$store.getters['sala/tipoVotacion']
+
+          if (tipoVotacionActual === 'LOBOS') {
+            if (this.miRol && this.miRol.toLowerCase() === 'lobo') {
+              this.$store.dispatch('sala/actualizarVotos', payload.votos)
+            }
+            return
+          }
+
+          this.$store.dispatch('sala/actualizarVotos', payload.votos)
+        })
+
+        cliente.subscribe(`/topic/partida/${this.codigoSala}/alcalde`, (msg) => {
+          const payload = JSON.parse(msg.body)
+          if (payload.tipo === 'ALCALDE_ELEGIDO') {
+            this.$store.dispatch('sala/designarAlcalde', payload.nombreAlcalde)
+            // ✅ Guardar nombre del alcalde y resetear votos
+            this.alcaldeNombre = payload.nombreAlcalde
+            this.$store.dispatch('sala/reiniciarVotos')
+          }
+        })
+
         cliente.subscribe(`/topic/partida/${this.codigoSala}/votacion`, (msg) => {
           const payload = JSON.parse(msg.body)
 
-          console.log('📩 VOTACION JUGADOR:', payload)
+          if (payload.tipo === 'VOTACION_ABIERTA' || payload.tipo === 'VOTACION_CERRADA') {
+            this.votacionActiva = payload.abierta
 
-          this.votacionActiva = payload.abierta ?? false
+            if (payload.abierta) {
+              this.tipoVotacionLocal = payload.tipoVotacion
+              this.$store.dispatch('sala/setTipoVotacion', payload.tipoVotacion)
 
-          if (payload.abierta) {
-            this.tipoVotacion = payload.tipoVotacion
+              if (payload.tipoVotacion === 'ALCALDE') {
+                this.mensajeEvento = 'ELECCIONES ABIERTAS'
+              } else if (payload.tipoVotacion === 'DIA') {
+                this.mensajeEvento = 'VOTACIÓN DE LINCHAMIENTO'
+              } else if (payload.tipoVotacion === 'LOBOS') {
+                this.mensajeEvento = 'LOS LOBOS DECIDEN'
+              }
 
-            // 🔥 MENSAJE VISUAL SEGÚN TIPO
-            if (payload.tipoVotacion === 'ALCALDE') {
-              this.mensajeEvento = 'ELECCIONES ABIERTAS'
-            } else if (payload.tipoVotacion === 'DIA') {
-              this.mensajeEvento = 'VOTACIÓN DE LINCHAMIENTO'
-            } else if (payload.tipoVotacion === 'LOBOS') {
-              this.mensajeEvento = 'LOS LOBOS DECIDEN'
+              setTimeout(() => {
+                this.mensajeEvento = null
+              }, 30000)
+            } else {
+              this.tipoVotacionLocal = null
+              this.$store.dispatch('sala/setTipoVotacion', null)
             }
+            return
+          }
 
-            // ⏱️ Se borra solo después
+          // Resultado de votación de lobos — marcar semimuerto
+          if (payload.tipo === 'LOBOS' && payload.nombreEliminado) {
+            this.$store.dispatch('sala/marcarSemimuerto', payload.nombreEliminado)
+            this.mensajeEvento = `Los lobos han devorado a ${payload.nombreEliminado} esta noche...`
             setTimeout(() => {
               this.mensajeEvento = null
-            }, 30000)
-          } else {
-            this.tipoVotacion = null
+            }, 8000)
           }
         })
+
         cliente.subscribe(`/topic/partida/${this.codigoSala}/turno`, (msg) => {
           const payload = JSON.parse(msg.body)
-          this.esMiTurno = payload.nombreJugador === this.nombre
-          if (this.esMiTurno) {
-            this.mensajeEvento = `Es tu turno, ${this.nombre}. Activa tu poder.`
+
+          if (payload.tipo === 'EVENTOS_INICIADOS') {
+            this.mensajeEvento =
+              '¡Llegó la noche! Presta atención, puede que el narrador te llame para que utilices tus poderes'
+            setTimeout(() => {
+              this.mensajeEvento = null
+            }, 10000)
+            return
+          }
+
+          if (payload.tipo === 'EVENTOS_FINALIZADOS') {
+            this.mensajeEvento = null
+            this.esMiTurno = false
+            this.jugadorSeleccionado = null
+            return
+          }
+
+          if (payload.tipo === 'TURNO_FINALIZADO') return
+          if (payload.tipo === 'MUERTE_ENAMORADO') return
+
+          if (payload.tipo === 'FLECHAZO') {
+            const soyEnamorado =
+              payload.jugador1 === this.nombre || payload.jugador2 === this.nombre
+
+            if (soyEnamorado) {
+              const nombrePareja =
+                payload.jugador1 === this.nombre ? payload.jugador2 : payload.jugador1
+
+              this.$store.dispatch('sala/setEnamorados', {
+                jugador1: payload.jugador1,
+                jugador2: payload.jugador2,
+              })
+
+              this.mensajeEvento = `¡Estás enamorado de ${nombrePareja}!`
+              setTimeout(() => {
+                this.mensajeEvento = null
+              }, 8000)
+            }
+            return
+          }
+
+          if (payload.tipo === 'TURNO_LOBOS') {
+            const soyLobo = payload.nombresLobos?.includes(this.nombre)
+            this.esMiTurno = soyLobo
+            if (soyLobo) {
+              this.mensajeEvento =
+                '¡Es hora de cazar! Decide junto a los tuyos a quién devoráis esta noche'
+              setTimeout(() => {
+                this.mensajeEvento = null
+              }, 30000)
+            }
+            return
+          }
+
+          if (payload.tipo === 'TURNO_JUGADOR') {
+            this.esMiTurno = payload.nombreJugador === this.nombre
+            if (this.esMiTurno) {
+              this.mensajeEvento = `Es tu turno, ${this.nombre}. Activa tu poder.`
+              setTimeout(() => {
+                this.mensajeEvento = null
+              }, 30000)
+            } else {
+              this.esMiTurno = false
+            }
           }
         })
+
         cliente.subscribe(`/topic/partida/${this.codigoSala}/fin`, (msg) => {
           const payload = JSON.parse(msg.body)
           this.$store.dispatch('sala/setResultado', {
@@ -259,6 +464,7 @@ export default {
           this.$router.push({ name: 'resultados' })
         })
       }
+
       cliente.activate()
       this.stompClient = cliente
     },
@@ -298,6 +504,13 @@ export default {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
 }
 
+.mesa-turno-activo :deep(.mesa-wrapper) {
+  border-color: #e4ba03 !important;
+  box-shadow:
+    0 0 12px rgba(228, 186, 3, 0.6),
+    0 0 28px rgba(228, 186, 3, 0.3);
+}
+
 .cuadro-evento {
   display: flex;
   align-items: center;
@@ -307,6 +520,7 @@ export default {
   font-family: 'Raleway', Arial, sans-serif;
   font-weight: 700;
   font-size: 0.95rem;
+  animation: aparecer 0.4s ease;
 }
 
 .evento-dia {
@@ -319,6 +533,52 @@ export default {
   background: rgba(0, 0, 0, 0.7);
   border: 2px solid #cc0000;
   color: #cc0000;
+}
+
+.cuadro-turno {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 2px solid #e4ba03;
+  color: #e4ba03;
+  font-family: 'Raleway', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  animation: aparecer 0.4s ease;
+}
+
+.cuadro-turno-texto {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-ir-poderes {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 2px solid #e4ba03;
+  background: transparent;
+  color: #e4ba03;
+  font-family: 'Raleway', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.btn-ir-poderes:hover {
+  background: #e4ba03;
+  color: #000;
 }
 
 .footer-aldea {
@@ -347,10 +607,14 @@ export default {
     width: 95%;
     padding-top: 20px;
   }
-}
-
-.cuadro-evento {
-  animation: aparecer 0.4s ease;
+  .cuadro-turno {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .cuadro-alcalde {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 @keyframes aparecer {

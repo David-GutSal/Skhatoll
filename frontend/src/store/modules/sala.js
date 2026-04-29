@@ -18,6 +18,9 @@ export default {
     enamorados: null,
     cupidoUsado: false,
     tipoVotacion: null,
+    brujaPocionVidaUsada: false,
+    brujaPocionMuerteUsada: false,
+    mentorNinno: null,
   }),
 
   mutations: {
@@ -147,6 +150,9 @@ export default {
       state.enamorados = null
       state.cupidoUsado = false
       state.tipoVotacion = null
+      state.brujaPocionVidaUsada = false
+      state.brujaPocionMuerteUsada = false
+      state.mentorNinno = null
     },
     SET_NARRADOR(state, nombreNarrador) {
       state.narradorActual = nombreNarrador
@@ -162,6 +168,15 @@ export default {
     },
     SET_TIPO_VOTACION(state, tipo) {
       state.tipoVotacion = tipo
+    },
+    SET_BRUJA_POCION_VIDA(state) {
+      state.brujaPocionVidaUsada = true
+    },
+    SET_BRUJA_POCION_MUERTE(state) {
+      state.brujaPocionMuerteUsada = true
+    },
+    SET_MENTOR_NINNO(state, nombreMentor) {
+      state.mentorNinno = nombreMentor
     },
   },
 
@@ -233,6 +248,12 @@ export default {
     setTipoVotacion({ commit }, tipo) {
       commit('SET_TIPO_VOTACION', tipo)
     },
+    setBrujaPocionVida({ commit }) {
+      commit('SET_BRUJA_POCION_VIDA')
+    },
+    setBrujaPocionMuerte({ commit }) {
+      commit('SET_BRUJA_POCION_MUERTE')
+    },
   },
 
   getters: {
@@ -252,5 +273,8 @@ export default {
     enamorados: (state) => state.enamorados,
     cupidoUsado: (state) => state.cupidoUsado,
     tipoVotacion: (state) => state.tipoVotacion,
+    brujaPocionVidaUsada: (state) => state.brujaPocionVidaUsada,
+    brujaPocionMuerteUsada: (state) => state.brujaPocionMuerteUsada,
+    mentorNinno:(state) => state.mentorNinno,
   },
 }

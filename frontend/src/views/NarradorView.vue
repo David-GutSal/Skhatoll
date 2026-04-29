@@ -366,6 +366,16 @@ export default {
                 .catch(() => {})
             }
           }
+          if (payload.tipo === 'MENTOR_ELEGIDO') {
+            const mentor = this.jugadoresConRol.find((j) => j.nombre === payload.nombreMentor)
+            if (mentor) mentor.esMentor = true
+
+            this.avisoSesion = `El Niño Salvaje ha elegido a ${payload.nombreMentor} como su mentor`
+            setTimeout(() => {
+              this.avisoSesion = null
+            }, 5000)
+            return
+          }
         })
       }
 
@@ -542,6 +552,16 @@ export default {
               : 'Error al iniciar turno',
           )
         }
+      }
+      if (
+        jugador.nombreRol === 'Niño Salvaje' &&
+        this.jugadoresYaActuadosEstaNoche.includes(jugador.nombre)
+      ) {
+        this.avisoSesion = '¡El Niño Salvaje ya eligió su mentor!'
+        setTimeout(() => {
+          this.avisoSesion = null
+        }, 4000)
+        return
       }
     },
   },

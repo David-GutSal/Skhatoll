@@ -95,4 +95,15 @@ public class SalaSocketService {
                 new JugadoresActualizadosEvent(
                         GameConstants.WS_EVENTO_JUGADOR_SALIO, jugadores));
     }
+
+    @Data
+    @AllArgsConstructor
+    public static class CompañerosLobosEvent {
+        private String tipo;
+        private List<String> lobos;
+    }
+
+    public void enviarMensajePrivado(String nombreUsuario, String destino, Object evento) {
+        messagingTemplate.convertAndSendToUser(nombreUsuario, destino, evento);
+    }
 }

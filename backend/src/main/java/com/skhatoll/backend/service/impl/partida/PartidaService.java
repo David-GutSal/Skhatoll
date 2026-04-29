@@ -14,9 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.skhatoll.backend.util.constants.ErrorMessages.*;
@@ -36,6 +34,7 @@ public class PartidaService implements IPartidaService {
     private final HabilidadSalaRepository habilidadSalaRepository;
     private final EnamoradosRepository enamoradosRepository;
     private final IJugadorService jugadorService;
+    private final RolRepository rolRepository;
 
     // -------------------------------------------------------
     // Obtener el usuario autenticado desde el contexto de Security
@@ -268,6 +267,19 @@ public class PartidaService implements IPartidaService {
 
         partidaSocketService.notificarMuerte(codigoSala, muerte);
 
+        salaUsuarioRepository.findBySala_IdSalaAndIdModelo(sala.getIdSala(), idUsuario).ifPresent(nino -> {
+            rolRepository.findByNombre(ROL_LOBO).ifPresent(rolLobo -> {
+                nino.setRol(rolLobo);
+                salaUsuarioRepository.save(nino);
+
+                salaSocketService.enviarRolPrivado(nino.getUsuario().getNombre(), new SalaSocketService.RolAsignadoEvent(WS_EVENTO_ROL_CAMBIADO, rolLobo.getIdRol(), rolLobo.getNombre(), rolLobo.getDescripcion(), rolLobo.getBando().name()));
+
+                List<String> companerosLobos = salaUsuarioRepository.findBySala_IdSala(sala.getIdSala()).stream().filter(su -> su.getEstaVivo() && su.getRol() != null && su.getRol().getBando() == Rol.Bando.lobo && !su.getUsuario().getIdUsuario().equals(nino.getUsuario().getIdUsuario())).map(su -> su.getUsuario().getNombre()).toList();
+
+                salaSocketService.enviarMensajePrivado(nino.getUsuario().getNombre(), "/queue/lobos", new SalaSocketService.CompañerosLobosEvent(WS_EVENTO_COMPANEROS_LOBOS, companerosLobos));
+            });
+        });
+
         comprobarFinPartida(codigoSala, sala);
     }
 
@@ -375,8 +387,16 @@ public class PartidaService implements IPartidaService {
 
         String nombreHabilidad = request.getNombreHabilidad();
 
+        if (!salaUsuario.getEstaVivo() && !HAB_DISPARO.equals(nombreHabilidad)) {
+            throw new IllegalStateException("Los jugadores eliminados no pueden usar habilidades");
+        }
+
         if (HAB_VISION.equals(nombreHabilidad)) {
             return usarVision(sala, salaUsuario, request.getObjetivos());
+        }
+
+        if (HAB_ESPIAR.equals(nombreHabilidad)) {
+            return usarEspiar(sala, salaUsuario);
         }
 
         HabilidadSala habilidad = habilidadSalaRepository.findByIdSalaUsuario_IdSalaUsuarioAndNombre(salaUsuario.getIdSalaUsuario(), nombreHabilidad).orElseThrow(() -> new IllegalArgumentException("No tienes la habilidad: " + nombreHabilidad));
@@ -390,9 +410,9 @@ public class PartidaService implements IPartidaService {
             case HAB_POCION_MUERTE -> usarPocionMuerte(codigoSala, sala, request.getObjetivos());
             case HAB_DISPARO -> usarDisparo(codigoSala, sala, salaUsuario, request.getObjetivos());
             case HAB_FLECHAZO -> usarFlechazo(sala, request.getObjetivos());
+            case HAB_MODELO -> usarModelo(sala, salaUsuario, request.getObjetivos());
             default -> throw new IllegalArgumentException("Habilidad desconocida: " + nombreHabilidad);
         };
-
 
         habilidad.setUsada(true);
         habilidadSalaRepository.save(habilidad);
@@ -525,6 +545,57 @@ public class PartidaService implements IPartidaService {
         var detalle = Map.of("nombreRol", objetivo.getRol().getNombre(), "bando", objetivo.getRol().getBando().name());
 
         return new HabilidadResultadoDto(HAB_VISION, List.of(objetivo.getUsuario().getNombre()), RES_ROL_REVELADO, detalle);
+    }
+
+    private HabilidadResultadoDto usarEspiar(Sala sala, SalaUsuario nina) {
+        if (nina.getRol() == null || !ROL_NINA.equals(nina.getRol().getNombre())) {
+            throw new IllegalStateException("Solo la Niña puede usar esta habilidad");
+        }
+
+        List<SalaUsuario> jugadoresVivos = salaUsuarioRepository.findBySala_IdSala(sala.getIdSala()).stream().filter(su -> su.getEstaVivo() && !su.getUsuario().getIdUsuario().equals(sala.getNarrador().getIdUsuario()) && !su.getUsuario().getIdUsuario().equals(nina.getUsuario().getIdUsuario())).toList();
+
+        List<String> lobos = jugadoresVivos.stream().filter(su -> su.getRol() != null && su.getRol().getBando() == Rol.Bando.lobo).map(su -> su.getUsuario().getNombre()).collect(Collectors.toList());
+
+        int cantidadRuido = Math.max(1, lobos.size());
+
+        List<String> aldeanos = jugadoresVivos.stream().filter(su -> su.getRol() != null && su.getRol().getBando() == Rol.Bando.aldea).map(su -> su.getUsuario().getNombre()).collect(Collectors.toList());
+
+        Collections.shuffle(aldeanos);
+
+        List<String> resultado = new ArrayList<>(lobos);
+        aldeanos.stream().limit(cantidadRuido).forEach(resultado::add);
+        Collections.shuffle(resultado);
+
+        return new HabilidadResultadoDto(HAB_ESPIAR, resultado, RES_LISTA_SOSPECHOSOS, null);
+    }
+
+    private HabilidadResultadoDto usarModelo(Sala sala, SalaUsuario ninoSalvaje, List<Integer> objetivos) {
+        if (ninoSalvaje.getRol() == null || !ROL_NINO_SALVAJE.equals(ninoSalvaje.getRol().getNombre())) {
+            throw new IllegalStateException("Solo el Niño Salvaje puede usar esta habilidad");
+        }
+
+        if (objetivos == null || objetivos.size() != 1) {
+            throw new IllegalArgumentException("Debes elegir exactamente un modelo");
+        }
+
+        if (ninoSalvaje.getIdModelo() != null) {
+            throw new IllegalStateException("Ya tienes un modelo asignado");
+        }
+
+        if (ninoSalvaje.getUsuario().getIdUsuario().equals(objetivos.getFirst())) {
+            throw new IllegalStateException("No puedes elegirte a ti mismo como modelo");
+        }
+
+        SalaUsuario modelo = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), objetivos.getFirst()).orElseThrow(() -> new IllegalArgumentException("Jugador no encontrado en la sala"));
+
+        if (!modelo.getEstaVivo()) {
+            throw new IllegalStateException("No puedes elegir un jugador eliminado como modelo");
+        }
+
+        ninoSalvaje.setIdModelo(modelo.getUsuario().getIdUsuario());
+        salaUsuarioRepository.save(ninoSalvaje);
+
+        return new HabilidadResultadoDto(HAB_MODELO, List.of(modelo.getUsuario().getNombre()), RES_MODELO_ASIGNADO, null);
     }
 
     @Transactional

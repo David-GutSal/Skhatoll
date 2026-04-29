@@ -17,4 +17,8 @@ public interface IPartidaService {
     SesionVotacion getSesionActiva(String codigo);
 
     HabilidadResultadoDto usarHabilidad(String codigo, HabilidadRequest request);
+
+    EstadoPartidaDto getEstadoPartida(String codigo);
+
+    void cerrarPartida(String codigo);
 }

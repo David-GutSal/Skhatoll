@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static com.skhatoll.backend.util.constants.GameConstants.*;
+
 @Service
 @RequiredArgsConstructor
 public class PartidaSocketService {
@@ -24,24 +26,15 @@ public class PartidaSocketService {
     // Canal: /topic/partida/{codigo}/fase
     // -------------------------------------------------------
     public void notificarCambioFase(String codigoSala, Sala.EstadoDia nuevaFase) {
-        messagingTemplate.convertAndSend(
-                "/topic/partida/" + codigoSala + "/fase",
-                new FaseEvent("CAMBIO_FASE", nuevaFase.name()));
+        messagingTemplate.convertAndSend(WS_FASE, new FaseEvent(WS_EVENTO_CAMBIO_FASE, nuevaFase.name()));
     }
 
     // -------------------------------------------------------
     // Notifica apertura o cierre de votación
     // Canal: /topic/partida/{codigo}/votacion
     // -------------------------------------------------------
-    public void notificarVotacion(String codigoSala, Integer idSesion,
-                                  String tipo, boolean abierta) {
-        messagingTemplate.convertAndSend(
-                "/topic/partida/" + codigoSala + "/votacion",
-                new VotacionEvent(
-                        abierta ? "VOTACION_ABIERTA" : "VOTACION_CERRADA",
-                        idSesion,
-                        tipo,
-                        abierta));
+    public void notificarVotacion(String codigoSala, Integer idSesion, String tipo, boolean abierta) {
+        messagingTemplate.convertAndSend(WS_VOTACION, new VotacionEvent(abierta ? WS_EVENTO_VOTACION_ABIERTA : WS_EVENTO_VOTACION_CERRADA, idSesion, tipo, abierta));
     }
 
     // -------------------------------------------------------
@@ -49,9 +42,7 @@ public class PartidaSocketService {
     // Canal: /topic/partida/{codigo}/votacion
     // -------------------------------------------------------
     public void notificarResultadoVotacion(String codigoSala, ResultadoVotacionDto resultado) {
-        messagingTemplate.convertAndSend(
-                "/topic/partida/" + codigoSala + "/votacion",
-                resultado);
+        messagingTemplate.convertAndSend(WS_VOTACION, resultado);
     }
 
     // -------------------------------------------------------
@@ -59,9 +50,7 @@ public class PartidaSocketService {
     // Canal: /topic/partida/{codigo}/votos
     // -------------------------------------------------------
     public void notificarVotos(String codigoSala, List<VotoDto> votos) {
-        messagingTemplate.convertAndSend(
-                "/topic/partida/" + codigoSala + "/votos",
-                new VotosEvent("VOTOS_ACTUALIZADOS", votos));
+        messagingTemplate.convertAndSend(WS_VOTOS, new VotosEvent(WS_EVENTO_VOTOS_ACTUALIZADOS, votos));
     }
 
     // -------------------------------------------------------
@@ -69,9 +58,7 @@ public class PartidaSocketService {
     // Canal: /topic/partida/{codigo}/muerte
     // -------------------------------------------------------
     public void notificarMuerte(String codigoSala, MuerteConfirmadaDto muerte) {
-        messagingTemplate.convertAndSend(
-                "/topic/partida/" + codigoSala + "/muerte",
-                muerte);
+        messagingTemplate.convertAndSend(WS_MUERTE, muerte);
     }
 
     // -------------------------------------------------------
@@ -79,9 +66,7 @@ public class PartidaSocketService {
     // Canal: /topic/partida/{codigo}/fin
     // -------------------------------------------------------
     public void notificarFinPartida(String codigoSala, FinPartidaDto fin) {
-        messagingTemplate.convertAndSend(
-                "/topic/partida/" + codigoSala + "/fin",
-                fin);
+        messagingTemplate.convertAndSend(WS_FIN, fin);
     }
 
     // -------------------------------------------------------

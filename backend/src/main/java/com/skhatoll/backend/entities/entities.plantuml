@@ -1,0 +1,527 @@
+@startuml
+
+title __ENTITIES's Class Diagram__\n
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.Enamorados {
+          - idSala : Integer
+          + Enamorados()
+          + Enamorados()
+          {static} + builder()
+          + equals()
+          + getIdSala()
+          + getSala()
+          + getUsuario1()
+          + getUsuario2()
+          + hashCode()
+          + setIdSala()
+          + setSala()
+          + setUsuario1()
+          + setUsuario2()
+          + toString()
+          # canEqual()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.Enamorados.EnamoradosBuilder {
+          - idSala : Integer
+          + build()
+          + idSala()
+          + sala()
+          + toString()
+          + usuario1()
+          + usuario2()
+          ~ enamoradosBuilder()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.HabilidadSala {
+          - idHabilidad : Integer
+          - nombre : String
+          - usada : Boolean
+          + HabilidadSala()
+          + HabilidadSala()
+          {static} + builder()
+          + equals()
+          + getIdHabilidad()
+          + getIdSalaUsuario()
+          + getNombre()
+          + getUsada()
+          + hashCode()
+          + setIdHabilidad()
+          + setIdSalaUsuario()
+          + setNombre()
+          + setUsada()
+          + toString()
+          # canEqual()
+          {static} - $default$usada()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.HabilidadSala.HabilidadSalaBuilder {
+          - idHabilidad : Integer
+          - nombre : String
+          - usada$set : boolean
+          - usada$value : Boolean
+          + build()
+          + idHabilidad()
+          + idSalaUsuario()
+          + nombre()
+          + toString()
+          + usada()
+          ~ HabilidadSalaBuilder()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.Rol {
+          - descripcion : String
+          - idRol : Integer
+          - nombre : String
+          + Rol()
+          + Rol()
+          {static} + builder()
+          + equals()
+          + getBando()
+          + getDescripcion()
+          + getIdRol()
+          + getNombre()
+          + hashCode()
+          + setBando()
+          + setDescripcion()
+          + setIdRol()
+          + setNombre()
+          + toString()
+          # canEqual()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      enum Bando {
+        aldea
+        lobo
+        narrador
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.Rol.RolBuilder {
+          - descripcion : String
+          - idRol : Integer
+          - nombre : String
+          + bando()
+          + build()
+          + descripcion()
+          + idRol()
+          + nombre()
+          + toString()
+          ~ RolBuilder()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.Sala {
+          - codigoSala : String
+          - fechaCreacion : LocalDateTime
+          - idSala : Integer
+          - maxJugadores : Integer
+          - minJugadores : Integer
+          - rondaActual : Integer
+          + Sala()
+          + Sala()
+          {static} + builder()
+          + equals()
+          + getAlcalde()
+          + getCodigoSala()
+          + getEstadoDia()
+          + getEstadoSala()
+          + getFechaCreacion()
+          + getIdSala()
+          + getMaxJugadores()
+          + getMinJugadores()
+          + getNarrador()
+          + getRondaActual()
+          + hashCode()
+          + setAlcalde()
+          + setCodigoSala()
+          + setEstadoDia()
+          + setEstadoSala()
+          + setFechaCreacion()
+          + setIdSala()
+          + setMaxJugadores()
+          + setMinJugadores()
+          + setNarrador()
+          + setRondaActual()
+          + toString()
+          # canEqual()
+          {static} - $default$estadoDia()
+          {static} - $default$estadoSala()
+          {static} - $default$fechaCreacion()
+          {static} - $default$maxJugadores()
+          {static} - $default$minJugadores()
+          {static} - $default$rondaActual()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      enum EstadoDia {
+        DIA
+        NOCHE
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      enum EstadoSala {
+        CERRADA
+        CREADA
+        INICIADA
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.Sala.SalaBuilder {
+          - codigoSala : String
+          - estadoDia$set : boolean
+          - estadoSala$set : boolean
+          - fechaCreacion$set : boolean
+          - fechaCreacion$value : LocalDateTime
+          - idSala : Integer
+          - maxJugadores$set : boolean
+          - maxJugadores$value : Integer
+          - minJugadores$set : boolean
+          - minJugadores$value : Integer
+          - rondaActual$set : boolean
+          - rondaActual$value : Integer
+          + alcalde()
+          + build()
+          + codigoSala()
+          + estadoDia()
+          + estadoSala()
+          + fechaCreacion()
+          + idSala()
+          + maxJugadores()
+          + minJugadores()
+          + narrador()
+          + rondaActual()
+          + toString()
+          ~ SalaBuilder()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.SalaUsuario {
+          - IdModelo : Integer
+          - estaVivo : Boolean
+          - idSalaUsuario : Integer
+          - muerteConfirmada : Boolean
+          + SalaUsuario()
+          + SalaUsuario()
+          {static} + builder()
+          + equals()
+          + getEstaVivo()
+          + getIdModelo()
+          + getIdSalaUsuario()
+          + getMuerteConfirmada()
+          + getRol()
+          + getSala()
+          + getUsuario()
+          + hashCode()
+          + setEstaVivo()
+          + setIdModelo()
+          + setIdSalaUsuario()
+          + setMuerteConfirmada()
+          + setRol()
+          + setSala()
+          + setUsuario()
+          + toString()
+          # canEqual()
+          {static} - $default$estaVivo()
+          {static} - $default$muerteConfirmada()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.SalaUsuario.SalaUsuarioBuilder {
+          - IdModelo : Integer
+          - estaVivo$set : boolean
+          - estaVivo$value : Boolean
+          - idSalaUsuario : Integer
+          - muerteConfirmada$set : boolean
+          - muerteConfirmada$value : Boolean
+          + IdModelo()
+          + build()
+          + estaVivo()
+          + idSalaUsuario()
+          + muerteConfirmada()
+          + rol()
+          + sala()
+          + toString()
+          + usuario()
+          ~ SalaUsuarioBuilder()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.SesionVotacion {
+          - abierta : Boolean
+          - fechaCierre : LocalDateTime
+          - fechaInicio : LocalDateTime
+          - idSesion : Integer
+          - ronda : Integer
+          + SesionVotacion()
+          + SesionVotacion()
+          {static} + builder()
+          + equals()
+          + getAbierta()
+          + getFechaCierre()
+          + getFechaInicio()
+          + getIdSesion()
+          + getRonda()
+          + getSala()
+          + getTipo()
+          + hashCode()
+          + setAbierta()
+          + setFechaCierre()
+          + setFechaInicio()
+          + setIdSesion()
+          + setRonda()
+          + setSala()
+          + setTipo()
+          + toString()
+          # canEqual()
+          {static} - $default$abierta()
+          {static} - $default$fechaInicio()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.SesionVotacion.SesionVotacionBuilder {
+          - abierta$set : boolean
+          - abierta$value : Boolean
+          - fechaCierre : LocalDateTime
+          - fechaInicio$set : boolean
+          - fechaInicio$value : LocalDateTime
+          - idSesion : Integer
+          - ronda : Integer
+          + abierta()
+          + build()
+          + fechaCierre()
+          + fechaInicio()
+          + idSesion()
+          + ronda()
+          + sala()
+          + tipo()
+          + toString()
+          ~ SesionVotacionBuilder()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      enum TipoVotacion {
+        ALCALDE
+        DIA
+        HABILIDAD
+        LOBOS
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.Usuario {
+          - codigoUuid : String
+          - idUsuario : Integer
+          - nombre : String
+          - password : String
+          + Usuario()
+          + Usuario()
+          {static} + builder()
+          + equals()
+          + getCodigoUuid()
+          + getIdUsuario()
+          + getNombre()
+          + getPassword()
+          + hashCode()
+          + setCodigoUuid()
+          + setIdUsuario()
+          + setNombre()
+          + setPassword()
+          + toString()
+          # canEqual()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.Usuario.UsuarioBuilder {
+          - codigoUuid : String
+          - idUsuario : Integer
+          - nombre : String
+          - password : String
+          + build()
+          + codigoUuid()
+          + idUsuario()
+          + nombre()
+          + password()
+          + toString()
+          ~ UsuarioBuilder()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.Voto {
+          - fechaVoto : LocalDateTime
+          - idVoto : Integer
+          + Voto()
+          + Voto()
+          {static} + builder()
+          + equals()
+          + getFechaVoto()
+          + getIdVoto()
+          + getObjetivo()
+          + getSesion()
+          + getVotante()
+          + hashCode()
+          + setFechaVoto()
+          + setIdVoto()
+          + setObjetivo()
+          + setSesion()
+          + setVotante()
+          + toString()
+          # canEqual()
+          {static} - $default$fechaVoto()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.Voto.VotoBuilder {
+          - fechaVoto$set : boolean
+          - fechaVoto$value : LocalDateTime
+          - idVoto : Integer
+          + build()
+          + fechaVoto()
+          + idVoto()
+          + objetivo()
+          + sesion()
+          + toString()
+          + votante()
+          ~ VotoBuilder()
+      }
+    }
+  }
+  
+
+  com.skhatoll.backend.entities.Enamorados o-- com.skhatoll.backend.entities.Sala : sala
+  com.skhatoll.backend.entities.Enamorados o-- com.skhatoll.backend.entities.Usuario : usuario1
+  com.skhatoll.backend.entities.Enamorados o-- com.skhatoll.backend.entities.Usuario : usuario2
+  com.skhatoll.backend.entities.Enamorados +-down- com.skhatoll.backend.entities.Enamorados.EnamoradosBuilder
+  com.skhatoll.backend.entities.Enamorados.EnamoradosBuilder o-- com.skhatoll.backend.entities.Sala : sala
+  com.skhatoll.backend.entities.Enamorados.EnamoradosBuilder o-- com.skhatoll.backend.entities.Usuario : usuario1
+  com.skhatoll.backend.entities.Enamorados.EnamoradosBuilder o-- com.skhatoll.backend.entities.Usuario : usuario2
+  com.skhatoll.backend.entities.HabilidadSala o-- com.skhatoll.backend.entities.SalaUsuario : idSalaUsuario
+  com.skhatoll.backend.entities.HabilidadSala +-down- com.skhatoll.backend.entities.HabilidadSala.HabilidadSalaBuilder
+  com.skhatoll.backend.entities.HabilidadSala.HabilidadSalaBuilder o-- com.skhatoll.backend.entities.SalaUsuario : idSalaUsuario
+  com.skhatoll.backend.entities.Rol o-- com.skhatoll.backend.entities.Rol.Bando : bando
+  com.skhatoll.backend.entities.Rol +-down- com.skhatoll.backend.entities.Rol.Bando
+  com.skhatoll.backend.entities.Rol +-down- com.skhatoll.backend.entities.Rol.RolBuilder
+  com.skhatoll.backend.entities.Rol.RolBuilder o-- com.skhatoll.backend.entities.Rol.Bando : bando
+  com.skhatoll.backend.entities.Sala o-- com.skhatoll.backend.entities.Usuario : alcalde
+  com.skhatoll.backend.entities.Sala o-- com.skhatoll.backend.entities.Sala.EstadoDia : estadoDia
+  com.skhatoll.backend.entities.Sala o-- com.skhatoll.backend.entities.Sala.EstadoSala : estadoSala
+  com.skhatoll.backend.entities.Sala o-- com.skhatoll.backend.entities.Usuario : narrador
+  com.skhatoll.backend.entities.Sala +-down- com.skhatoll.backend.entities.Sala.EstadoDia
+  com.skhatoll.backend.entities.Sala +-down- com.skhatoll.backend.entities.Sala.EstadoSala
+  com.skhatoll.backend.entities.Sala +-down- com.skhatoll.backend.entities.Sala.SalaBuilder
+  com.skhatoll.backend.entities.Sala.SalaBuilder o-- com.skhatoll.backend.entities.Usuario : alcalde
+  com.skhatoll.backend.entities.Sala.SalaBuilder o-- com.skhatoll.backend.entities.Sala.EstadoDia : estadoDia$value
+  com.skhatoll.backend.entities.Sala.SalaBuilder o-- com.skhatoll.backend.entities.Sala.EstadoSala : estadoSala$value
+  com.skhatoll.backend.entities.Sala.SalaBuilder o-- com.skhatoll.backend.entities.Usuario : narrador
+  com.skhatoll.backend.entities.SalaUsuario o-- com.skhatoll.backend.entities.Rol : rol
+  com.skhatoll.backend.entities.SalaUsuario o-- com.skhatoll.backend.entities.Sala : sala
+  com.skhatoll.backend.entities.SalaUsuario o-- com.skhatoll.backend.entities.Usuario : usuario
+  com.skhatoll.backend.entities.SalaUsuario +-down- com.skhatoll.backend.entities.SalaUsuario.SalaUsuarioBuilder
+  com.skhatoll.backend.entities.SalaUsuario.SalaUsuarioBuilder o-- com.skhatoll.backend.entities.Rol : rol
+  com.skhatoll.backend.entities.SalaUsuario.SalaUsuarioBuilder o-- com.skhatoll.backend.entities.Sala : sala
+  com.skhatoll.backend.entities.SalaUsuario.SalaUsuarioBuilder o-- com.skhatoll.backend.entities.Usuario : usuario
+  com.skhatoll.backend.entities.SesionVotacion o-- com.skhatoll.backend.entities.Sala : sala
+  com.skhatoll.backend.entities.SesionVotacion o-- com.skhatoll.backend.entities.SesionVotacion.TipoVotacion : tipo
+  com.skhatoll.backend.entities.SesionVotacion +-down- com.skhatoll.backend.entities.SesionVotacion.SesionVotacionBuilder
+  com.skhatoll.backend.entities.SesionVotacion +-down- com.skhatoll.backend.entities.SesionVotacion.TipoVotacion
+  com.skhatoll.backend.entities.SesionVotacion.SesionVotacionBuilder o-- com.skhatoll.backend.entities.Sala : sala
+  com.skhatoll.backend.entities.SesionVotacion.SesionVotacionBuilder o-- com.skhatoll.backend.entities.SesionVotacion.TipoVotacion : tipo
+  com.skhatoll.backend.entities.Usuario +-down- com.skhatoll.backend.entities.Usuario.UsuarioBuilder
+  com.skhatoll.backend.entities.Voto o-- com.skhatoll.backend.entities.Usuario : objetivo
+  com.skhatoll.backend.entities.Voto o-- com.skhatoll.backend.entities.SesionVotacion : sesion
+  com.skhatoll.backend.entities.Voto o-- com.skhatoll.backend.entities.Usuario : votante
+  com.skhatoll.backend.entities.Voto +-down- com.skhatoll.backend.entities.Voto.VotoBuilder
+  com.skhatoll.backend.entities.Voto.VotoBuilder o-- com.skhatoll.backend.entities.Usuario : objetivo
+  com.skhatoll.backend.entities.Voto.VotoBuilder o-- com.skhatoll.backend.entities.SesionVotacion : sesion
+  com.skhatoll.backend.entities.Voto.VotoBuilder o-- com.skhatoll.backend.entities.Usuario : votante
+
+
+right footer
+
+
+PlantUML diagram generated by SketchIt! (https://bitbucket.org/pmesmeur/sketch.it)
+For more information about this tool, please contact philippe.mesmeur@gmail.com
+endfooter
+
+@enduml

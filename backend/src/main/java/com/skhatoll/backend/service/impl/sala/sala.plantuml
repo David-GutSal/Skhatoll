@@ -1,0 +1,160 @@
+@startuml
+
+title __SALA's Class Diagram__\n
+
+  namespace com.skhatoll.backend {
+    namespace service.impl.sala {
+      class com.skhatoll.backend.service.impl.sala.SalaService {
+          + SalaService()
+          + asignarNarrador()
+          + crearSala()
+          + getJugadoresConRol()
+          + iniciarPartida()
+          + salirDeSala()
+          + unirse()
+          - generarCodigoUnico()
+          - getUsuarioAutenticado()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace service.impl.sala {
+      class com.skhatoll.backend.service.impl.sala.SalaSocketService {
+          - messagingTemplate : SimpMessagingTemplate
+          + SalaSocketService()
+          + enviarMensajePrivado()
+          + enviarRolPrivado()
+          + notificarAlcalde()
+          + notificarInicio()
+          + notificarJugadorSalio()
+          + notificarNuevoJugador()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace service.impl.sala {
+      class com.skhatoll.backend.service.impl.sala.SalaSocketService.AlcaldeEvent {
+          - nombreAlcalde : String
+          - tipo : String
+          + AlcaldeEvent()
+          + equals()
+          + getNombreAlcalde()
+          + getTipo()
+          + hashCode()
+          + setNombreAlcalde()
+          + setTipo()
+          + toString()
+          # canEqual()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace service.impl.sala {
+      class com.skhatoll.backend.service.impl.sala.SalaSocketService.CompañerosLobosEvent {
+          - lobos : List<String>
+          - tipo : String
+          + CompañerosLobosEvent()
+          + equals()
+          + getLobos()
+          + getTipo()
+          + hashCode()
+          + setLobos()
+          + setTipo()
+          + toString()
+          # canEqual()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace service.impl.sala {
+      class com.skhatoll.backend.service.impl.sala.SalaSocketService.JugadoresActualizadosEvent {
+          - jugadores : List<JugadorDto>
+          - tipo : String
+          + JugadoresActualizadosEvent()
+          + equals()
+          + getJugadores()
+          + getTipo()
+          + hashCode()
+          + setJugadores()
+          + setTipo()
+          + toString()
+          # canEqual()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace service.impl.sala {
+      class com.skhatoll.backend.service.impl.sala.SalaSocketService.PartidaIniciadaEvent {
+          - tipo : String
+          + PartidaIniciadaEvent()
+          + equals()
+          + getTipo()
+          + hashCode()
+          + setTipo()
+          + toString()
+          # canEqual()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace service.impl.sala {
+      class com.skhatoll.backend.service.impl.sala.SalaSocketService.RolAsignadoEvent {
+          - bando : String
+          - descripcionRol : String
+          - idRol : Integer
+          - nombreRol : String
+          - tipo : String
+          + RolAsignadoEvent()
+          + equals()
+          + getBando()
+          + getDescripcionRol()
+          + getIdRol()
+          + getNombreRol()
+          + getTipo()
+          + hashCode()
+          + setBando()
+          + setDescripcionRol()
+          + setIdRol()
+          + setNombreRol()
+          + setTipo()
+          + toString()
+          # canEqual()
+      }
+    }
+  }
+  
+
+  com.skhatoll.backend.service.impl.sala.SalaService .up.|> com.skhatoll.backend.service.interfaces.sala.ISalaService
+  com.skhatoll.backend.service.impl.sala.SalaService o-- com.skhatoll.backend.service.interfaces.jugador.IJugadorService : jugadorService
+  com.skhatoll.backend.service.impl.sala.SalaService o-- com.skhatoll.backend.repository.RolRepository : rolRepository
+  com.skhatoll.backend.service.impl.sala.SalaService o-- com.skhatoll.backend.repository.SalaRepository : salaRepository
+  com.skhatoll.backend.service.impl.sala.SalaService o-- com.skhatoll.backend.service.impl.sala.SalaSocketService : salaSocketService
+  com.skhatoll.backend.service.impl.sala.SalaService o-- com.skhatoll.backend.repository.SalaUsuarioRepository : salaUsuarioRepository
+  com.skhatoll.backend.service.impl.sala.SalaService o-- com.skhatoll.backend.repository.UsuarioRepository : usuarioRepository
+  com.skhatoll.backend.service.impl.sala.SalaSocketService +-down- com.skhatoll.backend.service.impl.sala.SalaSocketService.AlcaldeEvent
+  com.skhatoll.backend.service.impl.sala.SalaSocketService +-down- com.skhatoll.backend.service.impl.sala.SalaSocketService.CompañerosLobosEvent
+  com.skhatoll.backend.service.impl.sala.SalaSocketService +-down- com.skhatoll.backend.service.impl.sala.SalaSocketService.JugadoresActualizadosEvent
+  com.skhatoll.backend.service.impl.sala.SalaSocketService +-down- com.skhatoll.backend.service.impl.sala.SalaSocketService.PartidaIniciadaEvent
+  com.skhatoll.backend.service.impl.sala.SalaSocketService +-down- com.skhatoll.backend.service.impl.sala.SalaSocketService.RolAsignadoEvent
+
+
+right footer
+
+
+PlantUML diagram generated by SketchIt! (https://bitbucket.org/pmesmeur/sketch.it)
+For more information about this tool, please contact philippe.mesmeur@gmail.com
+endfooter
+
+@enduml

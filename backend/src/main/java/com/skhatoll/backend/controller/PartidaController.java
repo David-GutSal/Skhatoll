@@ -3,6 +3,7 @@ package com.skhatoll.backend.controller;
 import com.skhatoll.backend.dto.partida.*;
 import com.skhatoll.backend.entities.SesionVotacion;
 import com.skhatoll.backend.service.interfaces.partida.IPartidaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,15 +21,11 @@ public class PartidaController {
     // Alterna entre DÍA y NOCHE
     // -------------------------------------------------------
     @PutMapping("/{codigo}/fase")
-    public ResponseEntity<?> cambiarFase(@PathVariable String codigo) {
-        try {
-            partidaService.cambiarFase(codigo);
-            return ResponseEntity.ok("Fase cambiada correctamente");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        }
+    public ResponseEntity<String> cambiarFase(@PathVariable String codigo) {
+
+        partidaService.cambiarFase(codigo);
+        return ResponseEntity.ok("Fase cambiada correctamente");
+
     }
 
     // -------------------------------------------------------
@@ -36,32 +33,20 @@ public class PartidaController {
     // Body: { "tipo": "DIA" | "LOBOS" | "HABILIDAD" }
     // -------------------------------------------------------
     @PostMapping("/{codigo}/votacion/abrir")
-    public ResponseEntity<?> abrirVotacion(@PathVariable String codigo,
-                                           @RequestBody AbrirVotacionRequest request) {
-        try {
-            SesionVotacion sesion = partidaService.abrirVotacion(codigo, request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(sesion.getIdSesion());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        }
+    public ResponseEntity<Integer> abrirVotacion(@PathVariable String codigo,
+                                                 @Valid @RequestBody AbrirVotacionRequest request) {
+        SesionVotacion sesion = partidaService.abrirVotacion(codigo, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(sesion.getIdSesion());
     }
 
     // -------------------------------------------------------
     // PUT /partida/{codigo}/votacion/{idSesion}/cerrar
     // -------------------------------------------------------
     @PutMapping("/{codigo}/votacion/{idSesion}/cerrar")
-    public ResponseEntity<?> cerrarVotacion(@PathVariable String codigo,
+    public ResponseEntity<ResultadoVotacionDto> cerrarVotacion(@PathVariable String codigo,
                                             @PathVariable Integer idSesion) {
-        try {
-            ResultadoVotacionDto resultado = partidaService.cerrarVotacion(codigo, idSesion);
-            return ResponseEntity.ok(resultado);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        }
+        ResultadoVotacionDto resultado = partidaService.cerrarVotacion(codigo, idSesion);
+        return ResponseEntity.ok(resultado);
     }
 
     // -------------------------------------------------------
@@ -69,32 +54,20 @@ public class PartidaController {
     // Body: { "idObjetivo": 1 }
     // -------------------------------------------------------
     @PostMapping("/{codigo}/votar")
-    public ResponseEntity<?> votar(@PathVariable String codigo,
-                                   @RequestBody VotarRequest request) {
-        try {
-            partidaService.votar(codigo, request);
-            return ResponseEntity.ok("Voto registrado");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        }
+    public ResponseEntity<String> votar(@PathVariable String codigo,
+                                   @Valid @RequestBody VotarRequest request) {
+        partidaService.votar(codigo, request);
+        return ResponseEntity.ok("Voto registrado");
     }
 
     // -------------------------------------------------------
     // PUT /partida/{codigo}/jugador/{idUsuario}/confirmar-muerte
     // -------------------------------------------------------
     @PutMapping("/{codigo}/jugador/{idUsuario}/confirmar-muerte")
-    public ResponseEntity<?> confirmarMuerte(@PathVariable String codigo,
+    public ResponseEntity<String> confirmarMuerte(@PathVariable String codigo,
                                              @PathVariable Integer idUsuario) {
-        try {
-            partidaService.confirmarMuerte(codigo, idUsuario);
-            return ResponseEntity.ok("Muerte confirmada");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        }
+        partidaService.confirmarMuerte(codigo, idUsuario);
+        return ResponseEntity.ok("Muerte confirmada");
     }
 
     // -------------------------------------------------------
@@ -102,27 +75,27 @@ public class PartidaController {
     // Devuelve: { idSesion, tipo, ronda, abierta, fechaInicio }
     // -------------------------------------------------------
     @GetMapping("/{codigo}/sesion-activa")
-    public ResponseEntity<?> getSesionActiva(@PathVariable String codigo) {
-        try {
-            SesionVotacion sesion = partidaService.getSesionActiva(codigo);
-            return ResponseEntity.ok(sesion);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+    public ResponseEntity<SesionVotacion> getSesionActiva(@PathVariable String codigo) {
+        SesionVotacion sesion = partidaService.getSesionActiva(codigo);
+        return ResponseEntity.ok(sesion);
     }
 
     @PostMapping("/{codigo}/habilidad")
-    public ResponseEntity<?> usarHabilidad(@PathVariable String codigo,
-                                           @RequestBody HabilidadRequest request) {
-        try {
-            HabilidadResultadoDto resultado = partidaService.usarHabilidad(codigo, request);
-            return ResponseEntity.ok(resultado);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        }
+    public ResponseEntity<HabilidadResultadoDto> usarHabilidad(@PathVariable String codigo,
+                                           @Valid @RequestBody HabilidadRequest request) {
+        HabilidadResultadoDto resultado = partidaService.usarHabilidad(codigo, request);
+        return ResponseEntity.ok(resultado);
+    }
+
+    @PutMapping("/{codigo}/cerrar")
+    public ResponseEntity<String> cerrarPartida(@PathVariable String codigo) {
+        partidaService.cerrarPartida(codigo);
+        return ResponseEntity.ok("Partida cerrada");
+    }
+
+    @GetMapping("/{codigo}/estado")
+    public ResponseEntity<EstadoPartidaDto> getEstadoPartida(@PathVariable String codigo) {
+        EstadoPartidaDto estado = partidaService.getEstadoPartida(codigo);
+        return ResponseEntity.ok(estado);
     }
 }

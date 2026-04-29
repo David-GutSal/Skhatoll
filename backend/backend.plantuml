@@ -1,0 +1,534 @@
+@startuml
+
+title __BACKEND's Class Diagram__\n
+
+  namespace com.skhatoll.backend {
+    class com.skhatoll.backend.BackendApplication {
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace config {
+      class com.skhatoll.backend.config.CorsConfig {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace config {
+      class com.skhatoll.backend.config.SecurityConfig {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace config {
+      class com.skhatoll.backend.config.WebSocketConfig {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace controller {
+      class com.skhatoll.backend.controller.AuthController {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace controller {
+      class com.skhatoll.backend.controller.PartidaController {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace controller {
+      class com.skhatoll.backend.controller.SalaController {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.auth {
+      class com.skhatoll.backend.dto.auth.AuthResponse {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.auth {
+      class com.skhatoll.backend.dto.auth.LoginRequest {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.auth {
+      class com.skhatoll.backend.dto.auth.RegistroRequest {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.partida {
+      class com.skhatoll.backend.dto.partida.AbrirVotacionRequest {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.partida {
+      class com.skhatoll.backend.dto.partida.EstadoPartidaDto {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.partida {
+      class com.skhatoll.backend.dto.partida.FinPartidaDto {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.partida {
+      class com.skhatoll.backend.dto.partida.HabilidadRequest {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.partida {
+      class com.skhatoll.backend.dto.partida.HabilidadResultadoDto {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.partida {
+      class com.skhatoll.backend.dto.partida.MuerteConfirmadaDto {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.partida {
+      class com.skhatoll.backend.dto.partida.ResultadoVotacionDto {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.partida {
+      class com.skhatoll.backend.dto.partida.SesionActivaDto {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.partida {
+      class com.skhatoll.backend.dto.partida.VotarRequest {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.partida {
+      class com.skhatoll.backend.dto.partida.VotoDto {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.sala {
+      class com.skhatoll.backend.dto.sala.AsignarNarradorRequest {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.sala {
+      class com.skhatoll.backend.dto.sala.CrearSalaResponse {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.sala {
+      class com.skhatoll.backend.dto.sala.JugadorDto {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.sala {
+      class com.skhatoll.backend.dto.sala.JugadorRolDto {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.sala {
+      class com.skhatoll.backend.dto.sala.UnirseRequest {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.Enamorados {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.HabilidadSala {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.Rol {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.Sala {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.SalaUsuario {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.SesionVotacion {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.Usuario {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      class com.skhatoll.backend.entities.Voto {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace exception {
+      class com.skhatoll.backend.exception.ErrorResponse {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace exception {
+      class com.skhatoll.backend.exception.GlobalExceptionHandler {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace repository {
+      interface com.skhatoll.backend.repository.EnamoradosRepository {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace repository {
+      interface com.skhatoll.backend.repository.HabilidadSalaRepository {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace repository {
+      interface com.skhatoll.backend.repository.RolRepository {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace repository {
+      interface com.skhatoll.backend.repository.SalaRepository {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace repository {
+      interface com.skhatoll.backend.repository.SalaUsuarioRepository {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace repository {
+      interface com.skhatoll.backend.repository.SesionVotacionRepository {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace repository {
+      interface com.skhatoll.backend.repository.UsuarioRepository {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace repository {
+      interface com.skhatoll.backend.repository.VotoRepository {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace security {
+      class com.skhatoll.backend.security.JwtFilter {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace security {
+      class com.skhatoll.backend.security.JwtUtil {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace security {
+      class com.skhatoll.backend.security.UserDetailsServiceImpl {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace service.impl.auth {
+      class com.skhatoll.backend.service.impl.auth.AuthService {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace service.impl.jugador {
+      class com.skhatoll.backend.service.impl.jugador.JugadorService {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace service.impl.partida {
+      class com.skhatoll.backend.service.impl.partida.PartidaService {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace service.impl.partida {
+      class com.skhatoll.backend.service.impl.partida.PartidaSocketService {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace service.impl.sala {
+      class com.skhatoll.backend.service.impl.sala.SalaService {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace service.impl.sala {
+      class com.skhatoll.backend.service.impl.sala.SalaSocketService {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace service.interfaces.auth {
+      interface com.skhatoll.backend.service.interfaces.auth.IAuthService {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace service.interfaces.jugador {
+      interface com.skhatoll.backend.service.interfaces.jugador.IJugadorService {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace service.interfaces.partida {
+      interface com.skhatoll.backend.service.interfaces.partida.IPartidaService {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace service.interfaces.sala {
+      interface com.skhatoll.backend.service.interfaces.sala.ISalaService {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace util.constants {
+      class com.skhatoll.backend.util.constants.ErrorMessages {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace util.constants {
+      class com.skhatoll.backend.util.constants.GameConstants {
+      }
+    }
+  }
+  
+
+  com.skhatoll.backend.config.SecurityConfig o-- com.skhatoll.backend.security.JwtFilter : jwtFilter
+  com.skhatoll.backend.config.SecurityConfig o-- com.skhatoll.backend.security.UserDetailsServiceImpl : userDetailsService
+  com.skhatoll.backend.config.WebSocketConfig .up.|> org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer
+  com.skhatoll.backend.config.WebSocketConfig o-- com.skhatoll.backend.security.JwtUtil : jwtUtil
+  com.skhatoll.backend.config.WebSocketConfig o-- com.skhatoll.backend.security.UserDetailsServiceImpl : userDetailsService
+  com.skhatoll.backend.controller.AuthController o-- com.skhatoll.backend.service.interfaces.auth.IAuthService : authService
+  com.skhatoll.backend.controller.PartidaController o-- com.skhatoll.backend.service.interfaces.partida.IPartidaService : partidaService
+  com.skhatoll.backend.controller.SalaController o-- com.skhatoll.backend.service.interfaces.jugador.IJugadorService : jugadorService
+  com.skhatoll.backend.controller.SalaController o-- com.skhatoll.backend.service.interfaces.sala.ISalaService : salaService
+  com.skhatoll.backend.dto.partida.AbrirVotacionRequest o-- com.skhatoll.backend.entities.SesionVotacion.TipoVotacion : tipo
+  com.skhatoll.backend.dto.partida.EstadoPartidaDto o-- com.skhatoll.backend.dto.partida.SesionActivaDto : sesionActiva
+  com.skhatoll.backend.entities.Enamorados o-- com.skhatoll.backend.entities.Sala : sala
+  com.skhatoll.backend.entities.Enamorados o-- com.skhatoll.backend.entities.Usuario : usuario1
+  com.skhatoll.backend.entities.Enamorados o-- com.skhatoll.backend.entities.Usuario : usuario2
+  com.skhatoll.backend.entities.HabilidadSala o-- com.skhatoll.backend.entities.SalaUsuario : idSalaUsuario
+  com.skhatoll.backend.entities.Rol o-- com.skhatoll.backend.entities.Rol.Bando : bando
+  com.skhatoll.backend.entities.Sala o-- com.skhatoll.backend.entities.Usuario : alcalde
+  com.skhatoll.backend.entities.Sala o-- com.skhatoll.backend.entities.Sala.EstadoDia : estadoDia
+  com.skhatoll.backend.entities.Sala o-- com.skhatoll.backend.entities.Sala.EstadoSala : estadoSala
+  com.skhatoll.backend.entities.Sala o-- com.skhatoll.backend.entities.Usuario : narrador
+  com.skhatoll.backend.entities.SalaUsuario o-- com.skhatoll.backend.entities.Rol : rol
+  com.skhatoll.backend.entities.SalaUsuario o-- com.skhatoll.backend.entities.Sala : sala
+  com.skhatoll.backend.entities.SalaUsuario o-- com.skhatoll.backend.entities.Usuario : usuario
+  com.skhatoll.backend.entities.SesionVotacion o-- com.skhatoll.backend.entities.Sala : sala
+  com.skhatoll.backend.entities.SesionVotacion o-- com.skhatoll.backend.entities.SesionVotacion.TipoVotacion : tipo
+  com.skhatoll.backend.entities.Voto o-- com.skhatoll.backend.entities.Usuario : objetivo
+  com.skhatoll.backend.entities.Voto o-- com.skhatoll.backend.entities.SesionVotacion : sesion
+  com.skhatoll.backend.entities.Voto o-- com.skhatoll.backend.entities.Usuario : votante
+  com.skhatoll.backend.security.JwtFilter -up-|> org.springframework.web.filter.OncePerRequestFilter
+  com.skhatoll.backend.security.JwtFilter o-- com.skhatoll.backend.security.JwtUtil : jwtUtil
+  com.skhatoll.backend.security.JwtFilter o-- com.skhatoll.backend.security.UserDetailsServiceImpl : userDetailsService
+  com.skhatoll.backend.security.UserDetailsServiceImpl .up.|> org.springframework.security.core.userdetails.UserDetailsService
+  com.skhatoll.backend.security.UserDetailsServiceImpl o-- com.skhatoll.backend.repository.UsuarioRepository : usuarioRepository
+  com.skhatoll.backend.service.impl.auth.AuthService .up.|> com.skhatoll.backend.service.interfaces.auth.IAuthService
+  com.skhatoll.backend.service.impl.auth.AuthService o-- com.skhatoll.backend.security.JwtUtil : jwtUtil
+  com.skhatoll.backend.service.impl.auth.AuthService o-- com.skhatoll.backend.repository.UsuarioRepository : usuarioRepository
+  com.skhatoll.backend.service.impl.jugador.JugadorService .up.|> com.skhatoll.backend.service.interfaces.jugador.IJugadorService
+  com.skhatoll.backend.service.impl.jugador.JugadorService o-- com.skhatoll.backend.repository.SalaRepository : salaRepository
+  com.skhatoll.backend.service.impl.jugador.JugadorService o-- com.skhatoll.backend.repository.SalaUsuarioRepository : salaUsuarioRepository
+  com.skhatoll.backend.service.impl.partida.PartidaService .up.|> com.skhatoll.backend.service.interfaces.partida.IPartidaService
+  com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.repository.EnamoradosRepository : enamoradosRepository
+  com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.repository.HabilidadSalaRepository : habilidadSalaRepository
+  com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.service.interfaces.jugador.IJugadorService : jugadorService
+  com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.service.impl.partida.PartidaSocketService : partidaSocketService
+  com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.repository.RolRepository : rolRepository
+  com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.repository.SalaRepository : salaRepository
+  com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.service.impl.sala.SalaSocketService : salaSocketService
+  com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.repository.SalaUsuarioRepository : salaUsuarioRepository
+  com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.repository.SesionVotacionRepository : sesionVotacionRepository
+  com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.repository.UsuarioRepository : usuarioRepository
+  com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.repository.VotoRepository : votoRepository
+  com.skhatoll.backend.service.impl.sala.SalaService .up.|> com.skhatoll.backend.service.interfaces.sala.ISalaService
+  com.skhatoll.backend.service.impl.sala.SalaService o-- com.skhatoll.backend.service.interfaces.jugador.IJugadorService : jugadorService
+  com.skhatoll.backend.service.impl.sala.SalaService o-- com.skhatoll.backend.repository.RolRepository : rolRepository
+  com.skhatoll.backend.service.impl.sala.SalaService o-- com.skhatoll.backend.repository.SalaRepository : salaRepository
+  com.skhatoll.backend.service.impl.sala.SalaService o-- com.skhatoll.backend.service.impl.sala.SalaSocketService : salaSocketService
+  com.skhatoll.backend.service.impl.sala.SalaService o-- com.skhatoll.backend.repository.SalaUsuarioRepository : salaUsuarioRepository
+  com.skhatoll.backend.service.impl.sala.SalaService o-- com.skhatoll.backend.repository.UsuarioRepository : usuarioRepository
+
+
+right footer
+
+
+PlantUML diagram generated by SketchIt! (https://bitbucket.org/pmesmeur/sketch.it)
+For more information about this tool, please contact philippe.mesmeur@gmail.com
+endfooter
+
+@enduml

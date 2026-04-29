@@ -39,7 +39,6 @@ public class SalaUsuario {
     @Builder.Default
     private Boolean muerteConfirmada = false;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_modelo")
+    @Column(name = "id_modelo")
     private Integer IdModelo;
 }

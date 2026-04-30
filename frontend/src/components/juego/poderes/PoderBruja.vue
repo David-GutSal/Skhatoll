@@ -1,13 +1,12 @@
 <template>
   <div class="poder-bruja">
-
+    <!-- Título -->
     <div class="titulo-caja">
       <p class="titulo-pregunta">¿Quieres usar las pociones?</p>
     </div>
 
     <!-- Pociones -->
     <div class="pociones-fila">
-
       <!-- ── POCIÓN DE LA VIDA ── -->
       <div class="pocion-bloque">
         <div class="pocion-marco" :class="pocionVidaUsada ? 'marco-gris' : 'marco-vida'">
@@ -23,7 +22,7 @@
           <i class="fa-solid fa-user-injured"></i>
           {{ jugadorSemimuerto.nombre }}
         </div>
-        <div v-else-if="!pocionVidaUsada" class="chip-victima chip-vacia">
+        <div v-else-if="!pocionVidaUsada && !jugadorSemimuerto" class="chip-victima chip-vacia">
           <i class="fa-solid fa-bed"></i>
           Sin víctima esta noche
         </div>
@@ -104,6 +103,7 @@
     <button
       class="btn-finalizar"
       :class="{ 'btn-finalizado': turnoFinalizado }"
+      :disabled="turnoFinalizado"
       @click="finalizarTurno"
     >
       <i class="fa-solid fa-door-open"></i>
@@ -131,18 +131,24 @@ export default {
     return {
       imgVida,
       imgMuerte,
-      pocionVidaUsada: false,
-      pocionMuerteUsada: false,
       turnoFinalizado: false,
     }
   },
 
   computed: {
-    ...mapGetters('sala', ['codigoSala']),
+    ...mapGetters('sala', ['codigoSala', 'brujaPocionVidaUsada', 'brujaPocionMuerteUsada']),
     ...mapGetters('auth', ['nombre']),
     ...mapState('sala', ['semiMuertos', 'jugadores']),
 
-    // Jugador devorado por los lobos esta noche (primer semimuerto)
+    // Leer del store (persisten entre recargas del turno)
+    pocionVidaUsada() {
+      return this.brujaPocionVidaUsada
+    },
+    pocionMuerteUsada() {
+      return this.brujaPocionMuerteUsada
+    },
+
+    // Primer jugador semimuerto esta noche
     jugadorSemimuerto() {
       if (!this.semiMuertos || this.semiMuertos.length === 0) return null
       const nombre = this.semiMuertos[0]
@@ -173,13 +179,15 @@ export default {
           nombreHabilidad: 'pocion_vida',
           objetivos: [this.jugadorSemimuerto.idUsuario],
         })
-        // Revertir la muerte en el store local
+        // Guardar en store (persiste)
+        this.$store.dispatch('sala/setBrujaPocionVida')
+        // Revertir semimuerto en el store local del jugador
         this.$store.dispatch('sala/quitarSemimuerto', this.jugadorSemimuerto.nombre)
-        this.pocionVidaUsada = true
         // Notificar al narrador vía STOMP (lo publica JugadorView)
         this.$emit('vidaUsada', this.jugadorSemimuerto.nombre)
-      } catch {
-        alert('Error al usar la poción de vida')
+      } catch (err) {
+        console.error('Error pocion_vida:', err.response?.status, err.response?.data)
+        alert('Error al usar la poción de vida. Asegúrate de que el Narrador ha activado tu turno.')
       }
     },
 
@@ -190,11 +198,15 @@ export default {
           nombreHabilidad: 'pocion_muerte',
           objetivos: [this.jugadorSeleccionado.idUsuario],
         })
+        // Guardar en store (persiste)
+        this.$store.dispatch('sala/setBrujaPocionMuerte')
         // El backend ya emite WS /muerte → todos los clientes lo reciben
-        this.pocionMuerteUsada = true
         this.$emit('envenenar', this.jugadorSeleccionado)
-      } catch {
-        alert('Error al usar la poción de muerte')
+      } catch (err) {
+        console.error('Error pocion_muerte:', err.response?.status, err.response?.data)
+        alert(
+          'Error al usar la poción de muerte. Asegúrate de que el Narrador ha activado tu turno.',
+        )
       }
     },
 
@@ -203,10 +215,10 @@ export default {
       this.$emit('finalizarTurno')
     },
 
+    // Llamado desde ZonaPoderes cuando esMiTurno pasa a false
     resetear() {
-      this.pocionVidaUsada = false
-      this.pocionMuerteUsada = false
       this.turnoFinalizado = false
+      // Las pociones NO se resetean aquí, están en el store (persisten toda la partida)
     },
   },
 }
@@ -270,9 +282,15 @@ export default {
   transition: border-color 0.3s ease;
 }
 
-.marco-vida   { border-color: #2d9e2d; }
-.marco-muerte { border-color: #9b59b6; }
-.marco-gris   { border-color: #444; }
+.marco-vida {
+  border-color: #2d9e2d;
+}
+.marco-muerte {
+  border-color: #9b59b6;
+}
+.marco-gris {
+  border-color: #444;
+}
 
 .pocion-imagen {
   width: 100%;
@@ -379,8 +397,12 @@ export default {
   margin: 0;
 }
 
-.texto-verde { color: #5fd45f; }
-.texto-rojo  { color: #cc0000; }
+.texto-verde {
+  color: #5fd45f;
+}
+.texto-rojo {
+  color: #cc0000;
+}
 
 /* ── Descripciones ── */
 .descripciones {
@@ -433,20 +455,19 @@ export default {
   cursor: pointer;
   transition:
     background 0.3s ease,
-    border-color 0.3s ease,
-    color 0.3s ease;
+    border-color 0.3s ease;
 }
 
-.btn-finalizar:hover:not(.btn-finalizado) {
+.btn-finalizar:hover:not(:disabled) {
   background: #a00000;
   border-color: #a00000;
 }
 
 .btn-finalizado {
-  background: #111;
-  border-color: #333;
-  color: #555;
-  cursor: not-allowed;
+  background: #111 !important;
+  border-color: #333 !important;
+  color: #555 !important;
+  cursor: not-allowed !important;
 }
 
 @media (max-width: 500px) {

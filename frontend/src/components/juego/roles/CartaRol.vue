@@ -65,6 +65,9 @@
       <span v-if="jugador.esEnamorado" class="badge-enamorado" title="Enamorado">
         <i class="fa-solid fa-heart"></i>
       </span>
+      <span v-if="jugador.esMentor" class="badge-mentor" title="Mentor del Niño Salvaje">
+        <i class="fa-solid fa-hands-holding-child"></i>
+      </span>
     </div>
   </div>
 
@@ -110,6 +113,9 @@
       >
         <i :class="esVotacionLobos ? 'fa-solid fa-bone' : 'fa-solid fa-check'"></i>
         {{ jugador.votos }}
+      </span>
+      <span v-if="jugador.esMentor" class="badge-mentor" title="Mentor del Niño Salvaje">
+        <i class="fa-solid fa-hands-holding-child"></i>
       </span>
     </div>
   </div>
@@ -288,8 +294,13 @@ export default {
 }
 
 @keyframes pulsoVeneno {
-  0%, 100% { box-shadow: 0 0 8px rgba(155, 89, 182, 0.5); }
-  50%       { box-shadow: 0 0 18px rgba(155, 89, 182, 0.9); }
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(155, 89, 182, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(155, 89, 182, 0.9);
+  }
 }
 
 .overlay-muerto {
@@ -390,7 +401,8 @@ export default {
 }
 
 .carta-mesa-rol.oculto {
-  color: #444;
+  color: #8f8f8f;
+  font-size: 1.5rem;
   letter-spacing: 0.2em;
 }
 
@@ -420,7 +432,7 @@ export default {
   border: 2px solid #e4ba03;
   padding: 2px 6px;
   border-radius: 6px;
-  font-size: 1rem;
+  font-size: 1.5rem;
   font-weight: 700;
 }
 
@@ -430,16 +442,21 @@ export default {
   border: 2px solid #cc0000;
   padding: 2px 6px;
   border-radius: 6px;
-  font-size: 1rem;
+  font-size: 1.5rem;
   font-weight: 700;
   box-shadow: 0 0 6px rgba(204, 0, 0, 0.5);
+}
+
+.badge-mentor {
+  color: #5dade2;
+  font-size: 2rem;
 }
 
 .carta-narrador {
   border-width: 2px;
 }
 
-.colorear{
+.colorear {
   color: white;
   font-size: 5rem;
 }

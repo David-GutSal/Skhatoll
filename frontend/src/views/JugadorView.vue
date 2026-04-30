@@ -67,6 +67,7 @@
         @envenenar="manejarEnvenenar"
         @vidaUsada="manejarVidaUsada"
         @disparo="manejarDisparo"
+        @mentorElegido="manejarMentorElegido"
       />
     </div>
 
@@ -244,6 +245,18 @@ export default {
       })
     },
 
+    manejarMentorElegido(data) {
+      // Publicar por WebSocket para que el narrador y el niño vean el icono
+      this.stompClient.publish({
+        destination: `/topic/partida/${this.codigoSala}/turno`,
+        body: JSON.stringify({
+          tipo: 'MENTOR_ELEGIDO',
+          nombreNinno: data.nombreNinno,
+          nombreMentor: data.nombreMentor,
+        }),
+      })
+    },
+
     finalizarTurno() {
       this.esMiTurno = false
       this.jugadorSeleccionado = null
@@ -264,10 +277,10 @@ export default {
     },
 
     manejarDisparo(jugador) {
-  // El backend ya emite WS /muerte para la víctima del disparo
-  // Solo necesitamos loguear; el finalizarTurno lo emite PoderCazador tras 2.5s
-  console.log('🔫 Cazador disparó a:', jugador.nombre)
-},
+      // El backend ya emite WS /muerte para la víctima del disparo
+      // Solo necesitamos loguear; el finalizarTurno lo emite PoderCazador tras 2.5s
+      console.log('🔫 Cazador disparó a:', jugador.nombre)
+    },
 
     conectarWebSocket() {
       const token = this.$store.getters['auth/token']
@@ -293,6 +306,22 @@ export default {
           const payload = JSON.parse(msg.body)
           this.$store.dispatch('sala/marcarMuerto', payload.nombreJugador)
           this.$store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
+
+          if (
+            this.miRol &&
+            this.miRol.toLowerCase() === 'niño salvaje' &&
+            this.$store.getters['sala/mentorNinno'] === payload.nombreJugador
+          ) {
+            this.$store.commit('sala/SET_ROL', {
+              nombreRol: 'Lobo',
+              descripcionRol: 'Te has transformado en un Hombre Lobo',
+              bando: 'lobo',
+            })
+            this.mensajeEvento = '¡Tu mentor ha muerto! ¡Te has convertido en un Hombre Lobo!'
+            setTimeout(() => {
+              this.mensajeEvento = null
+            }, 8000)
+          }
 
           if (payload.nombreJugador === this.nombre) {
             if ((this.miRol || '').toLowerCase() === 'cazador') {
@@ -452,6 +481,15 @@ export default {
             } else {
               this.esMiTurno = false
             }
+          }
+
+          if (payload.tipo === 'MENTOR_ELEGIDO') {
+            if (payload.nombreNinno === this.nombre) return // ya lo gestionó PoderNinno
+
+            // Marcar al mentor en la lista de jugadores para mostrar el icono
+            const mentor = this.jugadores.find((j) => j.nombre === payload.nombreMentor)
+            if (mentor) mentor.esMentor = true
+            return
           }
         })
 

@@ -184,7 +184,10 @@ export default {
         const res = await axiosInstance.get(`/salas/${this.codigoSala}/jugadores`)
         this.setJugadores(res.data)
       } catch (error) {
-        alert('Error al cargar jugadores')
+        this.$store.dispatch('toast/mostrar', {
+          mensaje: 'Error al cargar jugadores',
+          tipo: 'error',
+        })
       }
     },
 
@@ -192,8 +195,10 @@ export default {
       try {
         await axiosInstance.post(`/salas/${this.codigoSala}/iniciar`)
       } catch (error) {
-        console.log('Mensaje backend:', error.response?.data)
-        alert(error.response?.data || 'Error al iniciar')
+        this.$store.dispatch('toast/mostrar', {
+          mensaje: error.response?.data || 'Error al iniciar',
+          tipo: 'error',
+        })
       }
     },
 
@@ -201,7 +206,10 @@ export default {
       try {
         await axiosInstance.put(`/salas/${this.codigoSala}/narrador`, { idUsuario })
       } catch (error) {
-        alert('Error al asignar narrador')
+        this.$store.dispatch('toast/mostrar', {
+          mensaje: 'Error al asignar narrador',
+          tipo: 'error',
+        })
       }
     },
 
@@ -213,29 +221,34 @@ export default {
         await this.cargarJugadores()
         this.conectarWebSocket()
       } catch (error) {
-        alert(
-          error.response?.status === 409
-            ? 'Ya estás en esta sala o está llena'
-            : 'Sala no encontrada',
-        )
+        this.$store.dispatch('toast/mostrar', {
+          mensaje:
+            error.response?.status === 409
+              ? 'Ya estás en esta sala o está llena'
+              : 'Sala no encontrada',
+          tipo: 'error',
+        })
       }
     },
 
-    async salirSala() {
-      try {
-        await axiosInstance.post(`/salas/${this.codigoSala}/salir`)
-        this.salir() // Vuex
-        this.$router.push({ name: 'sala' })
-      } catch (error) {
-        alert('Error al salir de la sala')
-      }
-    },
+async salirSala() {
+  try {
+    await axiosInstance.post(`/salas/${this.codigoSala}/salir`)
+    this.salir()
+    this.$router.push({ name: 'sala' })
+  } catch (error) {
+    this.$store.dispatch('toast/mostrar', { mensaje: 'Error al salir de la sala', tipo: 'error' })
+  }
+},
 
     async copiarParaDiscord() {
       await navigator.clipboard.writeText(
         `¡Únete a mi partida de Hombres Lobo! Código: ${this.codigoSala}`,
       )
-      alert('¡Código copiado! Pégalo en Discord')
+      this.$store.dispatch('toast/mostrar', {
+        mensaje: '¡Código copiado! Pégalo en Discord',
+        tipo: 'exito',
+      })
     },
 
     salirSala() {
@@ -356,7 +369,7 @@ export default {
   padding: 14px 20px;
   background: transparent;
   border: none;
-  font-family:Arial, sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 2rem;
   font-weight: bold;
   color: #8b0000;

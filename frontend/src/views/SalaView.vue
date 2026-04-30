@@ -1,7 +1,6 @@
 <template>
   <div class="contenedor-sala">
     <div class="caja-sala">
-
       <h1 class="titulo">Sala de Juegos</h1>
 
       <div class="imagen-wrapper">
@@ -12,8 +11,10 @@
         </div>
       </div>
 
-      <p class="subtitulo"> <i class="fa-solid fa-feather-pointed"></i> Adéntrate en la aldea de Castronegro, elige entre unirte a una partida o crear tu propia aventura...</p>
-
+      <p class="subtitulo">
+        <i class="fa-solid fa-feather-pointed"></i> Adéntrate en la aldea de Castronegro, elige
+        entre unirte a una partida o crear tu propia aventura...
+      </p>
     </div>
   </div>
 </template>
@@ -28,7 +29,7 @@ export default {
   created() {
     this.$store.dispatch('sala/resetSala')
   },
-  
+
   methods: {
     ...mapActions('sala', ['crearSala']),
     async handleCrearSala() {
@@ -37,7 +38,7 @@ export default {
         this.crearSala(res.data.codigoSala)
         this.$router.push({ name: 'lobby' })
       } catch (error) {
-        alert('Error al crear la sala')
+        this.$store.dispatch('toast/mostrar', { mensaje: 'Error al crear la sala', tipo: 'error' })
       }
     },
     irUnirse() {
@@ -49,7 +50,6 @@ export default {
 </script>
 
 <style scoped>
-
 .contenedor-sala {
   display: flex;
   justify-content: center;
@@ -116,7 +116,9 @@ export default {
   border-radius: 10px;
   cursor: pointer;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
-  transition: background 0.6s ease, transform 0.35s ease;
+  transition:
+    background 0.6s ease,
+    transform 0.35s ease;
 }
 
 .boton-sala:hover {
@@ -138,14 +140,12 @@ export default {
   .caja-sala {
     width: 70%;
     padding: 24px 16px;
-    
   }
 }
 
 @media (max-width: 765px) {
   .caja-sala {
     width: 85%;
-    
   }
   .botones-sala {
     flex-direction: column;
@@ -159,8 +159,8 @@ export default {
   }
 
   .botones-sala {
-  gap: 20px;
-  padding: 15px;
+    gap: 20px;
+    padding: 15px;
   }
 }
 
@@ -171,15 +171,14 @@ export default {
   }
 
   .botones-sala {
-  gap: 10px;
-  padding: 10px;
+    gap: 10px;
+    padding: 10px;
   }
 
   .boton-sala {
-  padding: 10px 20px;
-  font-size: 1rem;
-  font-weight: 500;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 500;
   }
-
 }
 </style>

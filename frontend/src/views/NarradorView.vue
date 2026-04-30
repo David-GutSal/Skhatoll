@@ -150,7 +150,7 @@ export default {
       if (codigoGuardado) {
         this.$store.dispatch('sala/unirse', codigoGuardado)
       } else {
-        alert('No hay sala activa')
+        this.$store.dispatch('toast/mostrar', { mensaje: 'No hay sala activa', tipo: 'error' })
         this.$router.push('/')
         return
       }
@@ -160,7 +160,7 @@ export default {
       const res = await axiosInstance.get(`/salas/${this.codigoSala}/roles`)
       this.$store.dispatch('sala/setJugadoresConRol', res.data)
     } catch (error) {
-      alert('Error al cargar jugadores')
+      this.$store.dispatch('toast/mostrar', { mensaje: 'Error al cargar jugadores', tipo: 'error' })
     }
 
     try {
@@ -201,11 +201,13 @@ export default {
 
         await axiosInstance.put(`/partida/${this.codigoSala}/fase`)
       } catch (error) {
-        alert(
-          error.response?.status === 409
-            ? 'Cierra la votación antes de cambiar la fase'
-            : 'Error al cambiar la fase',
-        )
+        his.$store.dispatch('toast/mostrar', {
+          mensaje:
+            error.response?.status === 409
+              ? 'Cierra la votación antes de cambiar la fase'
+              : 'Error al cambiar la fase',
+          tipo: 'error',
+        })
       }
     },
 
@@ -392,11 +394,13 @@ export default {
         this.votacionActiva = true
         this.tipoVotacion = 'DIA'
       } catch (error) {
-        alert(
-          error.response?.status === 409
-            ? 'Ya hay una votación abierta'
-            : 'Error al iniciar votación',
-        )
+        this.$store.dispatch('toast/mostrar', {
+          mensaje:
+            error.response?.status === 409
+              ? 'Ya hay una votación abierta'
+              : 'Error al iniciar votación',
+          tipo: 'error',
+        })
       }
     },
 
@@ -407,11 +411,13 @@ export default {
         })
         this.idSesionActual = res.data
       } catch (error) {
-        alert(
-          error.response?.status === 409
-            ? 'Ya hay una votación abierta'
-            : 'Error al iniciar elecciones',
-        )
+        this.$store.dispatch('toast/mostrar', {
+          mensaje:
+            error.response?.status === 409
+              ? 'Ya hay una votación abierta'
+              : 'Error al iniciar elecciones',
+          tipo: 'error',
+        })
       }
     },
 
@@ -428,7 +434,10 @@ export default {
         this.$store.dispatch('sala/reiniciarVotos')
         this.$store.dispatch('sala/setTipoVotacion', null)
       } catch (error) {
-        alert('Error al finalizar votación')
+        this.$store.dispatch('toast/mostrar', {
+          mensaje: 'Error al finalizar votación',
+          tipo: 'error',
+        })
       }
     },
 
@@ -535,11 +544,13 @@ export default {
             }),
           })
         } catch (error) {
-          alert(
-            error.response?.status === 409
-              ? 'Ya hay una votación abierta'
-              : 'Error al iniciar turno de lobos',
-          )
+          this.$store.dispatch('toast/mostrar', {
+            mensaje:
+              error.response?.status === 409
+                ? 'Ya hay una votación abierta'
+                : 'Error al iniciar turno de lobos',
+            tipo: 'error',
+          })
         }
       } else {
         try {
@@ -557,11 +568,13 @@ export default {
             }),
           })
         } catch (error) {
-          alert(
-            error.response?.status === 409
-              ? 'Ya hay una votación abierta'
-              : 'Error al iniciar turno',
-          )
+          this.$store.dispatch('toast/mostrar', {
+            mensaje:
+              error.response?.status === 409
+                ? 'Ya hay una votación abierta'
+                : 'Error al iniciar turno',
+            tipo: 'error',
+          })
         }
       }
       if (

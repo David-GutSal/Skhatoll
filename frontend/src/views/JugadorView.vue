@@ -138,7 +138,7 @@ export default {
       const res = await axiosInstance.get(`/salas/${this.codigoSala}/jugadores`)
       this.$store.dispatch('sala/setJugadores', res.data)
     } catch (error) {
-      alert('Error al cargar jugadores')
+       this.$store.dispatch('toast/mostrar', { mensaje: 'Error al cargar jugadores', tipo: 'error' })
     }
 
     try {
@@ -188,7 +188,7 @@ export default {
           idObjetivo: this.jugadorSeleccionado.idUsuario,
         })
       } catch (error) {
-        alert('Error al votar')
+        this.$store.dispatch('toast/mostrar', { mensaje: 'Error al votar', tipo: 'error' })
       }
     },
 
@@ -199,7 +199,7 @@ export default {
           idObjetivo: this.jugadorSeleccionado.idUsuario,
         })
       } catch (error) {
-        alert('Error al votar')
+        this.$store.dispatch('toast/mostrar', { mensaje: 'Error al votar', tipo: 'error' })
       }
     },
 
@@ -210,7 +210,7 @@ export default {
           idObjetivo: this.jugadorSeleccionado.idUsuario,
         })
       } catch (error) {
-        alert('Error al devorar')
+        this.$store.dispatch('toast/mostrar', { mensaje: 'Error al devorar', tipo: 'error' })
       }
     },
 

@@ -492,6 +492,17 @@ export default {
         return
       }
 
+      if (
+        jugador.nombreRol === 'Niña' &&
+        this.jugadoresYaActuadosEstaNoche.includes(jugador.nombre)
+      ) {
+        this.avisoSesion = '¡La Niña ya usó su poder esta noche!'
+        setTimeout(() => {
+          this.avisoSesion = null
+        }, 4000)
+        return
+      }
+
       if (this.idSesionActual) {
         this.avisoSesion = `Cierra el turno de ${this.jugadorSeleccionado?.nombre} antes de activar otro jugador`
         setTimeout(() => {

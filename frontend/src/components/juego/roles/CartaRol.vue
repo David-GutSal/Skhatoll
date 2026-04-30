@@ -432,7 +432,7 @@ export default {
   border: 2px solid #e4ba03;
   padding: 2px 6px;
   border-radius: 6px;
-  font-size: 1rem;
+  font-size: 1.5rem;
   font-weight: 700;
 }
 
@@ -442,7 +442,7 @@ export default {
   border: 2px solid #cc0000;
   padding: 2px 6px;
   border-radius: 6px;
-  font-size: 1rem;
+  font-size: 1.5rem;
   font-weight: 700;
   box-shadow: 0 0 6px rgba(204, 0, 0, 0.5);
 }

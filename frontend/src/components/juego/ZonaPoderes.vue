@@ -58,6 +58,13 @@
       @mentorElegido="(data) => $emit('mentorElegido', data)"
       @finalizarTurno="$emit('finalizarTurno')"
     />
+
+    <!-- NIÑA -->
+    <PoderNinna
+      v-if="esRol('niña') && esMiTurno && !esDia"
+      ref="poderNinna"
+      @finalizarTurno="$emit('finalizarTurno')"
+    />
   </div>
 </template>
 
@@ -68,10 +75,19 @@ import PoderCupido from './poderes/PoderCupido.vue'
 import PoderBruja from './poderes/PoderBruja.vue'
 import PoderCazador from './poderes/PoderCazador.vue'
 import PoderNinno from './poderes/PoderNinno.vue'
+import PoderNinna from './poderes/PoderNinna.vue'
 
 export default {
   name: 'ZonaPoderes',
-  components: { PoderLobo, PoderVidente, PoderCupido, PoderBruja, PoderCazador, PoderNinno },
+  components: {
+    PoderLobo,
+    PoderVidente,
+    PoderCupido,
+    PoderBruja,
+    PoderCazador,
+    PoderNinno,
+    PoderNinna,
+  },
 
   props: {
     miRol: { type: String, default: null },
@@ -100,10 +116,14 @@ export default {
         this.$refs.poderBruja?.resetear()
         this.$refs.poderCazador?.resetear()
         this.$refs.poderNinno?.resetear()
+        this.$refs.poderNinna?.resetear()
       }
     },
-    esDia(nuevo) {
-      if (!nuevo) this.$refs.poderVidente?.resetear()
+    esDia(nuevoValor) {
+      if (!nuevoValor) {
+        this.$refs.poderVidente?.resetear()
+        this.$refs.poderNinna?.resetearNoche()
+      }
     },
   },
 

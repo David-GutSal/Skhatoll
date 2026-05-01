@@ -1,4 +1,5 @@
 @startuml
+set separator none
 
 title __ENTITIES's Class Diagram__\n
 

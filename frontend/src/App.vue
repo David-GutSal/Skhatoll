@@ -1,31 +1,11 @@
+<script setup></script>
+
 <template>
-  <div id="app">
-    <TopBar/>
-    <Header/>
-    <Navbar/>
-    <router-view/>
-  </div>
+  <h1>You did it!</h1>
+  <p>
+    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
+    documentation
+  </p>
 </template>
 
-<script>
-import TopBar from "@/components/layout/TopBar.vue"
-import Header from "@/components/layout/Header.vue"
-import Navbar from "@/components/layout/Navbar.vue"
-
-export default {
-  name: "App",
-  components: { TopBar, Header, Navbar }
-}
-</script>
-
-<style>
-#app {
-  display: grid;
-  grid-template-rows: auto auto auto 1fr;
-  min-height: 100vh;
-}
-
-#app > router-view {
-  padding: 20px;
-}
-</style>
+<style scoped></style>

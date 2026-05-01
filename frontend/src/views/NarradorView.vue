@@ -201,7 +201,7 @@ export default {
 
         await axiosInstance.put(`/partida/${this.codigoSala}/fase`)
       } catch (error) {
-        his.$store.dispatch('toast/mostrar', {
+        this.$store.dispatch('toast/mostrar', {
           mensaje:
             error.response?.status === 409
               ? 'Cierra la votación antes de cambiar la fase'
@@ -423,7 +423,10 @@ export default {
 
     async finalizarVotacion() {
       if (!this.idSesionActual) {
-        alert('No hay ninguna votación activa')
+        this.$store.dispatch('toast/mostrar', {
+          mensaje: 'No hay ninguna votación activa',
+          tipo: 'aviso',
+        })
         return
       }
       try {

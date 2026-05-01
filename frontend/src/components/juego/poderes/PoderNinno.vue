@@ -1,11 +1,8 @@
 <template>
   <div class="poder-ninno">
-
     <div class="titulo-caja">
       <h2 class="titulo">Elige quién quieres que sea tu mentor</h2>
-      <p class="subtitulo">
-        Recuerda que si tu mentor muere, te convertirás en un hombre lobo
-      </p>
+      <p class="subtitulo">Recuerda que si tu mentor muere, te convertirás en un hombre lobo</p>
     </div>
 
     <div class="mentor-box" :class="jugadorSeleccionado ? 'mentor-activo' : 'mentor-vacio'">
@@ -28,7 +25,6 @@
       <i class="fa-solid fa-check-circle"></i>
       {{ notificacion }}
     </div>
-
   </div>
 </template>
 
@@ -87,13 +83,16 @@ export default {
         })
 
         this.notificacion = `Ahora tu mentor es: ${this.jugadorSeleccionado.nombre}`
-        setTimeout(() => { this.notificacion = null }, 5000)
+        setTimeout(() => {
+          this.notificacion = null
+        }, 5000)
 
         // Finalizar turno automáticamente tras elegir mentor
-        setTimeout(() => { this.$emit('finalizarTurno') }, 1500)
-
+        setTimeout(() => {
+          this.$emit('finalizarTurno')
+        }, 1500)
       } catch {
-        alert('Error al elegir mentor')
+        this.$store.dispatch('toast/mostrar', { mensaje: 'Error al elegir mentor', tipo: 'error' })
       }
     },
 
@@ -196,7 +195,10 @@ export default {
   font-weight: 700;
   font-size: 0.95rem;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .btn-mentor:hover:not(:disabled) {
@@ -237,7 +239,13 @@ export default {
 }
 
 @keyframes aparecer {
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

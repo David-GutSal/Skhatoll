@@ -187,7 +187,11 @@ export default {
         this.$emit('vidaUsada', this.jugadorSemimuerto.nombre)
       } catch (err) {
         console.error('Error pocion_vida:', err.response?.status, err.response?.data)
-        alert('Error al usar la poción de vida. Asegúrate de que el Narrador ha activado tu turno.')
+        this.$store.dispatch('toast/mostrar', {
+          mensaje:
+            'Error al usar la poción de vida. Asegúrate de que el Narrador ha activado tu turno.',
+          tipo: 'error',
+        })
       }
     },
 
@@ -204,9 +208,11 @@ export default {
         this.$emit('envenenar', this.jugadorSeleccionado)
       } catch (err) {
         console.error('Error pocion_muerte:', err.response?.status, err.response?.data)
-        alert(
-          'Error al usar la poción de muerte. Asegúrate de que el Narrador ha activado tu turno.',
-        )
+        this.$store.dispatch('toast/mostrar', {
+          mensaje:
+            'Error al usar la poción de muerte. Asegúrate de que el Narrador ha activado tu turno.',
+          tipo: 'error',
+        })
       }
     },
 

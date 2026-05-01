@@ -143,6 +143,7 @@ export default {
           password: this.loginPassword,
         })
         this.login({ token: res.data.token, nombre: res.data.nombre, uuid: res.data.codigoUuid })
+        this.$store.dispatch('toast/mostrar', { mensaje: '¡Éxito al iniciar sesión!', tipo: 'exito' })
         this.cerrarModales()
         this.loginNombre = ''
         this.loginPassword = ''

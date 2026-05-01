@@ -231,15 +231,18 @@ export default {
       }
     },
 
-async salirSala() {
-  try {
-    await axiosInstance.post(`/salas/${this.codigoSala}/salir`)
-    this.salir()
-    this.$router.push({ name: 'sala' })
-  } catch (error) {
-    this.$store.dispatch('toast/mostrar', { mensaje: 'Error al salir de la sala', tipo: 'error' })
-  }
-},
+    async salirSala() {
+      try {
+        await axiosInstance.post(`/salas/${this.codigoSala}/salir`)
+        this.salir()
+        this.$router.push({ name: 'sala' })
+      } catch (error) {
+        this.$store.dispatch('toast/mostrar', {
+          mensaje: 'Error al salir de la sala',
+          tipo: 'error',
+        })
+      }
+    },
 
     async copiarParaDiscord() {
       await navigator.clipboard.writeText(

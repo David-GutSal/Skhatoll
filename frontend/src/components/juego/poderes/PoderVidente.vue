@@ -1,6 +1,5 @@
 <template>
   <div class="poder-vidente" :class="esDia ? 'poder-dia' : 'poder-noche'">
-
     <div class="poder-titulo">
       <i class="fa-solid fa-eye"></i>
       Tu poder: Premonición
@@ -34,7 +33,6 @@
         class="carta-revelada"
       />
     </div>
-
   </div>
 </template>
 
@@ -84,7 +82,7 @@ export default {
         this.poderUsado = true
         this.$emit('premonicion', this.jugadorSeleccionado)
       } catch (error) {
-        alert('Error al usar la visión')
+        this.$store.dispatch('toast/mostrar', { mensaje: 'Error al usar la visión', tipo: 'error' })
       }
     },
 
@@ -150,7 +148,9 @@ export default {
   font-weight: 700;
   font-size: 0.95rem;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .btn-poder:hover:not(:disabled) {

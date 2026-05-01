@@ -138,7 +138,7 @@ export default {
       const res = await axiosInstance.get(`/salas/${this.codigoSala}/jugadores`)
       this.$store.dispatch('sala/setJugadores', res.data)
     } catch (error) {
-       this.$store.dispatch('toast/mostrar', { mensaje: 'Error al cargar jugadores', tipo: 'error' })
+      this.$store.dispatch('toast/mostrar', { mensaje: 'Error al cargar jugadores', tipo: 'error' })
     }
 
     try {
@@ -294,6 +294,13 @@ export default {
           const payload = JSON.parse(msg.body)
           this.esDia = payload.fase === 'DIA'
           this.$store.dispatch('sala/setFase', payload.fase)
+          this.$store.dispatch('toast/mostrar', {
+            mensaje:
+              payload.fase === 'DIA'
+                ? 'La aldea despierta al amanecer'
+                : 'Cae la noche sobre Castronegro',
+            tipo: payload.fase === 'DIA' ? 'dia' : 'noche',
+          })
 
           if (payload.fase === 'DIA') {
             this.$store.dispatch('sala/reiniciarVotos')
@@ -374,6 +381,10 @@ export default {
             // ✅ Guardar nombre del alcalde y resetear votos
             this.alcaldeNombre = payload.nombreAlcalde
             this.$store.dispatch('sala/reiniciarVotos')
+            this.$store.dispatch('toast/mostrar', {
+              mensaje: `¡${payload.nombreAlcalde} ha sido elegido alcalde!`,
+              tipo: 'aviso',
+            })
           }
         })
 
@@ -386,7 +397,16 @@ export default {
             if (payload.abierta) {
               this.tipoVotacionLocal = payload.tipoVotacion
               this.$store.dispatch('sala/setTipoVotacion', payload.tipoVotacion)
-
+              this.$store.dispatch('toast/mostrar', {
+                mensaje:
+                  payload.tipoVotacion === 'ALCALDE'
+                    ? 'Se han abierto las elecciones de alcalde'
+                    : payload.tipoVotacion === 'DIA'
+                      ? 'Votación de linchamiento en curso'
+                      : 'Los lobos están decidiendo su víctima...',
+                tipo: payload.tipoVotacion === 'LOBOS' ? 'error' : 'aviso',
+              })
+              
               if (payload.tipoVotacion === 'ALCALDE') {
                 this.mensajeEvento = 'ELECCIONES ABIERTAS'
               } else if (payload.tipoVotacion === 'DIA') {

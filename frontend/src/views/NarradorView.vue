@@ -200,6 +200,10 @@ export default {
         }
 
         await axiosInstance.put(`/partida/${this.codigoSala}/fase`)
+        this.$store.dispatch('toast/mostrar', {
+          mensaje: esNoche ? 'Cae la noche sobre Castronegro' : 'La aldea despierta ¡Bueos días!',
+          tipo: esNoche ? 'noche' : 'dia',
+        })
       } catch (error) {
         this.$store.dispatch('toast/mostrar', {
           mensaje:
@@ -273,6 +277,10 @@ export default {
           if (payload.tipo === 'ALCALDE_ELEGIDO') {
             this.$store.dispatch('sala/designarAlcalde', payload.nombreAlcalde)
             this.$store.dispatch('sala/reiniciarVotos')
+            this.$store.dispatch('toast/mostrar', {
+              mensaje: `¡${payload.nombreAlcalde} ha sido elegido alcalde!`,
+              tipo: 'aviso',
+            })
           }
         })
 
@@ -298,6 +306,15 @@ export default {
           if (payload.tipo === 'VOTACION_ABIERTA') {
             this.idSesionActual = payload.idSesion
             this.$store.dispatch('sala/setTipoVotacion', payload.tipoVotacion)
+            this.$store.dispatch('toast/mostrar', {
+              mensaje:
+                payload.tipoVotacion === 'ALCALDE'
+                  ? 'Se han abierto las elecciones de alcalde'
+                  : payload.tipoVotacion === 'DIA'
+                    ? 'Votación de linchamiento en curso'
+                    : 'Los lobos están decidiendo su víctima...',
+              tipo: payload.tipoVotacion === 'LOBOS' ? 'error' : 'aviso',
+            })
           }
 
           if (payload.tipo === 'VOTACION_CERRADA') {

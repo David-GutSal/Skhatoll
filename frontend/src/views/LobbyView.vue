@@ -177,6 +177,10 @@ export default {
       await navigator.clipboard.writeText(this.codigoSala)
       this.copiado = true
       setTimeout(() => (this.copiado = false), 2000)
+      this.$store.dispatch('toast/mostrar', {
+        mensaje: '¡Código copiado al portapapeles!',
+        tipo: 'info',
+      })
     },
 
     async cargarJugadores() {
@@ -194,6 +198,10 @@ export default {
     async iniciarPartida() {
       try {
         await axiosInstance.post(`/salas/${this.codigoSala}/iniciar`)
+        this.$store.dispatch('toast/mostrar', {
+          mensaje: '¡La partida va a comenzar!',
+          tipo: 'exito',
+        })
       } catch (error) {
         this.$store.dispatch('toast/mostrar', {
           mensaje: error.response?.data || 'Error al iniciar',
@@ -231,19 +239,6 @@ export default {
       }
     },
 
-    async salirSala() {
-      try {
-        await axiosInstance.post(`/salas/${this.codigoSala}/salir`)
-        this.salir()
-        this.$router.push({ name: 'sala' })
-      } catch (error) {
-        this.$store.dispatch('toast/mostrar', {
-          mensaje: 'Error al salir de la sala',
-          tipo: 'error',
-        })
-      }
-    },
-
     async copiarParaDiscord() {
       await navigator.clipboard.writeText(
         `¡Únete a mi partida de Hombres Lobo! Código: ${this.codigoSala}`,
@@ -254,14 +249,23 @@ export default {
       })
     },
 
-    salirSala() {
-      if (this.stompClient) {
-        this.stompClient.deactivate()
-        this.stompClient = null
-      }
-      this.salir()
-      this.$router.push({ name: 'sala' })
-    },
+async salirSala() {
+  try {
+    if (this.stompClient) {
+      this.stompClient.deactivate()
+      this.stompClient = null
+    }
+
+    await axiosInstance.post(`/salas/${this.codigoSala}/salir`)
+    this.salir()
+    this.$router.push({ name: 'sala' })
+  } catch (error) {
+    this.$store.dispatch('toast/mostrar', {
+      mensaje: 'Error al salir de la sala',
+      tipo: 'error',
+    })
+  }
+},
 
     conectarWebSocket() {
       const token = this.$store.getters['auth/token']

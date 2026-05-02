@@ -182,11 +182,11 @@ export default {
 
   actions: {
     crearSala({ commit }, codigoSala) {
-      localStorage.setItem('codigoSala', codigoSala)
+      sessionStorage.setItem('codigoSala', codigoSala)
       commit('SET_SALA', { codigoSala, esCreador: true })
     },
     unirse({ commit }, codigoSala) {
-      localStorage.setItem('codigoSala', codigoSala)
+      sessionStorage.setItem('codigoSala', codigoSala)
       commit('SET_SALA', { codigoSala, esCreador: false })
     },
     resetSala({ commit }) {
@@ -224,7 +224,7 @@ export default {
       commit('SET_RESULTADO', resultado)
     },
     salir({ commit }) {
-      localStorage.removeItem('codigoSala')
+      sessionStorage.removeItem('codigoSala')
       commit('CLEAR_SALA')
     },
     setNarrador({ commit }, nombreNarrador) {
@@ -253,6 +253,9 @@ export default {
     },
     setBrujaPocionMuerte({ commit }) {
       commit('SET_BRUJA_POCION_MUERTE')
+    },
+    setMentorNinno({ commit }, nombreMentor) {
+      commit('SET_MENTOR_NINNO', nombreMentor)
     },
   },
 

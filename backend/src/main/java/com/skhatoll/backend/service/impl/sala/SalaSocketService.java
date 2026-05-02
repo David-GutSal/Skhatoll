@@ -24,7 +24,7 @@ public class SalaSocketService {
     // -------------------------------------------------------
     public void notificarNuevoJugador(String codigoSala, List<JugadorDto> jugadores) {
         messagingTemplate.convertAndSend(
-                WS_SALA,
+                String.format(WS_SALA, codigoSala),
                 new JugadoresActualizadosEvent(WS_EVENTO_JUGADOR_UNIDO, jugadores));
     }
 
@@ -34,7 +34,7 @@ public class SalaSocketService {
     // -------------------------------------------------------
     public void notificarInicio(String codigoSala) {
         messagingTemplate.convertAndSend(
-                WS_SALA_INICIO,
+                String.format(WS_SALA_INICIO, codigoSala),
                 new PartidaIniciadaEvent(WS_EVENTO_PARTIDA_INICIADA));
     }
 
@@ -85,7 +85,7 @@ public class SalaSocketService {
 
     public void notificarAlcalde(String codigoSala, String nombreAlcalde) {
         messagingTemplate.convertAndSend(
-                WS_ALCALDE,
+                String.format(WS_ALCALDE, codigoSala),
                 new AlcaldeEvent(WS_EVENTO_ALCALDE_ELEGIDO, nombreAlcalde));
     }
 

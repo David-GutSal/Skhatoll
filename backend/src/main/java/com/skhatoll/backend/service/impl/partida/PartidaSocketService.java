@@ -26,7 +26,7 @@ public class PartidaSocketService {
     // Canal: /topic/partida/{codigo}/fase
     // -------------------------------------------------------
     public void notificarCambioFase(String codigoSala, Sala.EstadoDia nuevaFase) {
-        messagingTemplate.convertAndSend(WS_FASE, new FaseEvent(WS_EVENTO_CAMBIO_FASE, nuevaFase.name()));
+        messagingTemplate.convertAndSend(String.format(WS_FASE, codigoSala), new FaseEvent(WS_EVENTO_CAMBIO_FASE, nuevaFase.name()));
     }
 
     // -------------------------------------------------------
@@ -34,7 +34,7 @@ public class PartidaSocketService {
     // Canal: /topic/partida/{codigo}/votacion
     // -------------------------------------------------------
     public void notificarVotacion(String codigoSala, Integer idSesion, String tipo, boolean abierta) {
-        messagingTemplate.convertAndSend(WS_VOTACION, new VotacionEvent(abierta ? WS_EVENTO_VOTACION_ABIERTA : WS_EVENTO_VOTACION_CERRADA, idSesion, tipo, abierta));
+        messagingTemplate.convertAndSend(String.format(WS_VOTACION, codigoSala), new VotacionEvent(abierta ? WS_EVENTO_VOTACION_ABIERTA : WS_EVENTO_VOTACION_CERRADA, idSesion, tipo, abierta));
     }
 
     // -------------------------------------------------------
@@ -50,7 +50,7 @@ public class PartidaSocketService {
     // Canal: /topic/partida/{codigo}/votos
     // -------------------------------------------------------
     public void notificarVotos(String codigoSala, List<VotoDto> votos) {
-        messagingTemplate.convertAndSend(WS_VOTOS, new VotosEvent(WS_EVENTO_VOTOS_ACTUALIZADOS, votos));
+        messagingTemplate.convertAndSend(String.format(WS_VOTOS, codigoSala), new VotosEvent(WS_EVENTO_VOTOS_ACTUALIZADOS, votos));
     }
 
     // -------------------------------------------------------
@@ -58,7 +58,7 @@ public class PartidaSocketService {
     // Canal: /topic/partida/{codigo}/muerte
     // -------------------------------------------------------
     public void notificarMuerte(String codigoSala, MuerteConfirmadaDto muerte) {
-        messagingTemplate.convertAndSend(WS_MUERTE, muerte);
+        messagingTemplate.convertAndSend(String.format(WS_MUERTE, codigoSala), muerte);
     }
 
     // -------------------------------------------------------
@@ -66,7 +66,7 @@ public class PartidaSocketService {
     // Canal: /topic/partida/{codigo}/fin
     // -------------------------------------------------------
     public void notificarFinPartida(String codigoSala, FinPartidaDto fin) {
-        messagingTemplate.convertAndSend(WS_FIN, fin);
+        messagingTemplate.convertAndSend(String.format(WS_FIN, codigoSala), fin);
     }
 
     // -------------------------------------------------------

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/salas", produces = "application/json")
+@RequestMapping("/salas")
 @RequiredArgsConstructor
 public class SalaController {
 
@@ -44,7 +44,7 @@ public class SalaController {
     // Devuelve la lista de jugadores en la sala
     // -------------------------------------------------------
     @GetMapping("/{codigo}/jugadores")
-    public ResponseEntity<?> getJugadores(@PathVariable String codigo) {
+    public ResponseEntity<List<JugadorDto>> getJugadores(@PathVariable String codigo) {
         return ResponseEntity.ok(jugadorService.getJugadores(codigo));
     }
 

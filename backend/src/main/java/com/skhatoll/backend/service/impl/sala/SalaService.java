@@ -1,17 +1,12 @@
 package com.skhatoll.backend.service.impl.sala;
 
 import com.skhatoll.backend.dto.sala.*;
-import com.skhatoll.backend.entities.Rol;
-import com.skhatoll.backend.entities.Sala;
-import com.skhatoll.backend.entities.SalaUsuario;
-import com.skhatoll.backend.repository.RolRepository;
-import com.skhatoll.backend.repository.SalaRepository;
-import com.skhatoll.backend.repository.SalaUsuarioRepository;
-import com.skhatoll.backend.entities.Usuario;
-import com.skhatoll.backend.repository.UsuarioRepository;
+import com.skhatoll.backend.entities.*;
+import com.skhatoll.backend.repository.*;
 import com.skhatoll.backend.service.interfaces.jugador.IJugadorService;
 import com.skhatoll.backend.service.interfaces.sala.ISalaService;
 import com.skhatoll.backend.util.constants.ErrorMessages;
+import com.skhatoll.backend.util.constants.GameConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -36,6 +31,7 @@ public class SalaService implements ISalaService {
     private final RolRepository rolRepository;
     private final SalaSocketService salaSocketService;
     private final IJugadorService jugadorService;
+    private final HabilidadSalaRepository habilidadSalaRepository;
 
     // -------------------------------------------------------
     // Obtener el usuario autenticado desde el contexto de Security
@@ -203,6 +199,8 @@ public class SalaService implements ISalaService {
             su.setRol(rol);
             salaUsuarioRepository.save(su);
 
+            asignarHabilidades(su, rol);
+
             salaSocketService.enviarRolPrivado(
                     su.getUsuario().getNombre(),
                     new SalaSocketService.RolAsignadoEvent(
@@ -285,5 +283,28 @@ public class SalaService implements ISalaService {
 
         List<JugadorDto> jugadoresActualizados = jugadorService.getJugadores(codigoSala);
         salaSocketService.notificarJugadorSalio(codigoSala, jugadoresActualizados);
+    }
+
+    private void asignarHabilidades(SalaUsuario salaUsuario, Rol rol) {
+        List<String> habilidades = switch (rol.getNombre()) {
+            case GameConstants.ROL_BRUJA -> List.of(
+                    GameConstants.HAB_POCION_VIDA,
+                    GameConstants.HAB_POCION_MUERTE);
+            case GameConstants.ROL_CAZADOR -> List.of(
+                    GameConstants.HAB_DISPARO);
+            case GameConstants.ROL_CUPIDO -> List.of(
+                    GameConstants.HAB_FLECHAZO);
+            case GameConstants.ROL_NINO_SALVAJE -> List.of(
+                    GameConstants.HAB_MODELO);
+            default -> List.of();
+        };
+
+        habilidades.forEach(nombre -> {
+            HabilidadSala habilidad = HabilidadSala.builder()
+                    .idSalaUsuario(salaUsuario)
+                    .nombre(nombre)
+                    .build();
+            habilidadSalaRepository.save(habilidad);
+        });
     }
 }

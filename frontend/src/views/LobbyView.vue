@@ -237,12 +237,6 @@ export default {
           tipo: 'error',
         })
       }
-      if (this.stompClient) {
-        this.stompClient.deactivate()
-        this.stompClient = null
-      }
-      this.salir()
-      this.$router.push({ name: 'sala' })
     },
 
     async copiarParaDiscord() {
@@ -255,23 +249,23 @@ export default {
       })
     },
 
-async salirSala() {
-  try {
-    if (this.stompClient) {
-      this.stompClient.deactivate()
-      this.stompClient = null
-    }
+    async salirSala() {
+      try {
+        if (this.stompClient) {
+          this.stompClient.deactivate()
+          this.stompClient = null
+        }
 
-    await axiosInstance.post(`/salas/${this.codigoSala}/salir`)
-    this.salir()
-    this.$router.push({ name: 'sala' })
-  } catch (error) {
-    this.$store.dispatch('toast/mostrar', {
-      mensaje: 'Error al salir de la sala',
-      tipo: 'error',
-    })
-  }
-},
+        await axiosInstance.post(`/salas/${this.codigoSala}/salir`)
+        this.salir()
+        this.$router.push({ name: 'sala' })
+      } catch (error) {
+        this.$store.dispatch('toast/mostrar', {
+          mensaje: 'Error al salir de la sala',
+          tipo: 'error',
+        })
+      }
+    },
 
     conectarWebSocket() {
       const token = this.$store.getters['auth/token']
@@ -313,11 +307,22 @@ async salirSala() {
           }
         })
 
-      cliente.subscribe(`/topic/sala/${this.codigoSala}`, (msg) => {
-        const payload = JSON.parse(msg.body)
-        if (payload.tipo === 'JUGADOR_UNIDO') this.setJugadores(payload.jugadores)
-        if (payload.tipo === 'JUGADOR_SALIO') this.setJugadores(payload.jugadores)
-      })
+        cliente.subscribe(`/topic/sala/${this.codigoSala}`, (msg) => {
+          const payload = JSON.parse(msg.body)
+          if (payload.tipo === 'JUGADOR_UNIDO') {
+            this.setJugadores(payload.jugadores)
+            const ultimo = payload.jugadores[payload.jugadores.length - 1]
+            if (ultimo && ultimo.nombre !== this.nombre) {
+              this.$store.dispatch('toast/mostrar', {
+                mensaje: `${ultimo.nombre} se ha unido a la partida`,
+                tipo: 'info',
+              })
+            }
+          }
+          if (payload.tipo === 'JUGADOR_SALIO') {
+            this.setJugadores(payload.jugadores)
+          }
+        })
       }
       cliente.activate()
       this.stompClient = cliente

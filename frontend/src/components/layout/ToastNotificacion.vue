@@ -263,6 +263,10 @@ export default {
   animation: salir 0.3s ease-in forwards;
 }
 
+.fa-sun{
+  color: #e4ba03;
+}
+
 @keyframes entrar {
   from {
     opacity: 0;

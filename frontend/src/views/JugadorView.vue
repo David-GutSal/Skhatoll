@@ -71,6 +71,10 @@
       />
     </div>
 
+    <div class="boton-arriba-wrapper">
+      <button class="boton-arriba">Volver Arriba</button>
+    </div>
+
     <div class="footer-aldea" :class="esDia ? 'footer-dia' : 'footer-noche'"></div>
   </div>
 </template>
@@ -297,7 +301,7 @@ export default {
           this.$store.dispatch('toast/mostrar', {
             mensaje:
               payload.fase === 'DIA'
-                ? 'La aldea despierta al amanecer'
+                ? 'La aldea despierta ¡Buenos días!'
                 : 'Cae la noche sobre Castronegro',
             tipo: payload.fase === 'DIA' ? 'dia' : 'noche',
           })
@@ -404,9 +408,9 @@ export default {
                     : payload.tipoVotacion === 'DIA'
                       ? 'Votación de linchamiento en curso'
                       : 'Los lobos están decidiendo su víctima...',
-                tipo: payload.tipoVotacion === 'LOBOS' ? 'error' : 'aviso',
+                tipo: payload.tipoVotacion === 'LOBOS' ? 'info' : 'info',
               })
-              
+
               if (payload.tipoVotacion === 'ALCALDE') {
                 this.mensajeEvento = 'ELECCIONES ABIERTAS'
               } else if (payload.tipoVotacion === 'DIA') {
@@ -684,5 +688,42 @@ export default {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.boton-arriba-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 15px;
+  position: relative;
+  flex-wrap: wrap;
+}
+
+.boton-arriba {
+  background: #000000;
+  border: 3px solid white;
+  color: white;
+  padding: 16px 36px;
+  border-radius: 10px;
+  font-family: 'Cinzel', Arial, sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease;
+}
+
+.boton-arriba:hover {
+  background: #a30000;
+}
+
+.boton-arriba:active {
+  transform: scale(0.96);
 }
 </style>

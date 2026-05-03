@@ -201,7 +201,7 @@ export default {
 
         await axiosInstance.put(`/partida/${this.codigoSala}/fase`)
         this.$store.dispatch('toast/mostrar', {
-          mensaje: esNoche ? 'Cae la noche sobre Castronegro' : 'La aldea despierta ¡Bueos días!',
+          mensaje: esNoche ? 'Cae la noche sobre Castronegro' : 'La aldea despierta ¡Buenos días!',
           tipo: esNoche ? 'noche' : 'dia',
         })
       } catch (error) {
@@ -313,7 +313,7 @@ export default {
                   : payload.tipoVotacion === 'DIA'
                     ? 'Votación de linchamiento en curso'
                     : 'Los lobos están decidiendo su víctima...',
-              tipo: payload.tipoVotacion === 'LOBOS' ? 'error' : 'aviso',
+              tipo: payload.tipoVotacion === 'LOBOS' ? 'info' : 'info',
             })
           }
 

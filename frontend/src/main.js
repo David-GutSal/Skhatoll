@@ -7,9 +7,9 @@ import './assets/styles/main.css'
 
 const app = createApp(App)
 // 🟢 RECUPERAR AUTH AL RECARGAR
-const token = localStorage.getItem('token')
-const nombre = localStorage.getItem('nombre')
-const uuid = localStorage.getItem('uuid')
+const token = sessionStorage.getItem('token')
+const nombre = sessionStorage.getItem('nombre')
+const uuid = sessionStorage.getItem('uuid')
 
 if (token && nombre) {
   store.dispatch('auth/login', { token, nombre, uuid })

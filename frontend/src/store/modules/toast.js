@@ -5,6 +5,7 @@ export default {
     mensaje: null,
     tipo: 'info',
     visible: false,
+    cola: [],
   }),
 
   mutations: {
@@ -15,20 +16,35 @@ export default {
     },
     OCULTAR(state) {
       state.visible = false
+      state.mensaje = null
+    },
+    ENCOLAR(state, payload) {
+      state.cola.push(payload)
+    },
+    DESENCOLAR(state) {
+      state.cola.shift()
     },
   },
 
-  actions: {
-    mostrar({ commit, state }, { mensaje, tipo = 'info' }) {
+actions: {
+    mostrar({ commit, state, dispatch }, { mensaje, tipo = 'info' }) {
       if (state.visible) {
-        commit('OCULTAR')
-        setTimeout(() => commit('MOSTRAR', { mensaje, tipo }), 50)
+
+        commit('ENCOLAR', { mensaje, tipo })
       } else {
         commit('MOSTRAR', { mensaje, tipo })
       }
     },
-    ocultar({ commit }) {
+ 
+    ocultar({ commit, state, dispatch }) {
       commit('OCULTAR')
+      if (state.cola.length > 0) {
+        const siguiente = state.cola[0]
+        commit('DESENCOLAR')
+        setTimeout(() => {
+          dispatch('mostrar', siguiente)
+        }, 300)
+      }
     },
   },
 
@@ -36,5 +52,6 @@ export default {
     mensaje: (state) => state.mensaje,
     tipo: (state) => state.tipo,
     visible: (state) => state.visible,
+    colaPendiente: (state) => state.cola.length,
   },
 }

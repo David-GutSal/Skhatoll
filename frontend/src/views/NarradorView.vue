@@ -146,7 +146,7 @@ export default {
 
   async created() {
     if (!this.codigoSala) {
-      const codigoGuardado = localStorage.getItem('codigoSala')
+      const codigoGuardado = sessionStorage.getItem('codigoSala')
       if (codigoGuardado) {
         this.$store.dispatch('sala/unirse', codigoGuardado)
       } else {

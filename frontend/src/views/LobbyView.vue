@@ -237,6 +237,12 @@ export default {
           tipo: 'error',
         })
       }
+      if (this.stompClient) {
+        this.stompClient.deactivate()
+        this.stompClient = null
+      }
+      this.salir()
+      this.$router.push({ name: 'sala' })
     },
 
     async copiarParaDiscord() {
@@ -274,13 +280,26 @@ async salirSala() {
         connectHeaders: { Authorization: `Bearer ${token}` },
       })
       cliente.onConnect = () => {
-        cliente.subscribe(`/topic/sala/${this.codigoSala}`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          if (payload.tipo === 'JUGADOR_UNIDO') this.setJugadores(payload.jugadores)
-        })
+        let rolRecibido = false
+        let inicioRecibido = false
+
+        const intentarNavegar = () => {
+          if (rolRecibido && inicioRecibido) {
+            this.$router.push({ name: 'cargaRol' })
+          }
+        }
+
         cliente.subscribe(`/topic/sala/${this.codigoSala}/inicio`, () => {
-          this.$router.push({ name: 'cargaRol' })
+          setTimeout(() => {
+            const esCreador = this.$store.getters['sala/esCreador']
+            if (esCreador) {
+              this.$router.push({ name: 'esperaNarrador' })
+            } else {
+              this.$router.push({ name: 'cargaRol' })
+            }
+          }, 500)
         })
+
         cliente.subscribe(`/user/queue/rol`, (msg) => {
           const payload = JSON.parse(msg.body)
           if (payload.tipo === 'ROL_ASIGNADO') {
@@ -289,8 +308,16 @@ async salirSala() {
               descripcionRol: payload.descripcionRol,
               bando: payload.bando,
             })
+            rolRecibido = true
+            intentarNavegar()
           }
         })
+
+      cliente.subscribe(`/topic/sala/${this.codigoSala}`, (msg) => {
+        const payload = JSON.parse(msg.body)
+        if (payload.tipo === 'JUGADOR_UNIDO') this.setJugadores(payload.jugadores)
+        if (payload.tipo === 'JUGADOR_SALIO') this.setJugadores(payload.jugadores)
+      })
       }
       cliente.activate()
       this.stompClient = cliente

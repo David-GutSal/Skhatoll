@@ -1,11 +1,28 @@
 <template>
   <Transition name="toast">
-    <div v-if="visible" class="toast" :class="`toast-${tipo}`" @click="ocultar">
+    <div
+      v-if="visible"
+      class="toast"
+      :class="`toast-${tipo}`"
+      @click="ocultar"
+      @mouseenter="pausarTimer"
+      @mouseleave="reanudarTimer"
+    >
+      <button class="toast-cerrar" @click.stop="ocultar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
       <span class="toast-icono">
         <i :class="icono"></i>
       </span>
-      <span class="toast-texto">{{ mensaje }}</span>
-      <div class="toast-barra"></div>
+
+      <div class="toast-cuerpo">
+        <span class="toast-texto">{{ mensaje }}</span>
+
+        <span v-if="colaPendiente > 0" class="toast-cola-badge"> +{{ colaPendiente }} más </span>
+      </div>
+
+      <div class="toast-barra" :key="mensaje" :style="{ animationDuration: duracion + 'ms' }"></div>
     </div>
   </Transition>
 </template>
@@ -16,8 +33,16 @@ import { mapGetters } from 'vuex'
 export default {
   name: 'ToastNotificacion',
 
+  data() {
+    return {
+      _timer: null,
+      _tiempoRestante: null,
+      _tiempoInicio: null,
+    }
+  },
+
   computed: {
-    ...mapGetters('toast', ['mensaje', 'tipo', 'visible']),
+    ...mapGetters('toast', ['mensaje', 'tipo', 'visible', 'colaPendiente']),
 
     icono() {
       const iconos = {
@@ -30,15 +55,16 @@ export default {
       }
       return iconos[this.tipo] || iconos.info
     },
+
+    duracion() {
+      return this.tipo === 'error' ? 6000 : 4000
+    },
   },
 
   watch: {
     visible(val) {
       if (val) {
-        clearTimeout(this._timer)
-        this._timer = setTimeout(() => {
-          this.$store.dispatch('toast/ocultar')
-        }, 4000)
+        this.iniciarTimer()
       }
     },
   },
@@ -48,6 +74,29 @@ export default {
   },
 
   methods: {
+    iniciarTimer(tiempoRestante = null) {
+      clearTimeout(this._timer)
+      const tiempo = tiempoRestante ?? this.duracion
+      this._tiempoRestante = tiempo
+      this._tiempoInicio = Date.now()
+      this._timer = setTimeout(() => {
+        this.$store.dispatch('toast/ocultar')
+      }, tiempo)
+    },
+
+    pausarTimer() {
+      if (!this._tiempoInicio) return
+      clearTimeout(this._timer)
+      const transcurrido = Date.now() - this._tiempoInicio
+      this._tiempoRestante = Math.max(0, this._tiempoRestante - transcurrido)
+    },
+
+    reanudarTimer() {
+      if (this._tiempoRestante > 0) {
+        this.iniciarTimer(this._tiempoRestante)
+      }
+    },
+
     ocultar() {
       clearTimeout(this._timer)
       this.$store.dispatch('toast/ocultar')
@@ -63,11 +112,12 @@ export default {
   right: 28px;
   z-index: 9999;
   width: 420px;
+  max-width: calc(100vw - 32px);
   display: flex;
   align-items: flex-start;
   gap: 12px;
   padding: 18px 20px;
-  border-radius: 12px;
+  border-radius: 15px;
   background: rgba(10, 10, 10, 0.96);
   border-left: 5px solid;
   font-family: 'Raleway', Arial, sans-serif;
@@ -77,6 +127,7 @@ export default {
   cursor: pointer;
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  position: fixed;
 }
 
 .toast-exito {
@@ -119,15 +170,67 @@ export default {
   background: #0087bd;
 }
 
+.toast-dia {
+  border-color: #0087bd;
+}
+.toast-dia .toast-icono {
+  color: #4db8f0;
+}
+.toast-dia .toast-barra {
+  background: #0087bd;
+}
+
+.toast-noche {
+  border-color: #5500a5;
+}
+.toast-noche .toast-icono {
+  color: #aa66ff;
+}
+.toast-noche .toast-barra {
+  background: #5500a5;
+}
+
 .toast-icono {
   font-size: 1.2rem;
   flex-shrink: 0;
-  margin-top: 1px;
+  margin-top: 2px;
+}
+
+.toast-cuerpo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .toast-texto {
-  flex: 1;
   line-height: 1.4;
+}
+
+.toast-cola-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #888;
+  letter-spacing: 0.03em;
+}
+
+.toast-cerrar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: #c50000;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.toast-cerrar:hover {
+  color: white;
 }
 
 .toast-barra {
@@ -136,7 +239,7 @@ export default {
   left: 0;
   height: 3px;
   width: 100%;
-  animation: barra 4s linear forwards;
+  animation: barra linear forwards;
 }
 
 @keyframes barra {
@@ -148,9 +251,14 @@ export default {
   }
 }
 
+.toast:hover .toast-barra {
+  animation-play-state: paused;
+}
+
 .toast-enter-active {
   animation: entrar 0.35s cubic-bezier(0.34, 1.4, 0.64, 1) forwards;
 }
+
 .toast-leave-active {
   animation: salir 0.3s ease-in forwards;
 }
@@ -169,19 +277,11 @@ export default {
 @keyframes salir {
   from {
     opacity: 1;
-    transform: translateX(0) scale(1);
+    transform: translateY(0) scale(1);
   }
   to {
     opacity: 0;
-    transform: translateX(60px) scale(0.88);
+    transform: translateY(-20px) scale(0.95);
   }
 }
-
-.toast-dia   { border-color: #0087bd; }
-.toast-dia .toast-icono   { color: #4db8f0; }
-.toast-dia .toast-barra   { background: #0087bd; }
-
-.toast-noche { border-color: #5500a5; }
-.toast-noche .toast-icono { color: #aa66ff; }
-.toast-noche .toast-barra { background: #5500a5; }
 </style>

@@ -141,7 +141,10 @@ export default {
           jugador2: this.enamorado2,
         })
       } catch (error) {
-        alert('Error al usar el flechazo')
+        this.$store.dispatch('toast/mostrar', {
+          mensaje: 'Error al usar el flechazo',
+          tipo: 'error',
+        })
       }
     },
 

@@ -1,14 +1,11 @@
 <template>
   <div class="poder-lobo">
-
     <div class="poder-titulo">
       <i class="fa-solid fa-bone"></i>
       Tu poder: Devorar
     </div>
 
-    <p class="poder-descripcion">
-      ¡Es hora de cazar! ¿A qué jugador vais a devorar esta noche?
-    </p>
+    <p class="poder-descripcion">¡Es hora de cazar! ¿A qué jugador vais a devorar esta noche?</p>
 
     <div class="victima-box" :class="jugadorSeleccionado ? 'victima-activa' : 'victima-vacia'">
       <i class="fa-solid fa-person"></i>
@@ -16,11 +13,7 @@
       <span v-else class="victima-placeholder">Selecciona una víctima en el tablero</span>
     </div>
 
-    <button
-      class="btn-poder"
-      :disabled="!jugadorSeleccionado || poderUsado"
-      @click="devorar"
-    >
+    <button class="btn-poder" :disabled="!jugadorSeleccionado || poderUsado" @click="devorar">
       <i class="fa-solid fa-bone"></i>
       {{ poderUsado ? 'Ya has votado esta noche' : 'Devorar' }}
     </button>
@@ -39,7 +32,6 @@
         <span class="voto-victima">{{ voto.nombreObjetivo }}</span>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -94,7 +86,7 @@ export default {
         this.poderUsado = true
         this.$emit('devorar')
       } catch (error) {
-        alert('Error al votar')
+        this.$store.dispatch('toast/mostrar', { mensaje: 'Error al votar', tipo: 'error' })
       }
     },
 
@@ -189,7 +181,9 @@ export default {
   font-weight: 700;
   font-size: 0.95rem;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .btn-poder:hover:not(:disabled) {

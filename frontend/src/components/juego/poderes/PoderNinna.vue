@@ -102,7 +102,7 @@ export default {
       //     this.sospechosos = []
       //   }
       // } catch {
-      //   alert('Error al espiar')
+      //   this.$store.dispatch('toast/mostrar', { mensaje: 'Error al espiar', tipo: 'error' })
       //   this.cargando = false
       //   return
       // }
@@ -203,7 +203,6 @@ export default {
 
 .ventana-abierta {
   min-height: 320px;
-  
 }
 
 .ventana-marco::before {

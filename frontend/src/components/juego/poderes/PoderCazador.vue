@@ -1,6 +1,5 @@
 <template>
   <div class="poder-cazador">
-
     <!-- Título -->
     <div class="titulo-caja">
       <h2 class="titulo">¡Has sido eliminado!</h2>
@@ -29,7 +28,6 @@
       <i class="fa-solid fa-skull"></i>
       Tu venganza está hecha. Descansa en paz.
     </p>
-
   </div>
 </template>
 
@@ -71,7 +69,10 @@ export default {
           this.$emit('finalizarTurno')
         }, 2500)
       } catch {
-        alert('Error al usar el disparo')
+        this.$store.dispatch('toast/mostrar', {
+          mensaje: 'Error al usar el disparo',
+          tipo: 'error',
+        })
       }
     },
 
@@ -214,7 +215,13 @@ export default {
 }
 
 @keyframes aparecer {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

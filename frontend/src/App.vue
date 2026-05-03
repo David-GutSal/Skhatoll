@@ -11,6 +11,7 @@
     </template>
 
     <router-view />
+    <ToastNotificacion /> 
      <Footer v-if="!$route.meta.sinLayout" />
   </div>
 </template>
@@ -19,11 +20,11 @@
 import TopBar from '@/components/layout/TopBar.vue'
 import Header from '@/components/layout/Header.vue'
 import Navbar from '@/components/layout/Navbar.vue'
-import Footer from '@/components/layout/Footer.vue';
-
+import Footer from '@/components/layout/Footer.vue'
+import ToastNotificacion from '@/components/layout/ToastNotificacion.vue'
 export default {
   name: 'App',
-  components: { TopBar, Header, Navbar, Footer},
+  components: { TopBar, Header, Navbar, Footer, ToastNotificacion},
 
   data() {
     return {

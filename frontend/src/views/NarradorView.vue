@@ -304,22 +304,38 @@ export default {
           console.log('📩 VOTACION PAYLOAD COMPLETO:', JSON.stringify(payload))
 
           if (payload.tipo === 'VOTACION_ABIERTA') {
-            this.idSesionActual = payload.idSesion
+            this.votacionActiva = true
+            this.tipoVotacionLocal = payload.tipoVotacion
             this.$store.dispatch('sala/setTipoVotacion', payload.tipoVotacion)
-            this.$store.dispatch('toast/mostrar', {
-              mensaje:
-                payload.tipoVotacion === 'ALCALDE'
-                  ? 'Se han abierto las elecciones de alcalde'
-                  : payload.tipoVotacion === 'DIA'
-                    ? 'Votación de linchamiento en curso'
-                    : 'Los lobos están decidiendo su víctima...',
-              tipo: payload.tipoVotacion === 'LOBOS' ? 'info' : 'info',
-            })
+
+            switch (payload.tipoVotacion) {
+              case 'ALCALDE':
+                this.$store.dispatch('toast/mostrar', {
+                  mensaje: 'Elecciones de alcalde abiertas',
+                  tipo: 'info',
+                })
+                break
+              case 'DIA':
+                this.$store.dispatch('toast/mostrar', {
+                  mensaje: 'Votación de linchamiento en curso',
+                  tipo: 'info',
+                })
+                break
+              case 'LOBOS':
+                this.$store.dispatch('toast/mostrar', {
+                  mensaje: 'Los lobos salen de cazería...',
+                  tipo: 'licantropia',
+                })
+                break
+            }
+            return
           }
 
           if (payload.tipo === 'VOTACION_CERRADA') {
-            this.idSesionActual = null
+            this.votacionActiva = false
+            this.tipoVotacionLocal = null
             this.$store.dispatch('sala/setTipoVotacion', null)
+            return
           }
 
           // Resultado de votación de lobos — marcar semimuerto
@@ -587,6 +603,17 @@ export default {
               nombreJugador: jugador.nombre,
             }),
           })
+
+          const toastsPorRol = {
+            Vidente: { mensaje: 'La Vidente está teniendo una visión...', tipo: 'videncia' },
+            Bruja: { mensaje: 'La Bruja prepara sus pociones...', tipo: 'brujeria' },
+            Cupido: { mensaje: 'Cupido está lanzando sus flechas de amor...', tipo: 'amorio' },
+          }
+
+          const toastRol = toastsPorRol[jugador.nombreRol]
+          if (toastRol) {
+            this.$store.dispatch('toast/mostrar', toastRol)
+          }
         } catch (error) {
           this.$store.dispatch('toast/mostrar', {
             mensaje:

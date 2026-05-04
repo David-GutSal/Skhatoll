@@ -10,9 +10,14 @@
       </div>
     </template>
 
-    <router-view />
-    <ToastNotificacion /> 
-     <Footer v-if="!$route.meta.sinLayout" />
+    <router-view v-slot="{ Component }">
+      <transition name="fade" mode="out-in">
+        <component :is="Component" />
+      </transition>
+    </router-view>
+
+    <ToastNotificacion />
+    <Footer v-if="!$route.meta.sinLayout" />
   </div>
 </template>
 
@@ -24,7 +29,7 @@ import Footer from '@/components/layout/Footer.vue'
 import ToastNotificacion from '@/components/layout/ToastNotificacion.vue'
 export default {
   name: 'App',
-  components: { TopBar, Header, Navbar, Footer, ToastNotificacion},
+  components: { TopBar, Header, Navbar, Footer, ToastNotificacion },
 
   data() {
     return {
@@ -54,7 +59,12 @@ body {
   margin: 0;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: 'Cinzel', Arial, sans-serif;
 }
 
@@ -91,5 +101,15 @@ h1, h2, h3, h4, h5, h6 {
   .sticky-navbar {
     top: 150px;
   }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

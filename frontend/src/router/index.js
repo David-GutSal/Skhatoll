@@ -94,6 +94,40 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+scrollBehavior(to, from, savedPosition) {
+  if (savedPosition) {
+    return savedPosition
+  }
+
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      if (to.path === '/') {
+        resolve({ top: 0, behavior: 'smooth' })
+      } else {
+        const ancho = window.innerWidth
+        let posicionFinal = 0
+
+        if (ancho > 1200) {
+          posicionFinal = 410
+        } 
+        else if (ancho <= 1200 && ancho > 847) {
+          posicionFinal = 180
+        } 
+        else if (ancho <= 847 && ancho > 480) {
+          posicionFinal = 170
+        } 
+        else {
+          posicionFinal = 140
+        }
+
+        resolve({ 
+          top: posicionFinal, 
+          behavior: 'smooth' 
+        })
+      }
+    }, 500)
+    })
+  },
 })
 
 export default router

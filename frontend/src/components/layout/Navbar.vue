@@ -1,5 +1,5 @@
 <template>
-  <nav class="navbar">
+  <nav class="navbar" id="mi-navbar">
     <router-link to="/">Inicio</router-link>
     <router-link to="/sala">Sala de juegos</router-link>
     <router-link to="/reglas">Reglas y juegos</router-link>
@@ -19,7 +19,7 @@ export default {
   display:flex;
   justify-content:center;
   gap:40px;
-  padding:18px 40px;
+  padding:28px 40px;
   background:#000000;
   min-height: 60px;
   align-items: center;
@@ -31,7 +31,7 @@ export default {
   text-decoration: none;
   font-family: 'Cinzel', Arial, sans-serif;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 1.4rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   position: relative;
@@ -72,13 +72,15 @@ export default {
   width: 100%;
 }
  
-@media (max-width: 690px) {
+@media (max-width: 970px) {
   .navbar {
     flex-direction: column;
     gap: 14px;
     padding: 18px 20px;
     align-items: center;
   }
+
+  .navbar a {font-size: 1.2rem;}
 }
 
 </style>

@@ -230,24 +230,29 @@ export default {
   display: block;
   max-width: 100%;
   margin: 0 auto;
-  border: 6px solid #e4ba03;
-  border-radius: 15px;
   transition: transform 0.4s ease;
+  height: auto;
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
 }
 
 .imagen-hover-zoom {
   position: relative;
   display: inline-block;
-  max-width: 100%;
+  max-width: fit-content;
   margin: 0 auto;
+   overflow: hidden; 
   cursor: zoom-in;
+  border: 6px solid #e4ba03;
+  border-radius: 15px;
 }
 
 .imagen-hover-zoom:hover .img-resumen {
-  transform: scale(1.1);
+  transform: scale(1.3);
 }
 
 .lupa-hover {
+  z-index: 10;
   position: absolute;
   top: 20px;
   right: 20px;

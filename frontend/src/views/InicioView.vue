@@ -406,17 +406,45 @@ export default {
   font-size: 1rem;
   border-radius: 12px;
   text-decoration: none;
-  transition: all 0.2s ease;
   margin-top: 35px;
   border: none;
   cursor: pointer;
+  transition: all 0.4s ease;
+}
+
+.btn-bloque:hover {
+  transform: scale(0.96);
+}
+
+.btn-bloque:active {
+  transform: scale(0.92);
+  transition: transform 0.15s ease;
 }
 
 .btn-rojo { background: #cc0000; color: white; }
-.btn-rojo:hover { background: white; color: #cc0000; }
+.btn-rojo:hover { background: white; color: #000000;}
 
 .btn-dorado { background: #e4ba03; color: white; }
-.btn-dorado:hover { background: white; color: #e4ba03; }
+.btn-dorado:hover { background: white; color: #e4ba03;}
+
+.btn-sala-juegos:hover {
+  background: #000000;
+  animation: vaiven 0.4s ease-in-out infinite; 
+  box-shadow: 0 0 20px rgba(54, 54, 54, 0.4);
+}
+
+@keyframes vaiven {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(4px); }
+  50% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+  100% { transform: translateX(0); }
+}
+
+.btn-sala-juegos:active {
+  transform: scale(0.9);
+  animation: none;
+}
 
 .bloque-central {
   display: flex;
@@ -533,17 +561,17 @@ font-size: 1.2rem;
   padding: 16px 40px;
   border-radius: 50px;
   text-decoration: none;
-  transition: all 0.25s ease;
+  transition: all 0.4s ease;
 }
 
 .btn-sala-juegos:hover {
   background: #000000;
-  transform: translateY(-3px);
   box-shadow: 0 6px 15px rgba(85, 0, 0, 0.3);
+  animation: vaiven 0.8s ease-in-out infinite;
 }
 
 .btn-sala-juegos:active {
-  transform: scale(0.93);
+  transform: scale(0.93)!important;
 }
 
 .img-fenrir {
@@ -609,6 +637,7 @@ font-size: 1.2rem;
   .btn-sala-juegos {
     padding: 13px 32px;
     font-size: 1rem;
+    transition: all 0.4s ease;
   }
 
   .titulo-skhatoll {

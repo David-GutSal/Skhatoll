@@ -26,7 +26,7 @@
           <div v-if="ventanaAbierta" class="ventana-contenido">
             <p class="frase-ninna">
               Ves sombras oscuras que parecen ser tus vecinos pero...
-              <strong>¡Qué es eso! ¡Parece que uno tiene orejas y unos colmillos afilados!</strong>
+              <strong>¡Qué es eso! ¡Parece que uno de ellos tiene orejas y unos colmillos afilados!</strong>
             </p>
             <div class="sospechosos-lista">
               <span v-for="nombre in sospechosos" :key="nombre" class="chip-sospechoso">
@@ -360,13 +360,12 @@ export default {
 
 .btn-dormir {
   background: #830000;
-  color: #aaa;
+  color: white;
   border-top: 1px solid #830000;
 }
 
 .btn-dormir:hover {
   background: #1a1a2e;
-  color: white;
 }
 
 .fade-ventana-enter-active {

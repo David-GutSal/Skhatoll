@@ -72,7 +72,9 @@
     </div>
 
     <div class="boton-arriba-wrapper">
-      <button class="boton-arriba">Volver Arriba</button>
+      <button class="boton-arriba" @click="irArriba">
+        <i class="fa-solid fa-arrow-up"></i> Volver Arriba
+      </button>
     </div>
 
     <div class="footer-aldea" :class="esDia ? 'footer-dia' : 'footer-noche'"></div>
@@ -104,7 +106,6 @@ export default {
     return {
       esDia: true,
       votacionActiva: false,
-      // ✅ renombrado a tipoVotacionLocal para evitar conflicto con el getter del store
       tipoVotacionLocal: null,
       esMiTurno: false,
       jugadorSeleccionado: null,
@@ -170,6 +171,10 @@ export default {
       this.$refs.zonaPoderes.$el.scrollIntoView({ behavior: 'smooth' })
     },
 
+    irArriba() {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    },
+
     seleccionarJugador(j) {
       if (this.enamorados) {
         const miNombre = this.nombre
@@ -180,7 +185,6 @@ export default {
           if (j.nombre === nombrePareja) return
         }
       }
-
       if (!this.votacionActiva && !this.esMiTurno) return
       this.jugadorSeleccionado = j
     },
@@ -239,18 +243,13 @@ export default {
     },
 
     manejarVidaUsada(nombreJugador) {
-      // Publicar por STOMP para que el narrador también actualice su store
       this.stompClient?.publish({
         destination: `/topic/partida/${this.codigoSala}/turno`,
-        body: JSON.stringify({
-          tipo: 'BRUJA_VIDA',
-          nombreJugador,
-        }),
+        body: JSON.stringify({ tipo: 'BRUJA_VIDA', nombreJugador }),
       })
     },
 
     manejarMentorElegido(data) {
-      // Publicar por WebSocket para que el narrador y el niño vean el icono
       this.stompClient.publish({
         destination: `/topic/partida/${this.codigoSala}/turno`,
         body: JSON.stringify({
@@ -264,7 +263,6 @@ export default {
     finalizarTurno() {
       this.esMiTurno = false
       this.jugadorSeleccionado = null
-
       this.stompClient.publish({
         destination: `/topic/partida/${this.codigoSala}/turno`,
         body: JSON.stringify({
@@ -272,7 +270,6 @@ export default {
           nombreJugador: this.nombre,
         }),
       })
-
       if (this.soyElCazadorMuerto) {
         setTimeout(() => {
           this.$router.push({ name: 'eliminado' })
@@ -281,8 +278,6 @@ export default {
     },
 
     manejarDisparo(jugador) {
-      // El backend ya emite WS /muerte para la víctima del disparo
-      // Solo necesitamos loguear; el finalizarTurno lo emite PoderCazador tras 2.5s
       console.log('🔫 Cazador disparó a:', jugador.nombre)
     },
 
@@ -305,7 +300,6 @@ export default {
                 : 'Cae la noche sobre Castronegro',
             tipo: payload.fase === 'DIA' ? 'dia' : 'noche',
           })
-
           if (payload.fase === 'DIA') {
             this.$store.dispatch('sala/reiniciarVotos')
             this.$store.dispatch('sala/setTipoVotacion', null)
@@ -367,14 +361,12 @@ export default {
         cliente.subscribe(`/topic/partida/${this.codigoSala}/votos`, (msg) => {
           const payload = JSON.parse(msg.body)
           const tipoVotacionActual = this.$store.getters['sala/tipoVotacion']
-
           if (tipoVotacionActual === 'LOBOS') {
             if (this.miRol && this.miRol.toLowerCase() === 'lobo') {
               this.$store.dispatch('sala/actualizarVotos', payload.votos)
             }
             return
           }
-
           this.$store.dispatch('sala/actualizarVotos', payload.votos)
         })
 
@@ -382,7 +374,6 @@ export default {
           const payload = JSON.parse(msg.body)
           if (payload.tipo === 'ALCALDE_ELEGIDO') {
             this.$store.dispatch('sala/designarAlcalde', payload.nombreAlcalde)
-            // ✅ Guardar nombre del alcalde y resetear votos
             this.alcaldeNombre = payload.nombreAlcalde
             this.$store.dispatch('sala/reiniciarVotos')
             this.$store.dispatch('toast/mostrar', {
@@ -392,6 +383,7 @@ export default {
           }
         })
 
+        // ✅ VOTACION — sin toast de lobos aquí, lo gestiona TURNO_LOBOS
         cliente.subscribe(`/topic/partida/${this.codigoSala}/votacion`, (msg) => {
           const payload = JSON.parse(msg.body)
 
@@ -401,22 +393,22 @@ export default {
             if (payload.abierta) {
               this.tipoVotacionLocal = payload.tipoVotacion
               this.$store.dispatch('sala/setTipoVotacion', payload.tipoVotacion)
-              this.$store.dispatch('toast/mostrar', {
-                mensaje:
-                  payload.tipoVotacion === 'ALCALDE'
-                    ? 'Se han abierto las elecciones de alcalde'
-                    : payload.tipoVotacion === 'DIA'
-                      ? 'Votación de linchamiento en curso'
-                      : 'Los lobos están decidiendo su víctima...',
-                tipo: payload.tipoVotacion === 'LOBOS' ? 'info' : 'info',
-              })
 
               if (payload.tipoVotacion === 'ALCALDE') {
                 this.mensajeEvento = 'ELECCIONES ABIERTAS'
+                this.$store.dispatch('toast/mostrar', {
+                  mensaje: 'Se han abierto las elecciones de alcalde',
+                  tipo: 'info',
+                })
               } else if (payload.tipoVotacion === 'DIA') {
                 this.mensajeEvento = 'VOTACIÓN DE LINCHAMIENTO'
+                this.$store.dispatch('toast/mostrar', {
+                  mensaje: 'Votación de linchamiento en curso',
+                  tipo: 'info',
+                })
               } else if (payload.tipoVotacion === 'LOBOS') {
                 this.mensajeEvento = 'LOS LOBOS DECIDEN'
+                
               }
 
               setTimeout(() => {
@@ -429,7 +421,6 @@ export default {
             return
           }
 
-          // Resultado de votación de lobos — marcar semimuerto
           if (payload.tipo === 'LOBOS' && payload.nombreEliminado) {
             this.$store.dispatch('sala/marcarSemimuerto', payload.nombreEliminado)
             this.mensajeEvento = `Los lobos han devorado a ${payload.nombreEliminado} esta noche...`
@@ -464,16 +455,13 @@ export default {
           if (payload.tipo === 'FLECHAZO') {
             const soyEnamorado =
               payload.jugador1 === this.nombre || payload.jugador2 === this.nombre
-
             if (soyEnamorado) {
               const nombrePareja =
                 payload.jugador1 === this.nombre ? payload.jugador2 : payload.jugador1
-
               this.$store.dispatch('sala/setEnamorados', {
                 jugador1: payload.jugador1,
                 jugador2: payload.jugador2,
               })
-
               this.mensajeEvento = `¡Estás enamorado de ${nombrePareja}!`
               setTimeout(() => {
                 this.mensajeEvento = null
@@ -485,6 +473,11 @@ export default {
           if (payload.tipo === 'TURNO_LOBOS') {
             const soyLobo = payload.nombresLobos?.includes(this.nombre)
             this.esMiTurno = soyLobo
+
+            this.$store.dispatch('toast/mostrar', {
+              mensaje: 'Los lobos salen de cazería...',
+              tipo: 'licantropia',
+            })
             if (soyLobo) {
               this.mensajeEvento =
                 '¡Es hora de cazar! Decide junto a los tuyos a quién devoráis esta noche'
@@ -497,6 +490,17 @@ export default {
 
           if (payload.tipo === 'TURNO_JUGADOR') {
             this.esMiTurno = payload.nombreJugador === this.nombre
+              const toastsPorRol = {
+                Vidente: { mensaje: 'La Vidente está teniendo una visión...', tipo: 'videncia' },
+                Bruja: { mensaje: 'La Bruja prepara sus pociones...', tipo: 'brujeria' },
+                Cupido: { mensaje: 'Cupido está lanzando sus flechas de amor...', tipo: 'amorio' },
+              }
+              const toastRol = toastsPorRol[payload.rolActivo]
+
+              if (toastRol) {
+                this.$store.dispatch('toast/mostrar', toastRol)
+              }
+
             if (this.esMiTurno) {
               this.mensajeEvento = `Es tu turno, ${this.nombre}. Activa tu poder.`
               setTimeout(() => {
@@ -505,12 +509,11 @@ export default {
             } else {
               this.esMiTurno = false
             }
+            return
           }
 
           if (payload.tipo === 'MENTOR_ELEGIDO') {
-            if (payload.nombreNinno === this.nombre) return // ya lo gestionó PoderNinno
-
-            // Marcar al mentor en la lista de jugadores para mostrar el icono
+            if (payload.nombreNinno === this.nombre) return
             const mentor = this.jugadores.find((j) => j.nombre === payload.nombreMentor)
             if (mentor) mentor.esMentor = true
             return
@@ -695,7 +698,7 @@ export default {
   justify-content: center;
   align-items: flex-start;
   gap: 12px;
-  margin-top: 15px;
+  margin-top: 75px;
   position: relative;
   flex-wrap: wrap;
 }

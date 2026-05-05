@@ -52,6 +52,10 @@ export default {
         info: 'fa-solid fa-circle-info',
         dia: 'fa-solid fa-sun',
         noche: 'fa-solid fa-moon',
+        licantropia: 'fa-solid fa-paw',
+        brujeria: 'fa-solid fa-hat-wizard',
+        videncia: 'fa-solid fa-eye',
+        amorio: 'fa-solid fa-heart',
       }
       return iconos[this.tipo] || iconos.info
     },
@@ -130,23 +134,29 @@ export default {
   position: fixed;
 }
 
-.toast-exito {
+.toast-exito,
+.toast-brujeria {
   border-color: #2d9e2d;
 }
-.toast-exito .toast-icono {
+.toast-exito .toast-icono,
+.toast-brujeria .toast-icono {
   color: #5fd45f;
 }
-.toast-exito .toast-barra {
+.toast-exito .toast-barra,
+.toast-brujeria .toast-barra {
   background: #2d9e2d;
 }
 
-.toast-error {
+.toast-error,
+.toast-licantropia {
   border-color: #cc0000;
 }
-.toast-error .toast-icono {
+.toast-error .toast-icono,
+.toast-licantropia .toast-icono {
   color: #ff5555;
 }
-.toast-error .toast-barra {
+.toast-error .toast-barra,
+.toast-licantropia .toast-barra {
   background: #cc0000;
 }
 
@@ -180,14 +190,29 @@ export default {
   background: #0087bd;
 }
 
-.toast-noche {
+.toast-noche,
+.toast-videncia {
   border-color: #5500a5;
 }
-.toast-noche .toast-icono {
+.toast-noche .toast-icono,
+.toast-videncia .toast-icono {
   color: #aa66ff;
 }
-.toast-noche .toast-barra {
+.toast-noche .toast-barra,
+.toast-videncia .toast-barra {
   background: #5500a5;
+}
+
+.toast-amorio {
+  border-color: #ff27b7;
+}
+
+.toast-amorio .toast-icono {
+  color: #ff27b7;
+}
+
+.toast-amorio .toast-barra{
+  background: #9e0069;
 }
 
 .toast-icono {
@@ -263,7 +288,7 @@ export default {
   animation: salir 0.3s ease-in forwards;
 }
 
-.fa-sun{
+.fa-sun {
   color: #e4ba03;
 }
 

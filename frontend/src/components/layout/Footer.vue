@@ -1,5 +1,5 @@
 <template>
-  <footer class="footer">
+  <footer class="footer" id="mi-footer">
     <div class="footer-wrapper">
       <img :src="footerImg" alt="" class="footer-buildings" />
       

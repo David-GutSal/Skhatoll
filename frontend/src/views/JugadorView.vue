@@ -490,19 +490,16 @@ export default {
 
           if (payload.tipo === 'TURNO_JUGADOR') {
             this.esMiTurno = payload.nombreJugador === this.nombre
-
-            const jugador = this.jugadores.find((j) => j.nombre === payload.nombreJugador)
-            if (jugador) {
               const toastsPorRol = {
                 Vidente: { mensaje: 'La Vidente está teniendo una visión...', tipo: 'videncia' },
                 Bruja: { mensaje: 'La Bruja prepara sus pociones...', tipo: 'brujeria' },
                 Cupido: { mensaje: 'Cupido está lanzando sus flechas de amor...', tipo: 'amorio' },
               }
-              const toastRol = toastsPorRol[jugador.nombreRol]
+              const toastRol = toastsPorRol[payload.rolActivo]
+
               if (toastRol) {
                 this.$store.dispatch('toast/mostrar', toastRol)
               }
-            }
 
             if (this.esMiTurno) {
               this.mensajeEvento = `Es tu turno, ${this.nombre}. Activa tu poder.`

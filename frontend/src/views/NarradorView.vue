@@ -601,6 +601,7 @@ export default {
             body: JSON.stringify({
               tipo: 'TURNO_JUGADOR',
               nombreJugador: jugador.nombre,
+               rolActivo: jugador.nombreRol, // ← añade esto
             }),
           })
 

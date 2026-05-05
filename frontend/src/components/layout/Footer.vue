@@ -27,15 +27,8 @@
   </footer>
 </template>
 
-<script>
+<script setup>
 import footerImg from '@/assets/imgs/footer-castronegro.svg'
-
-export default {
-  name: 'Footer',
-  data() {
-    return { footerImg }
-  },
-}
 </script>
 
 <style scoped>

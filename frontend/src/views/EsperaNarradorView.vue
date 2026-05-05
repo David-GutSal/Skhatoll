@@ -33,38 +33,34 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { FRASES } from '@/data/roles.js'
 
-export default {
-  name: 'EsperaNarradorView',
+const router = useRouter()
 
-  data() {
-    return {
-      FRASES,
-      fraseActual: 0,
-      intervaloFrases: null,
-      consejos: [
-        'Lo más importante es que tanto tú como tus jugadores os divirtáis, sé un buen guía en la aventura.',
-        'Ayuda a los jugadores a entender a sus personajes.',
-        'Puedes ver lo que hace cada personaje consultando las reglas o haciendo click sobre su carta.',
-        'Conviértete en un storyteller, no en un árbitro, sé totalmente neutral.',
-        'Controla bien los tiempos y modula tu voz.',
-      ],
-    }
-  },
+const fraseActual = ref(0)
+const intervaloFrases = ref(null)
 
-  mounted() {
-    this.intervaloFrases = setInterval(() => {
-      this.fraseActual = (this.fraseActual + 1) % FRASES.length
-    }, 8000)
-    setTimeout(() => this.$router.push({ name: 'narrador' }), 5000)
-  },
+const consejos = ref([
+  'Lo más importante es que tanto tú como tus jugadores os divirtáis, sé un buen guía en la aventura.',
+  'Ayuda a los jugadores a entender a sus personajes.',
+  'Puedes ver lo que hace cada personaje consultando las reglas o haciendo click sobre su carta.',
+  'Conviértete en un storyteller, no en un árbitro, sé totalmente neutral.',
+  'Controla bien los tiempos y modula tu voz.',
+])
 
-  beforeUnmount() {
-    clearInterval(this.intervaloFrases)
-  },
-}
+onMounted(() => {
+  intervaloFrases.value = setInterval(() => {
+    fraseActual.value = (fraseActual.value + 1) % FRASES.length
+  }, 8000)
+  setTimeout(() => router.push({ name: 'narrador' }), 5000)
+})
+
+onUnmounted(() => {
+  clearInterval(intervaloFrases.value)
+})
 </script>
 
 <style scoped>

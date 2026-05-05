@@ -60,90 +60,54 @@
   </div>
 </template>
 
-<script>
-// import axiosInstance from '@/plugins/axios'   ← DESCOMENTAR cuando el endpoint espiar esté disponible
-import { mapGetters, mapState } from 'vuex'
+<script setup>
+import { ref, computed, defineEmits } from 'vue'
+import { useStore } from 'vuex'
 
-export default {
-  name: 'PoderNinna',
+const emit = defineEmits(['finalizarTurno'])
 
-  emits: ['finalizarTurno'],
+const store = useStore()
 
-  data() {
-    return {
-      ventanaAbierta: false,
-      cargando: false,
-      sospechosos: [],
-    }
-  },
+const ventanaAbierta = ref(false)
+const cargando = ref(false)
+const sospechosos = ref([])
 
-  computed: {
-    ...mapGetters('sala', ['codigoSala']),
-    ...mapState('sala', ['jugadores']),
-  },
+const codigoSala = computed(() => store.getters['sala/codigoSala'])
+const jugadores = computed(() => store.getters['sala/jugadores'])
 
-  methods: {
-    async asomarseVentana() {
-      if (this.cargando || this.ventanaAbierta) return
-      this.cargando = true
+const asomarseVentana = async () => {
+  if (cargando.value || ventanaAbierta.value) return
+  cargando.value = true
 
-      // ─────────────────────────────────────────────────────────────
-      // OPCIÓN A — Endpoint espiar (PENDIENTE, habilitar cuando esté disponible)
-      // ─────────────────────────────────────────────────────────────
-      // try {
-      //   const res = await axiosInstance.post(`/partida/${this.codigoSala}/habilidad`, {
-      //     nombreHabilidad: 'espiar',
-      //     objetivos: [],
-      //   })
-      //   const detalle = res.data?.detalle
-      //   if (Array.isArray(detalle) && detalle.length > 0) {
-      //     this.sospechosos = detalle
-      //   } else {
-      //     this.sospechosos = []
-      //   }
-      // } catch {
-      //   this.$store.dispatch('toast/mostrar', { mensaje: 'Error al espiar', tipo: 'error' })
-      //   this.cargando = false
-      //   return
-      // }
-      // ─────────────────────────────────────────────────────────────
+  const vivosAjenos = jugadores.value.filter(
+    (j) => j.estaVivo && j.nombre !== store.getters['auth/nombre'],
+  )
+  const cantidad = Math.min(vivosAjenos.length, Math.floor(Math.random() * 3) + 2)
+  const mezclados = [...vivosAjenos].sort(() => Math.random() - 0.5)
+  sospechosos.value = mezclados.slice(0, cantidad).map((j) => j.nombre)
 
-      // ─────────────────────────────────────────────────────────────
-      // OPCIÓN B — Jugadores aleatorios (provisional hasta que el endpoint esté disponible)
-      // Selecciona entre 2 y 4 jugadores vivos al azar, excluyendo a la propia niña
-      // ─────────────────────────────────────────────────────────────
-      const vivosAjenos = this.jugadores.filter(
-        (j) => j.estaVivo && j.nombre !== this.$store.getters['auth/nombre'],
-      )
-      const cantidad = Math.min(vivosAjenos.length, Math.floor(Math.random() * 3) + 2)
-      const mezclados = [...vivosAjenos].sort(() => Math.random() - 0.5)
-      this.sospechosos = mezclados.slice(0, cantidad).map((j) => j.nombre)
-      // ─────────────────────────────────────────────────────────────
+  cargando.value = false
+  ventanaAbierta.value = true
+}
 
-      this.cargando = false
-      this.ventanaAbierta = true
-    },
+const estrellaEstilo = (n) => {
+  return {
+    left: `${((n * 37) % 90) + 5}%`,
+    top: `${((n * 23) % 60) + 5}%`,
+    fontSize: `${(n % 3) * 4 + 8}px`,
+    opacity: `${((n * 17) % 5) * 0.15 + 0.4}`,
+    animationDelay: `${(n * 0.3) % 2}s`,
+  }
+}
 
-    estrellaEstilo(n) {
-      return {
-        left: `${((n * 37) % 90) + 5}%`,
-        top: `${((n * 23) % 60) + 5}%`,
-        fontSize: `${(n % 3) * 4 + 8}px`,
-        opacity: `${((n * 17) % 5) * 0.15 + 0.4}`,
-        animationDelay: `${(n * 0.3) % 2}s`,
-      }
-    },
+const resetear = () => {
+  ventanaAbierta.value = false
+  sospechosos.value = []
+  cargando.value = false
+}
 
-    resetear() {
-      this.ventanaAbierta = false
-      this.sospechosos = []
-      this.cargando = false
-    },
-
-    resetearNoche() {
-      this.resetear()
-    },
-  },
+const resetearNoche = () => {
+  resetear()
 }
 </script>
 

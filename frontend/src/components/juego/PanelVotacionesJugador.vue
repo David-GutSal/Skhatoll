@@ -36,17 +36,17 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'PanelVotacionesJugador',
-  props: {
-    esDia: { type: Boolean, default: true },
-    votacionActiva: { type: Boolean, default: false },
-    tipoVotacion: { type: String, default: null },
-    jugadorSeleccionado: { type: Object, default: null },
-  },
-  emits: ['votarAlcalde', 'votarCulpable'],
-}
+<script setup>
+import { defineProps, defineEmits } from 'vue'
+
+defineProps({
+  esDia: { type: Boolean, default: true },
+  votacionActiva: { type: Boolean, default: false },
+  tipoVotacion: { type: String, default: null },
+  jugadorSeleccionado: { type: Object, default: null },
+})
+
+defineEmits(['votarAlcalde', 'votarCulpable'])
 </script>
 
 <style scoped>

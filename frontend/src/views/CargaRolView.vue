@@ -45,85 +45,62 @@
   </div>
 </template>
 
-<script>
-import { mapActions } from 'vuex'
+<script setup>
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 import { FRASES, getImagenRol, getColorBando } from '@/data/roles.js'
 
-export default {
-  name: 'CargaRolView',
+const router = useRouter()
+const store = useStore()
 
-  data() {
-    return {
-      nombreRol: '',
-      descripcionRol: '',
-      bando: '',
-      fraseActual: 0,
-      FRASES,
-      intervaloFrases: null,
-    }
-  },
+const nombreRol = ref('')
+const descripcionRol = ref('')
+const bando = ref('')
+const fraseActual = ref(0)
+const intervaloFrases = ref(null)
 
-  computed: {
-    imagenRol() {
-      return getImagenRol(this.nombreRol)
-    },
-    colorBando() {
-      return getColorBando(this.bando)
-    },
-  },
+const imagenRol = computed(() => getImagenRol(nombreRol.value))
+const colorBando = computed(() => getColorBando(bando.value))
 
-  created() {
-    const esCreador = this.$store.getters['sala/esCreador']
-    if (esCreador) {
-      this.$router.push({ name: 'esperaNarrador' })
-      return
-    }
-
-/* Info profesor: previa para que se puedan ver sin tiempo las vistas de espera
-    Descomentar para ver e ir a ir a router/index.js para habilitar los enlaces al router
-    Vista espera de los jugadores: http://localhost:5173/preview-carga
-    Vista  espera narrador: http://localhost:5173/preview-espera */
-//Texto de relleno
-    /*this.nombreRol = 'BRUJA'
-    this.descripcionRol = 'Posees dos pociones...'
-    this.bando = 'aldea'
-*/
-    this.intervaloFrases = setInterval(() => {
-      this.fraseActual = (this.fraseActual + 1) % FRASES.length
-    }, 8000)
-
-    const nombreRol = this.$store.getters['sala/miRol']
-    if (nombreRol) {
-      this.cargarRol(nombreRol)
-      setTimeout(() => this.$router.push({ name: 'jugador' }), 5000)
-    } else {
-      const unwatch = this.$watch(
-        () => this.$store.getters['sala/miRol'],
-        (nuevoRol) => {
-          if (nuevoRol) {
-            this.cargarRol(nuevoRol)
-            setTimeout(() => this.$router.push({ name: 'jugador' }), 5000)
-            unwatch()
-          }
-        },
-      )
-    }
-  },
-
-  beforeUnmount() {
-    clearInterval(this.intervaloFrases)
-  },
-
-  methods: {
-    ...mapActions('sala', ['setRol']),
-
-    cargarRol(nombreRol) {
-      this.nombreRol = nombreRol
-      this.descripcionRol = this.$store.getters['sala/miRolDescripcion']
-      this.bando = this.$store.getters['sala/miBando']
-    },
-  },
+const cargarRol = (nombre) => {
+  nombreRol.value = nombre
+  descripcionRol.value = store.getters['sala/miRolDescripcion']
+  bando.value = store.getters['sala/miBando']
 }
+
+onMounted(() => {
+  const esCreador = store.getters['sala/esCreador']
+  if (esCreador) {
+    router.push({ name: 'esperaNarrador' })
+    return
+  }
+
+  intervaloFrases.value = setInterval(() => {
+    fraseActual.value = (fraseActual.value + 1) % FRASES.length
+  }, 8000)
+
+  const rol = store.getters['sala/miRol']
+  if (rol) {
+    cargarRol(rol)
+    setTimeout(() => router.push({ name: 'jugador' }), 5000)
+  } else {
+    const unwatch = watch(
+      () => store.getters['sala/miRol'],
+      (nuevoRol) => {
+        if (nuevoRol) {
+          cargarRol(nuevoRol)
+          setTimeout(() => router.push({ name: 'jugador' }), 5000)
+          unwatch()
+        }
+      },
+    )
+  }
+})
+
+onUnmounted(() => {
+  clearInterval(intervaloFrases.value)
+})
 </script>
 
 <style scoped>

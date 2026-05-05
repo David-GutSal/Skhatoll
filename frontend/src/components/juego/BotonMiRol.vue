@@ -48,33 +48,28 @@
   </div>
 </template>
 
-<script>
-import { mapGetters } from 'vuex'
+<script setup>
+import { ref, computed } from 'vue'
+import { useStore } from 'vuex'
 import CartaRol from '@/components/juego/roles/CartaRol.vue'
 
-export default {
-  name: 'BotonMiRol',
-  components: { CartaRol },
+const store = useStore()
 
-  data() {
-    return {
-      mostrar: false,
-      mostrarEnamorado: false,
-    }
-  },
+const mostrar = ref(false)
+const mostrarEnamorado = ref(false)
 
-  computed: {
-    ...mapGetters('sala', ['miRol', 'miRolDescripcion', 'miBando', 'enamorados', 'nombre']),
+const miRol = computed(() => store.getters['sala/miRol'])
+const miRolDescripcion = computed(() => store.getters['sala/miRolDescripcion'])
+const miBando = computed(() => store.getters['sala/miBando'])
+const enamorados = computed(() => store.getters['sala/enamorados'])
+const nombre = computed(() => store.getters['sala/nombre'])
 
-    nombreEnamorado() {
-      if (!this.enamorados) return null
-      // Devuelve el nombre del otro enamorado
-      const miNombre = this.$store.getters['auth/nombre']
-      if (this.enamorados.jugador1 === miNombre) return this.enamorados.jugador2
-      return this.enamorados.jugador1
-    },
-  },
-}
+const nombreEnamorado = computed(() => {
+  if (!enamorados.value) return null
+  const miNombre = store.getters['auth/nombre']
+  if (enamorados.value.jugador1 === miNombre) return enamorados.value.jugador2
+  return enamorados.value.jugador1
+})
 </script>
 
 <style scoped>

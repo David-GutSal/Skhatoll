@@ -292,10 +292,7 @@
   </main>
 </template>
 
-<script>
-export default {
-  name: 'InicioView',
-}
+<script setup>
 </script>
 
 <style scoped>

@@ -33,84 +33,75 @@
   </div>
 </template>
 
-<script>
-import { mapGetters } from 'vuex'
+<script setup>
+import { ref, computed, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
 import MesaJugadores from '@/components/juego/MesaJugadores.vue'
 
-export default {
-  name: 'EliminadoView',
-  components: { MesaJugadores },
+const router = useRouter()
+const store = useStore()
 
-  data() {
-    return {
-      verPartida: false,
-      esDia: true,
-      stompClient: null,
-    }
-  },
+const verPartida = ref(false)
+const esDia = ref(true)
+const stompClient = ref(null)
 
-  computed: {
-    ...mapGetters('sala', ['codigoSala', 'jugadores', 'fase']),
-  },
+const codigoSala = computed(() => store.getters['sala/codigoSala'])
+const jugadores = computed(() => store.getters['sala/jugadores'])
 
-  created() {
-    this.esDia = this.$store.getters['sala/fase'] !== 'NOCHE'
-    this.conectarWebSocket()
-  },
-
-  beforeUnmount() {
-    if (this.stompClient) {
-      this.stompClient.deactivate()
-      this.stompClient = null
-    }
-  },
-
-  methods: {
-    togglePartida() {
-      this.verPartida = !this.verPartida
-    },
-
-    irInicio() {
-      this.$store.dispatch('sala/salir')
-      this.$router.push({ name: 'inicio' })
-    },
-
-    conectarWebSocket() {
-      const token = this.$store.getters['auth/token']
-      const cliente = new Client({
-        webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
-        connectHeaders: { Authorization: `Bearer ${token}` },
-      })
-
-      cliente.onConnect = () => {
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/fase`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          this.esDia = payload.fase === 'DIA'
-          this.$store.dispatch('sala/setFase', payload.fase)
-        })
-
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/muerte`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          this.$store.dispatch('sala/marcarMuerto', payload.nombreJugador)
-        })
-
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/fin`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          this.$store.dispatch('sala/setResultado', {
-            bandoGanador: payload.bandoGanador,
-            mensaje: payload.mensaje,
-          })
-          this.$router.push({ name: 'resultados' })
-        })
-      }
-
-      cliente.activate()
-      this.stompClient = cliente
-    },
-  },
+const togglePartida = () => {
+  verPartida.value = !verPartida.value
 }
+
+const irInicio = () => {
+  store.dispatch('sala/salir')
+  router.push({ name: 'inicio' })
+}
+
+const conectarWebSocket = () => {
+  const token = store.getters['auth/token']
+  const cliente = new Client({
+    webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+    connectHeaders: { Authorization: `Bearer ${token}` },
+  })
+
+  cliente.onConnect = () => {
+    cliente.subscribe(`/topic/partida/${codigoSala.value}/fase`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      esDia.value = payload.fase === 'DIA'
+      store.dispatch('sala/setFase', payload.fase)
+    })
+
+    cliente.subscribe(`/topic/partida/${codigoSala.value}/muerte`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      store.dispatch('sala/marcarMuerto', payload.nombreJugador)
+    })
+
+    cliente.subscribe(`/topic/partida/${codigoSala.value}/fin`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      store.dispatch('sala/setResultado', {
+        bandoGanador: payload.bandoGanador,
+        mensaje: payload.mensaje,
+      })
+      router.push({ name: 'resultados' })
+    })
+  }
+
+  cliente.activate()
+  stompClient.value = cliente
+}
+
+esDia.value = store.getters['sala/fase'] !== 'NOCHE'
+conectarWebSocket()
+
+onUnmounted(() => {
+  if (stompClient.value) {
+    stompClient.value.deactivate()
+    stompClient.value = null
+  }
+})
 </script>
 
 <style scoped>

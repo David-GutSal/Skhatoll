@@ -21,36 +21,27 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
 import TopBar from '@/components/layout/TopBar.vue'
 import Header from '@/components/layout/Header.vue'
 import Navbar from '@/components/layout/Navbar.vue'
 import Footer from '@/components/layout/Footer.vue'
 import ToastNotificacion from '@/components/layout/ToastNotificacion.vue'
-export default {
-  name: 'App',
-  components: { TopBar, Header, Navbar, Footer, ToastNotificacion },
 
-  data() {
-    return {
-      hayScroll: false,
-    }
-  },
+const hayScroll = ref(false)
 
-  mounted() {
-    window.addEventListener('scroll', this.detectarScroll)
-  },
-
-  unmounted() {
-    window.removeEventListener('scroll', this.detectarScroll)
-  },
-
-  methods: {
-    detectarScroll() {
-      this.hayScroll = window.scrollY > 0
-    },
-  },
+const detectarScroll = () => {
+  hayScroll.value = window.scrollY > 0
 }
+
+onMounted(() => {
+  window.addEventListener('scroll', detectarScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', detectarScroll)
+})
 </script>
 
 <style>

@@ -19,14 +19,14 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'IndicadorDiaNoche',
-  props: {
-    esDia: { type: Boolean, default: true },
-  },
-  emits: ['cambiarFase'],
-}
+<script setup>
+import { defineProps, defineEmits } from 'vue'
+
+defineProps({
+  esDia: { type: Boolean, default: true },
+})
+
+defineEmits(['cambiarFase'])
 </script>
 
 <style scoped>

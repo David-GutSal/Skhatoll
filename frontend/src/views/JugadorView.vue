@@ -81,460 +81,452 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 import axiosInstance from '@/plugins/axios'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
-import { mapGetters } from 'vuex'
 import CabeceraJugador from '@/components/juego/CabeceraJugador.vue'
 import PanelVotacionesJugador from '@/components/juego/PanelVotacionesJugador.vue'
 import MesaJugadores from '@/components/juego/MesaJugadores.vue'
 import BotonMiRol from '@/components/juego/BotonMiRol.vue'
 import ZonaPoderes from '@/components/juego/ZonaPoderes.vue'
 
-export default {
-  name: 'JugadorView',
-  components: {
-    CabeceraJugador,
-    PanelVotacionesJugador,
-    MesaJugadores,
-    BotonMiRol,
-    ZonaPoderes,
-  },
+const router = useRouter()
+const store = useStore()
+const zonaPoderes = ref(null)
 
-  data() {
-    return {
-      esDia: true,
-      votacionActiva: false,
-      tipoVotacionLocal: null,
-      esMiTurno: false,
-      jugadorSeleccionado: null,
-      stompClient: null,
-      mensajeEvento: null,
-      alcaldeNombre: null,
-      jugadorEnvenenado: null,
-      soyElCazadorMuerto: false,
+const esDia = ref(true)
+const votacionActiva = ref(false)
+const tipoVotacionLocal = ref(null)
+const esMiTurno = ref(false)
+const stompClient = ref(null)
+const mensajeEvento = ref(null)
+const alcaldeNombre = ref(null)
+const jugadorEnvenenado = ref(null)
+const soyElCazadorMuerto = ref(false)
+const jugadorSeleccionado = ref(null)
+
+const nombre = computed(() => store.getters['auth/nombre'])
+const codigoSala = computed(() => store.getters['sala/codigoSala'])
+const jugadores = computed(() => store.getters['sala/jugadores'])
+const miRol = computed(() => store.getters['sala/miRol'])
+const enamorados = computed(() => store.getters['sala/enamorados'])
+
+const nombreNarrador = computed(() => {
+  const narrador = jugadores.value.find((j) => j.esNarrador === true)
+  return narrador ? narrador.nombre : 'Esperando narrador...'
+})
+
+const soyNarrador = computed(() => {
+  return jugadores.value.some((j) => j.esNarrador === true && j.nombre === nombre.value)
+})
+
+const jugadoresVisibles = computed(() => {
+  if (!esDia.value && miRol.value && miRol.value.toLowerCase() === 'lobo') {
+    return jugadores.value.filter((j) => j.nombre !== nombre.value)
+  }
+  return jugadores.value
+})
+
+const scrollAPoderes = () => {
+  zonaPoderes.value?.$el?.scrollIntoView({ behavior: 'smooth' })
+}
+
+const irArriba = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const seleccionarJugador = (j) => {
+  if (enamorados.value) {
+    const miNombre = nombre.value
+    const { jugador1, jugador2 } = enamorados.value
+    const soyEnamorado = jugador1 === miNombre || jugador2 === miNombre
+    if (soyEnamorado) {
+      const nombrePareja = jugador1 === miNombre ? jugador2 : jugador1
+      if (j.nombre === nombrePareja) return
     }
-  },
+  }
+  if (!votacionActiva.value && !esMiTurno.value) return
+  jugadorSeleccionado.value = j
+}
 
-  computed: {
-    ...mapGetters('auth', ['nombre']),
-    ...mapGetters('sala', ['codigoSala', 'jugadores', 'miRol', 'enamorados']),
+const votarAlcalde = async () => {
+  if (!jugadorSeleccionado.value) return
+  try {
+    await axiosInstance.post(`/partida/${codigoSala.value}/votar`, {
+      idObjetivo: jugadorSeleccionado.value.idUsuario,
+    })
+  } catch (error) {
+    store.dispatch('toast/mostrar', { mensaje: 'Error al votar', tipo: 'error' })
+  }
+}
 
-    nombreNarrador() {
-      const narrador = this.jugadores.find((j) => j.esNarrador === true)
-      return narrador ? narrador.nombre : 'Esperando narrador...'
-    },
+const votarCulpable = async () => {
+  if (!jugadorSeleccionado.value) return
+  try {
+    await axiosInstance.post(`/partida/${codigoSala.value}/votar`, {
+      idObjetivo: jugadorSeleccionado.value.idUsuario,
+    })
+  } catch (error) {
+    store.dispatch('toast/mostrar', { mensaje: 'Error al votar', tipo: 'error' })
+  }
+}
 
-    soyNarrador() {
-      return this.jugadores.some((j) => j.esNarrador === true && j.nombre === this.nombre)
-    },
+const devorarJugador = async () => {
+  if (!jugadorSeleccionado.value) return
+  try {
+    await axiosInstance.post(`/partida/${codigoSala.value}/votar`, {
+      idObjetivo: jugadorSeleccionado.value.idUsuario,
+    })
+  } catch (error) {
+    store.dispatch('toast/mostrar', { mensaje: 'Error al devorar', tipo: 'error' })
+  }
+}
 
-    jugadoresVisibles() {
-      if (!this.esDia && this.miRol && this.miRol.toLowerCase() === 'lobo') {
-        return this.jugadores.filter((j) => j.nombre !== this.nombre)
+const usarPremonicion = () => {
+  if (!jugadorSeleccionado.value) return
+}
+
+const manejarFlechazo = (pareja) => {
+  stompClient.value.publish({
+    destination: `/topic/partida/${codigoSala.value}/turno`,
+    body: JSON.stringify({
+      tipo: 'FLECHAZO',
+      jugador1: pareja.jugador1.nombre,
+      jugador2: pareja.jugador2.nombre,
+    }),
+  })
+  finalizarTurno()
+}
+
+const manejarEnvenenar = (jugador) => {
+  jugadorEnvenenado.value = jugador
+}
+
+const manejarVidaUsada = (nombreJugador) => {
+  stompClient.value?.publish({
+    destination: `/topic/partida/${codigoSala.value}/turno`,
+    body: JSON.stringify({ tipo: 'BRUJA_VIDA', nombreJugador }),
+  })
+}
+
+const manejarMentorElegido = (data) => {
+  stompClient.value.publish({
+    destination: `/topic/partida/${codigoSala.value}/turno`,
+    body: JSON.stringify({
+      tipo: 'MENTOR_ELEGIDO',
+      nombreNinno: data.nombreNinno,
+      nombreMentor: data.nombreMentor,
+    }),
+  })
+}
+
+const finalizarTurno = () => {
+  esMiTurno.value = false
+  jugadorSeleccionado.value = null
+  stompClient.value.publish({
+    destination: `/topic/partida/${codigoSala.value}/turno`,
+    body: JSON.stringify({
+      tipo: 'TURNO_FINALIZADO',
+      nombreJugador: nombre.value,
+    }),
+  })
+  if (soyElCazadorMuerto.value) {
+    setTimeout(() => {
+      router.push({ name: 'eliminado' })
+    }, 1500)
+  }
+}
+
+const manejarDisparo = (jugador) => {
+  console.log('🔫 Cazador disparó a:', jugador.nombre)
+}
+
+const cargarDatos = async () => {
+  try {
+    const res = await axiosInstance.get(`/salas/${codigoSala.value}/jugadores`)
+    store.dispatch('sala/setJugadores', res.data)
+  } catch (error) {
+    store.dispatch('toast/mostrar', { mensaje: 'Error al cargar jugadores', tipo: 'error' })
+  }
+
+  try {
+    const sesion = await axiosInstance.get(`/partida/${codigoSala.value}/sesion-activa`)
+    if (sesion.data?.abierta) {
+      votacionActiva.value = true
+      tipoVotacionLocal.value = sesion.data.tipo
+    }
+  } catch {
+    // No hay sesión activa, es normal
+  }
+
+  conectarWebSocket()
+}
+
+const conectarWebSocket = () => {
+  const token = store.getters['auth/token']
+  const cliente = new Client({
+    webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+    connectHeaders: { Authorization: `Bearer ${token}` },
+  })
+
+  cliente.onConnect = () => {
+    cliente.subscribe(`/topic/partida/${codigoSala.value}/fase`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      esDia.value = payload.fase === 'DIA'
+      store.dispatch('sala/setFase', payload.fase)
+      store.dispatch('toast/mostrar', {
+        mensaje:
+          payload.fase === 'DIA'
+            ? 'La aldea despierta ¡Buenos días!'
+            : 'Cae la noche sobre Castronegro',
+        tipo: payload.fase === 'DIA' ? 'dia' : 'noche',
+      })
+      if (payload.fase === 'DIA') {
+        store.dispatch('sala/reiniciarVotos')
+        store.dispatch('sala/setTipoVotacion', null)
+        tipoVotacionLocal.value = null
       }
-      return this.jugadores
-    },
-  },
+    })
 
-  async created() {
-    try {
-      const res = await axiosInstance.get(`/salas/${this.codigoSala}/jugadores`)
-      this.$store.dispatch('sala/setJugadores', res.data)
-    } catch (error) {
-      this.$store.dispatch('toast/mostrar', { mensaje: 'Error al cargar jugadores', tipo: 'error' })
-    }
+    cliente.subscribe(`/topic/partida/${codigoSala.value}/muerte`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      store.dispatch('sala/marcarMuerto', payload.nombreJugador)
+      store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
 
-    try {
-      const sesion = await axiosInstance.get(`/partida/${this.codigoSala}/sesion-activa`)
-      if (sesion.data?.abierta) {
-        this.votacionActiva = true
-        this.tipoVotacionLocal = sesion.data.tipo
+      if (
+        miRol.value &&
+        miRol.value.toLowerCase() === 'niño salvaje' &&
+        store.getters['sala/mentorNinno'] === payload.nombreJugador
+      ) {
+        store.commit('sala/SET_ROL', {
+          nombreRol: 'Lobo',
+          descripcionRol: 'Te has transformado en un Hombre Lobo',
+          bando: 'lobo',
+        })
+        mensajeEvento.value = '¡Tu mentor ha muerto! ¡Te has convertido en un Hombre Lobo!'
+        setTimeout(() => {
+          mensajeEvento.value = null
+        }, 8000)
       }
-    } catch {
-      // No hay sesión activa, es normal
-    }
 
-    this.conectarWebSocket()
-  },
+      if (payload.nombreJugador === nombre.value) {
+        if ((miRol.value || '').toLowerCase() === 'cazador') {
+          soyElCazadorMuerto.value = true
+          mensajeEvento.value =
+            '¡Has sido eliminado! El Narrador activará tu poder de Cazador en breve...'
+          return
+        }
+        router.push({ name: 'eliminado' })
+        return
+      }
 
-  beforeUnmount() {
-    if (this.stompClient) {
-      this.stompClient.deactivate()
-      this.stompClient = null
-    }
-  },
-
-  methods: {
-    scrollAPoderes() {
-      this.$refs.zonaPoderes.$el.scrollIntoView({ behavior: 'smooth' })
-    },
-
-    irArriba() {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    },
-
-    seleccionarJugador(j) {
-      if (this.enamorados) {
-        const miNombre = this.nombre
-        const { jugador1, jugador2 } = this.enamorados
-        const soyEnamorado = jugador1 === miNombre || jugador2 === miNombre
-        if (soyEnamorado) {
-          const nombrePareja = jugador1 === miNombre ? jugador2 : jugador1
-          if (j.nombre === nombrePareja) return
+      const enamorados = store.getters['sala/enamorados']
+      if (enamorados) {
+        const { jugador1, jugador2 } = enamorados
+        if (payload.nombreJugador === jugador1 || payload.nombreJugador === jugador2) {
+          const nombrePareja = payload.nombreJugador === jugador1 ? jugador2 : jugador1
+          const jugadorPareja = jugadores.value.find((j) => j.nombre === nombrePareja)
+          if (jugadorPareja && jugadorPareja.estaVivo) {
+            stompClient.value.publish({
+              destination: `/topic/partida/${codigoSala.value}/turno`,
+              body: JSON.stringify({
+                tipo: 'MUERTE_ENAMORADO',
+                nombreJugador: nombrePareja,
+              }),
+            })
+          }
         }
       }
-      if (!this.votacionActiva && !this.esMiTurno) return
-      this.jugadorSeleccionado = j
-    },
+    })
 
-    async votarAlcalde() {
-      if (!this.jugadorSeleccionado) return
-      try {
-        await axiosInstance.post(`/partida/${this.codigoSala}/votar`, {
-          idObjetivo: this.jugadorSeleccionado.idUsuario,
-        })
-      } catch (error) {
-        this.$store.dispatch('toast/mostrar', { mensaje: 'Error al votar', tipo: 'error' })
+    cliente.subscribe(`/topic/partida/${codigoSala.value}/votos`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      const tipoVotacionActual = store.getters['sala/tipoVotacion']
+      if (tipoVotacionActual === 'LOBOS') {
+        if (miRol.value && miRol.value.toLowerCase() === 'lobo') {
+          store.dispatch('sala/actualizarVotos', payload.votos)
+        }
+        return
       }
-    },
+      store.dispatch('sala/actualizarVotos', payload.votos)
+    })
 
-    async votarCulpable() {
-      if (!this.jugadorSeleccionado) return
-      try {
-        await axiosInstance.post(`/partida/${this.codigoSala}/votar`, {
-          idObjetivo: this.jugadorSeleccionado.idUsuario,
+    cliente.subscribe(`/topic/partida/${codigoSala.value}/alcalde`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      if (payload.tipo === 'ALCALDE_ELEGIDO') {
+        store.dispatch('sala/designarAlcalde', payload.nombreAlcalde)
+        alcaldeNombre.value = payload.nombreAlcalde
+        store.dispatch('sala/reiniciarVotos')
+        store.dispatch('toast/mostrar', {
+          mensaje: `¡${payload.nombreAlcalde} ha sido elegido alcalde!`,
+          tipo: 'aviso',
         })
-      } catch (error) {
-        this.$store.dispatch('toast/mostrar', { mensaje: 'Error al votar', tipo: 'error' })
       }
-    },
+    })
 
-    async devorarJugador() {
-      if (!this.jugadorSeleccionado) return
-      try {
-        await axiosInstance.post(`/partida/${this.codigoSala}/votar`, {
-          idObjetivo: this.jugadorSeleccionado.idUsuario,
-        })
-      } catch (error) {
-        this.$store.dispatch('toast/mostrar', { mensaje: 'Error al devorar', tipo: 'error' })
+    cliente.subscribe(`/topic/partida/${codigoSala.value}/votacion`, (msg) => {
+      const payload = JSON.parse(msg.body)
+
+      if (payload.tipo === 'VOTACION_ABIERTA' || payload.tipo === 'VOTACION_CERRADA') {
+        votacionActiva.value = payload.abierta
+
+        if (payload.abierta) {
+          tipoVotacionLocal.value = payload.tipoVotacion
+          store.dispatch('sala/setTipoVotacion', payload.tipoVotacion)
+
+          if (payload.tipoVotacion === 'ALCALDE') {
+            mensajeEvento.value = 'ELECCIONES ABIERTAS'
+            store.dispatch('toast/mostrar', {
+              mensaje: 'Se han abierto las elecciones de alcalde',
+              tipo: 'info',
+            })
+          } else if (payload.tipoVotacion === 'DIA') {
+            mensajeEvento.value = 'VOTACIÓN DE LINCHAMIENTO'
+            store.dispatch('toast/mostrar', {
+              mensaje: 'Votación de linchamiento en curso',
+              tipo: 'info',
+            })
+          } else if (payload.tipoVotacion === 'LOBOS') {
+            mensajeEvento.value = 'LOS LOBOS DECIDEN'
+          }
+
+          setTimeout(() => {
+            mensajeEvento.value = null
+          }, 30000)
+        } else {
+          tipoVotacionLocal.value = null
+          store.dispatch('sala/setTipoVotacion', null)
+        }
+        return
       }
-    },
 
-    usarPremonicion() {
-      if (!this.jugadorSeleccionado) return
-    },
-
-    manejarFlechazo(pareja) {
-      this.stompClient.publish({
-        destination: `/topic/partida/${this.codigoSala}/turno`,
-        body: JSON.stringify({
-          tipo: 'FLECHAZO',
-          jugador1: pareja.jugador1.nombre,
-          jugador2: pareja.jugador2.nombre,
-        }),
-      })
-      this.finalizarTurno()
-    },
-
-    manejarEnvenenar(jugador) {
-      this.jugadorEnvenenado = jugador
-    },
-
-    manejarVidaUsada(nombreJugador) {
-      this.stompClient?.publish({
-        destination: `/topic/partida/${this.codigoSala}/turno`,
-        body: JSON.stringify({ tipo: 'BRUJA_VIDA', nombreJugador }),
-      })
-    },
-
-    manejarMentorElegido(data) {
-      this.stompClient.publish({
-        destination: `/topic/partida/${this.codigoSala}/turno`,
-        body: JSON.stringify({
-          tipo: 'MENTOR_ELEGIDO',
-          nombreNinno: data.nombreNinno,
-          nombreMentor: data.nombreMentor,
-        }),
-      })
-    },
-
-    finalizarTurno() {
-      this.esMiTurno = false
-      this.jugadorSeleccionado = null
-      this.stompClient.publish({
-        destination: `/topic/partida/${this.codigoSala}/turno`,
-        body: JSON.stringify({
-          tipo: 'TURNO_FINALIZADO',
-          nombreJugador: this.nombre,
-        }),
-      })
-      if (this.soyElCazadorMuerto) {
+      if (payload.tipo === 'LOBOS' && payload.nombreEliminado) {
+        store.dispatch('sala/marcarSemimuerto', payload.nombreEliminado)
+        mensajeEvento.value = `Los lobos han devorado a ${payload.nombreEliminado} esta noche...`
         setTimeout(() => {
-          this.$router.push({ name: 'eliminado' })
-        }, 1500)
+          mensajeEvento.value = null
+        }, 8000)
       }
-    },
+    })
 
-    manejarDisparo(jugador) {
-      console.log('🔫 Cazador disparó a:', jugador.nombre)
-    },
+    cliente.subscribe(`/topic/partida/${codigoSala.value}/turno`, (msg) => {
+      const payload = JSON.parse(msg.body)
 
-    conectarWebSocket() {
-      const token = this.$store.getters['auth/token']
-      const cliente = new Client({
-        webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
-        connectHeaders: { Authorization: `Bearer ${token}` },
+      if (payload.tipo === 'EVENTOS_INICIADOS') {
+        mensajeEvento.value =
+          '¡Llegó la noche! Presta atención, puede que el narrador te llame para que utilices tus poderes'
+        setTimeout(() => {
+          mensajeEvento.value = null
+        }, 10000)
+        return
+      }
+
+      if (payload.tipo === 'EVENTOS_FINALIZADOS') {
+        mensajeEvento.value = null
+        esMiTurno.value = false
+        jugadorSeleccionado.value = null
+        return
+      }
+
+      if (payload.tipo === 'TURNO_FINALIZADO') return
+      if (payload.tipo === 'MUERTE_ENAMORADO') return
+
+      if (payload.tipo === 'FLECHAZO') {
+        const soyEnamorado =
+          payload.jugador1 === nombre.value || payload.jugador2 === nombre.value
+        if (soyEnamorado) {
+          const nombrePareja =
+            payload.jugador1 === nombre.value ? payload.jugador2 : payload.jugador1
+          store.dispatch('sala/setEnamorados', {
+            jugador1: payload.jugador1,
+            jugador2: payload.jugador2,
+          })
+          mensajeEvento.value = `¡Estás enamorado de ${nombrePareja}!`
+          setTimeout(() => {
+            mensajeEvento.value = null
+          }, 8000)
+        }
+        return
+      }
+
+      if (payload.tipo === 'TURNO_LOBOS') {
+        const soyLobo = payload.nombresLobos?.includes(nombre.value)
+        esMiTurno.value = soyLobo
+
+        store.dispatch('toast/mostrar', {
+          mensaje: 'Los lobos salen de cazería...',
+          tipo: 'licantropia',
+        })
+        if (soyLobo) {
+          mensajeEvento.value =
+            '¡Es hora de cazar! Decide junto a los tuyos a quién devoráis esta noche'
+          setTimeout(() => {
+            mensajeEvento.value = null
+          }, 30000)
+        }
+        return
+      }
+
+      if (payload.tipo === 'TURNO_JUGADOR') {
+        esMiTurno.value = payload.nombreJugador === nombre.value
+        const toastsPorRol = {
+          Vidente: { mensaje: 'La Vidente está teniendo una visión...', tipo: 'videncia' },
+          Bruja: { mensaje: 'La Bruja prepara sus pociones...', tipo: 'brujeria' },
+          Cupido: { mensaje: 'Cupido está lanzando sus flechas de amor...', tipo: 'amorio' },
+        }
+        const toastRol = toastsPorRol[payload.rolActivo]
+
+        if (toastRol) {
+          store.dispatch('toast/mostrar', toastRol)
+        }
+
+        if (esMiTurno.value) {
+          mensajeEvento.value = `Es tu turno, ${nombre.value}. Activa tu poder.`
+          setTimeout(() => {
+            mensajeEvento.value = null
+          }, 30000)
+        } else {
+          esMiTurno.value = false
+        }
+        return
+      }
+
+      if (payload.tipo === 'MENTOR_ELEGIDO') {
+        if (payload.nombreNinno === nombre.value) return
+        const mentor = jugadores.value.find((j) => j.nombre === payload.nombreMentor)
+        if (mentor) mentor.esMentor = true
+        return
+      }
+    })
+
+    cliente.subscribe(`/topic/partida/${codigoSala.value}/fin`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      store.dispatch('sala/setResultado', {
+        bandoGanador: payload.bandoGanador,
+        mensaje: payload.mensaje,
       })
+      router.push({ name: 'resultados' })
+    })
+  }
 
-      cliente.onConnect = () => {
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/fase`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          this.esDia = payload.fase === 'DIA'
-          this.$store.dispatch('sala/setFase', payload.fase)
-          this.$store.dispatch('toast/mostrar', {
-            mensaje:
-              payload.fase === 'DIA'
-                ? 'La aldea despierta ¡Buenos días!'
-                : 'Cae la noche sobre Castronegro',
-            tipo: payload.fase === 'DIA' ? 'dia' : 'noche',
-          })
-          if (payload.fase === 'DIA') {
-            this.$store.dispatch('sala/reiniciarVotos')
-            this.$store.dispatch('sala/setTipoVotacion', null)
-            this.tipoVotacionLocal = null
-          }
-        })
-
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/muerte`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          this.$store.dispatch('sala/marcarMuerto', payload.nombreJugador)
-          this.$store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
-
-          if (
-            this.miRol &&
-            this.miRol.toLowerCase() === 'niño salvaje' &&
-            this.$store.getters['sala/mentorNinno'] === payload.nombreJugador
-          ) {
-            this.$store.commit('sala/SET_ROL', {
-              nombreRol: 'Lobo',
-              descripcionRol: 'Te has transformado en un Hombre Lobo',
-              bando: 'lobo',
-            })
-            this.mensajeEvento = '¡Tu mentor ha muerto! ¡Te has convertido en un Hombre Lobo!'
-            setTimeout(() => {
-              this.mensajeEvento = null
-            }, 8000)
-          }
-
-          if (payload.nombreJugador === this.nombre) {
-            if ((this.miRol || '').toLowerCase() === 'cazador') {
-              this.soyElCazadorMuerto = true
-              this.mensajeEvento =
-                '¡Has sido eliminado! El Narrador activará tu poder de Cazador en breve...'
-              return
-            }
-            this.$router.push({ name: 'eliminado' })
-            return
-          }
-
-          const enamorados = this.$store.getters['sala/enamorados']
-          if (enamorados) {
-            const { jugador1, jugador2 } = enamorados
-            if (payload.nombreJugador === jugador1 || payload.nombreJugador === jugador2) {
-              const nombrePareja = payload.nombreJugador === jugador1 ? jugador2 : jugador1
-              const jugadorPareja = this.jugadores.find((j) => j.nombre === nombrePareja)
-              if (jugadorPareja && jugadorPareja.estaVivo) {
-                this.stompClient.publish({
-                  destination: `/topic/partida/${this.codigoSala}/turno`,
-                  body: JSON.stringify({
-                    tipo: 'MUERTE_ENAMORADO',
-                    nombreJugador: nombrePareja,
-                  }),
-                })
-              }
-            }
-          }
-        })
-
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/votos`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          const tipoVotacionActual = this.$store.getters['sala/tipoVotacion']
-          if (tipoVotacionActual === 'LOBOS') {
-            if (this.miRol && this.miRol.toLowerCase() === 'lobo') {
-              this.$store.dispatch('sala/actualizarVotos', payload.votos)
-            }
-            return
-          }
-          this.$store.dispatch('sala/actualizarVotos', payload.votos)
-        })
-
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/alcalde`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          if (payload.tipo === 'ALCALDE_ELEGIDO') {
-            this.$store.dispatch('sala/designarAlcalde', payload.nombreAlcalde)
-            this.alcaldeNombre = payload.nombreAlcalde
-            this.$store.dispatch('sala/reiniciarVotos')
-            this.$store.dispatch('toast/mostrar', {
-              mensaje: `¡${payload.nombreAlcalde} ha sido elegido alcalde!`,
-              tipo: 'aviso',
-            })
-          }
-        })
-
-        // ✅ VOTACION — sin toast de lobos aquí, lo gestiona TURNO_LOBOS
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/votacion`, (msg) => {
-          const payload = JSON.parse(msg.body)
-
-          if (payload.tipo === 'VOTACION_ABIERTA' || payload.tipo === 'VOTACION_CERRADA') {
-            this.votacionActiva = payload.abierta
-
-            if (payload.abierta) {
-              this.tipoVotacionLocal = payload.tipoVotacion
-              this.$store.dispatch('sala/setTipoVotacion', payload.tipoVotacion)
-
-              if (payload.tipoVotacion === 'ALCALDE') {
-                this.mensajeEvento = 'ELECCIONES ABIERTAS'
-                this.$store.dispatch('toast/mostrar', {
-                  mensaje: 'Se han abierto las elecciones de alcalde',
-                  tipo: 'info',
-                })
-              } else if (payload.tipoVotacion === 'DIA') {
-                this.mensajeEvento = 'VOTACIÓN DE LINCHAMIENTO'
-                this.$store.dispatch('toast/mostrar', {
-                  mensaje: 'Votación de linchamiento en curso',
-                  tipo: 'info',
-                })
-              } else if (payload.tipoVotacion === 'LOBOS') {
-                this.mensajeEvento = 'LOS LOBOS DECIDEN'
-                
-              }
-
-              setTimeout(() => {
-                this.mensajeEvento = null
-              }, 30000)
-            } else {
-              this.tipoVotacionLocal = null
-              this.$store.dispatch('sala/setTipoVotacion', null)
-            }
-            return
-          }
-
-          if (payload.tipo === 'LOBOS' && payload.nombreEliminado) {
-            this.$store.dispatch('sala/marcarSemimuerto', payload.nombreEliminado)
-            this.mensajeEvento = `Los lobos han devorado a ${payload.nombreEliminado} esta noche...`
-            setTimeout(() => {
-              this.mensajeEvento = null
-            }, 8000)
-          }
-        })
-
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/turno`, (msg) => {
-          const payload = JSON.parse(msg.body)
-
-          if (payload.tipo === 'EVENTOS_INICIADOS') {
-            this.mensajeEvento =
-              '¡Llegó la noche! Presta atención, puede que el narrador te llame para que utilices tus poderes'
-            setTimeout(() => {
-              this.mensajeEvento = null
-            }, 10000)
-            return
-          }
-
-          if (payload.tipo === 'EVENTOS_FINALIZADOS') {
-            this.mensajeEvento = null
-            this.esMiTurno = false
-            this.jugadorSeleccionado = null
-            return
-          }
-
-          if (payload.tipo === 'TURNO_FINALIZADO') return
-          if (payload.tipo === 'MUERTE_ENAMORADO') return
-
-          if (payload.tipo === 'FLECHAZO') {
-            const soyEnamorado =
-              payload.jugador1 === this.nombre || payload.jugador2 === this.nombre
-            if (soyEnamorado) {
-              const nombrePareja =
-                payload.jugador1 === this.nombre ? payload.jugador2 : payload.jugador1
-              this.$store.dispatch('sala/setEnamorados', {
-                jugador1: payload.jugador1,
-                jugador2: payload.jugador2,
-              })
-              this.mensajeEvento = `¡Estás enamorado de ${nombrePareja}!`
-              setTimeout(() => {
-                this.mensajeEvento = null
-              }, 8000)
-            }
-            return
-          }
-
-          if (payload.tipo === 'TURNO_LOBOS') {
-            const soyLobo = payload.nombresLobos?.includes(this.nombre)
-            this.esMiTurno = soyLobo
-
-            this.$store.dispatch('toast/mostrar', {
-              mensaje: 'Los lobos salen de cazería...',
-              tipo: 'licantropia',
-            })
-            if (soyLobo) {
-              this.mensajeEvento =
-                '¡Es hora de cazar! Decide junto a los tuyos a quién devoráis esta noche'
-              setTimeout(() => {
-                this.mensajeEvento = null
-              }, 30000)
-            }
-            return
-          }
-
-          if (payload.tipo === 'TURNO_JUGADOR') {
-            this.esMiTurno = payload.nombreJugador === this.nombre
-              const toastsPorRol = {
-                Vidente: { mensaje: 'La Vidente está teniendo una visión...', tipo: 'videncia' },
-                Bruja: { mensaje: 'La Bruja prepara sus pociones...', tipo: 'brujeria' },
-                Cupido: { mensaje: 'Cupido está lanzando sus flechas de amor...', tipo: 'amorio' },
-              }
-              const toastRol = toastsPorRol[payload.rolActivo]
-
-              if (toastRol) {
-                this.$store.dispatch('toast/mostrar', toastRol)
-              }
-
-            if (this.esMiTurno) {
-              this.mensajeEvento = `Es tu turno, ${this.nombre}. Activa tu poder.`
-              setTimeout(() => {
-                this.mensajeEvento = null
-              }, 30000)
-            } else {
-              this.esMiTurno = false
-            }
-            return
-          }
-
-          if (payload.tipo === 'MENTOR_ELEGIDO') {
-            if (payload.nombreNinno === this.nombre) return
-            const mentor = this.jugadores.find((j) => j.nombre === payload.nombreMentor)
-            if (mentor) mentor.esMentor = true
-            return
-          }
-        })
-
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/fin`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          this.$store.dispatch('sala/setResultado', {
-            bandoGanador: payload.bandoGanador,
-            mensaje: payload.mensaje,
-          })
-          this.$router.push({ name: 'resultados' })
-        })
-      }
-
-      cliente.activate()
-      this.stompClient = cliente
-    },
-  },
+  cliente.activate()
+  stompClient.value = cliente
 }
+
+onMounted(() => {
+  cargarDatos()
+})
+
+onUnmounted(() => {
+  if (stompClient.value) {
+    stompClient.value.deactivate()
+    stompClient.value = null
+  }
+})
 </script>
 
 <style scoped>

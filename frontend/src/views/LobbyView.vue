@@ -112,223 +112,146 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 import axiosInstance from '@/plugins/axios'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
-import { mapGetters, mapActions } from 'vuex'
 import ListaJugadores from '@/components/lobby/ListaJugadores.vue'
 import bienvenidaImg from '@/assets/imgs/bienvenida.jpg'
 
-export default {
-  name: 'LobbyView',
-  components: { ListaJugadores },
+const router = useRouter()
+const store = useStore()
 
-  data() {
-    return {
-      inputCodigo: '',
-      mensajeUnion: false,
-      stompClient: null,
-      copiado: false,
-      bienvenidaImg,
-    }
-  },
+const inputCodigo = ref('')
+const mensajeUnion = ref(false)
+const stompClient = ref(null)
+const copiado = ref(false)
 
-  computed: {
-    ...mapGetters('sala', ['codigoSala', 'esCreador', 'jugadores']),
-    ...mapGetters('auth', ['nombre']),
+const codigoSala = computed(() => store.getters['sala/codigoSala'])
+const esCreador = computed(() => store.getters['sala/esCreador'])
+const jugadores = computed(() => store.getters['sala/jugadores'])
+const nombre = computed(() => store.getters['auth/nombre'])
 
-    nombreNarrador() {
-      const narrador = this.jugadores?.find((j) => j.esNarrador)
-      return narrador ? narrador.nombre : null
-    },
+const nombreNarrador = computed(() => {
+  const narrador = jugadores.value?.find((j) => j.esNarrador)
+  return narrador ? narrador.nombre : null
+})
 
-    soyNarrador() {
-      return this.nombreNarrador === this.nombre
-    },
-  },
-  watch: {
-    codigoSala(nuevo) {
-      if (nuevo) {
-        this.cargarJugadores()
-        this.conectarWebSocket()
-      }
-    },
-  },
+const soyNarrador = computed(() => nombreNarrador.value === nombre.value)
 
-  created() {
-    if (this.codigoSala) {
-      this.cargarJugadores()
-      this.conectarWebSocket()
-    }
-  },
-
-  beforeUnmount() {
-    if (this.stompClient) {
-      this.stompClient.deactivate()
-      this.stompClient = null
-    }
-  },
-
-  methods: {
-    ...mapActions('sala', ['unirse', 'setJugadores', 'salir']),
-
-    async copiarCodigo() {
-      await navigator.clipboard.writeText(this.codigoSala)
-      this.copiado = true
-      setTimeout(() => (this.copiado = false), 2000)
-      this.$store.dispatch('toast/mostrar', {
-        mensaje: '¡Código copiado al portapapeles!',
-        tipo: 'info',
-      })
-    },
-
-    async cargarJugadores() {
-      try {
-        const res = await axiosInstance.get(`/salas/${this.codigoSala}/jugadores`)
-        this.setJugadores(res.data)
-      } catch (error) {
-        this.$store.dispatch('toast/mostrar', {
-          mensaje: 'Error al cargar jugadores',
-          tipo: 'error',
-        })
-      }
-    },
-
-    async iniciarPartida() {
-      try {
-        await axiosInstance.post(`/salas/${this.codigoSala}/iniciar`)
-        this.$store.dispatch('toast/mostrar', {
-          mensaje: '¡La partida va a comenzar!',
-          tipo: 'exito',
-        })
-      } catch (error) {
-        this.$store.dispatch('toast/mostrar', {
-          mensaje: error.response?.data || 'Error al iniciar',
-          tipo: 'error',
-        })
-      }
-    },
-
-    async asignarNarrador(idUsuario) {
-      try {
-        await axiosInstance.put(`/salas/${this.codigoSala}/narrador`, { idUsuario })
-      } catch (error) {
-        this.$store.dispatch('toast/mostrar', {
-          mensaje: 'Error al asignar narrador',
-          tipo: 'error',
-        })
-      }
-    },
-
-    async handleUnirse() {
-      try {
-        await axiosInstance.post('/salas/unirse', { codigoSala: this.inputCodigo })
-        this.unirse(this.inputCodigo)
-        this.mensajeUnion = true
-        await this.cargarJugadores()
-        this.conectarWebSocket()
-      } catch (error) {
-        this.$store.dispatch('toast/mostrar', {
-          mensaje:
-            error.response?.status === 409
-              ? 'Ya estás en esta sala o está llena'
-              : 'Sala no encontrada',
-          tipo: 'error',
-        })
-      }
-    },
-
-    async copiarParaDiscord() {
-      await navigator.clipboard.writeText(
-        `¡Únete a mi partida de Hombres Lobo! Código: ${this.codigoSala}`,
-      )
-      this.$store.dispatch('toast/mostrar', {
-        mensaje: '¡Código copiado! Pégalo en Discord',
-        tipo: 'exito',
-      })
-    },
-
-    async salirSala() {
-      try {
-        if (this.stompClient) {
-          this.stompClient.deactivate()
-          this.stompClient = null
-        }
-
-        await axiosInstance.post(`/salas/${this.codigoSala}/salir`)
-        this.salir()
-        this.$router.push({ name: 'sala' })
-      } catch (error) {
-        this.$store.dispatch('toast/mostrar', {
-          mensaje: 'Error al salir de la sala',
-          tipo: 'error',
-        })
-      }
-    },
-
-    conectarWebSocket() {
-      const token = this.$store.getters['auth/token']
-      const cliente = new Client({
-        webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
-        connectHeaders: { Authorization: `Bearer ${token}` },
-      })
-      cliente.onConnect = () => {
-        let rolRecibido = false
-        let inicioRecibido = false
-
-        const intentarNavegar = () => {
-          if (rolRecibido && inicioRecibido) {
-            this.$router.push({ name: 'cargaRol' })
-          }
-        }
-
-        cliente.subscribe(`/topic/sala/${this.codigoSala}/inicio`, () => {
-          setTimeout(() => {
-            const esCreador = this.$store.getters['sala/esCreador']
-            if (esCreador) {
-              this.$router.push({ name: 'esperaNarrador' })
-            } else {
-              this.$router.push({ name: 'cargaRol' })
-            }
-          }, 500)
-        })
-
-        cliente.subscribe(`/user/queue/rol`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          if (payload.tipo === 'ROL_ASIGNADO') {
-            this.$store.dispatch('sala/setRol', {
-              nombreRol: payload.nombreRol,
-              descripcionRol: payload.descripcionRol,
-              bando: payload.bando,
-            })
-            rolRecibido = true
-            intentarNavegar()
-          }
-        })
-
-        cliente.subscribe(`/topic/sala/${this.codigoSala}`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          if (payload.tipo === 'JUGADOR_UNIDO') {
-            this.setJugadores(payload.jugadores)
-            const ultimo = payload.jugadores[payload.jugadores.length - 1]
-            if (ultimo && ultimo.nombre !== this.nombre) {
-              this.$store.dispatch('toast/mostrar', {
-                mensaje: `${ultimo.nombre} se ha unido a la partida`,
-                tipo: 'info',
-              })
-            }
-          }
-          if (payload.tipo === 'JUGADOR_SALIO') {
-            this.setJugadores(payload.jugadores)
-          }
-        })
-      }
-      cliente.activate()
-      this.stompClient = cliente
-    },
-  },
+const cargarJugadores = async () => {
+  if (!codigoSala.value) return
+  try {
+    const res = await axiosInstance.get(`/salas/${codigoSala.value}`)
+    store.dispatch('sala/setJugadores', res.data.jugadores)
+    store.dispatch('sala/setSala', {
+      codigoSala: res.data.codigoSala,
+      esCreador: res.data.esCreador,
+    })
+  } catch (error) {
+    console.error('Error al cargar jugadores:', error)
+  }
 }
+
+const conectarWebSocket = () => {
+  const token = store.getters['auth/token']
+  const cliente = new Client({
+    webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+    connectHeaders: { Authorization: `Bearer ${token}` },
+  })
+
+  let rolRecibido = false
+  let inicioRecibido = false
+
+  const intentarNavegar = () => {
+    if (rolRecibido && inicioRecibido) {
+      router.push({ name: 'cargaRol' })
+    }
+  }
+
+  cliente.subscribe(`/topic/sala/${codigoSala.value}/inicio`, () => {
+    setTimeout(() => {
+      const esCreador = store.getters['sala/esCreador']
+      if (esCreador) {
+        router.push({ name: 'esperaNarrador' })
+      } else {
+        router.push({ name: 'cargaRol' })
+      }
+    }, 500)
+  })
+
+  cliente.subscribe(`/user/queue/rol`, (msg) => {
+    const payload = JSON.parse(msg.body)
+    if (payload.tipo === 'ROL_ASIGNADO') {
+      store.dispatch('sala/setRol', {
+        nombreRol: payload.nombreRol,
+        descripcionRol: payload.descripcionRol,
+        bando: payload.bando,
+      })
+      rolRecibido = true
+      intentarNavegar()
+    }
+  })
+
+  cliente.subscribe(`/topic/sala/${codigoSala.value}`, (msg) => {
+    const payload = JSON.parse(msg.body)
+    if (payload.tipo === 'JUGADOR_UNIDO') {
+      store.dispatch('sala/setJugadores', payload.jugadores)
+      const ultimo = payload.jugadores[payload.jugadores.length - 1]
+      if (ultimo && ultimo.nombre !== nombre.value) {
+        store.dispatch('toast/mostrar', {
+          mensaje: `${ultimo.nombre} se ha unido a la partida`,
+          tipo: 'info',
+        })
+      }
+    }
+    if (payload.tipo === 'JUGADOR_SALIO') {
+      store.dispatch('sala/setJugadores', payload.jugadores)
+    }
+  })
+
+  cliente.activate()
+  stompClient.value = cliente
+}
+
+watch(codigoSala, (nuevo) => {
+  if (nuevo) {
+    cargarJugadores()
+    conectarWebSocket()
+  }
+})
+
+const copiarCodigo = () => {
+  navigator.clipboard.writeText(codigoSala.value)
+  copiado.value = true
+  setTimeout(() => {
+    copiado.value = false
+  }, 2000)
+}
+
+const abandonarSala = async () => {
+  if (stompClient.value) {
+    stompClient.value.deactivate()
+    stompClient.value = null
+  }
+  try {
+    await axiosInstance.delete(`/salas/${codigoSala.value}`)
+  } catch (error) {
+    console.error('Error al abandonar sala:', error)
+  }
+  store.dispatch('sala/salir')
+  router.push('/')
+}
+
+onMounted(() => {
+  if (codigoSala.value) {
+    cargarJugadores()
+    conectarWebSocket()
+  }
+})
 </script>
 
 <style scoped>

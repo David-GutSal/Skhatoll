@@ -48,28 +48,20 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed, defineProps } from 'vue'
 import solImg from '@/assets/imgs/sol.jpg'
 import lunaImg from '@/assets/imgs/luna.jpg'
 
-export default {
-  name: 'CabeceraJugador',
-  props: {
-    nombreJugador: { type: String, default: '' },
-    esDia: { type: Boolean, default: true },
-    esNarrador: { type: Boolean, default: false },
-    nombreNarrador: { type: String, default: '' },
-    alcaldeNombre: { type: String, default: '' },
-  },
-  data() {
-    return { solImg, lunaImg }
-  },
-  computed: {
-  textoAlcalde() {
-    return this.alcaldeNombre || 'Elecciones pendientes'
-  }
-}
-}
+const props = defineProps({
+  nombreJugador: { type: String, default: '' },
+  esDia: { type: Boolean, default: true },
+  esNarrador: { type: Boolean, default: false },
+  nombreNarrador: { type: String, default: '' },
+  alcaldeNombre: { type: String, default: '' },
+})
+
+const textoAlcalde = computed(() => props.alcaldeNombre || 'Elecciones pendientes')
 </script>
 
 <style scoped>

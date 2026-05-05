@@ -49,31 +49,20 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { defineProps, defineEmits } from 'vue'
 import lobbyImg from '@/assets/imgs/bienvenida.jpg'
 
-export default {
-  name: 'ListaJugadores',
+const props = defineProps({
+  jugadores: Array,
+  modoCreador: Boolean,
+  nombreNarrador: String,
+  soyNarrador: Boolean,
+})
 
-  props: {
-    jugadores: Array,
-    modoCreador: Boolean,
-    nombreNarrador: String,
-    soyNarrador: Boolean,
-  },
+defineEmits(['asignar-narrador'])
 
-  emits: ['asignar-narrador'],
-
-  data() {
-    return { lobbyImg }
-  },
-
-  methods: {
-    esNarrador(jugador) {
-      return jugador.nombre === this.nombreNarrador
-    },
-  },
-}
+const esNarrador = (jugador) => jugador.nombre === props.nombreNarrador
 </script>
 
 <style scoped>

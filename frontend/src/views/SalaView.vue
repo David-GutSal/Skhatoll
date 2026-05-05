@@ -19,33 +19,29 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { useStore } from 'vuex'
+import { useRouter } from 'vue-router'
 import axiosInstance from '@/plugins/axios'
-import { mapActions } from 'vuex'
 
-export default {
-  name: 'SalaView',
+const store = useStore()
+const router = useRouter()
 
-  created() {
-    this.$store.dispatch('sala/resetSala')
-  },
+store.dispatch('sala/resetSala')
 
-  methods: {
-    ...mapActions('sala', ['crearSala']),
-    async handleCrearSala() {
-      try {
-        const res = await axiosInstance.post('/salas/crear')
-        this.crearSala(res.data.codigoSala)
-        this.$router.push({ name: 'lobby' })
-      } catch (error) {
-        this.$store.dispatch('toast/mostrar', { mensaje: 'Error al crear la sala', tipo: 'error' })
-      }
-    },
-    irUnirse() {
-      this.$store.dispatch('sala/unirse', null)
-      this.$router.push({ name: 'lobby' })
-    },
-  },
+const handleCrearSala = async () => {
+  try {
+    const res = await axiosInstance.post('/salas/crear')
+    store.dispatch('sala/crearSala', res.data.codigoSala)
+    router.push({ name: 'lobby' })
+  } catch (error) {
+    store.dispatch('toast/mostrar', { mensaje: 'Error al crear la sala', tipo: 'error' })
+  }
+}
+
+const irUnirse = () => {
+  store.dispatch('sala/unirse', null)
+  router.push({ name: 'lobby' })
 }
 </script>
 

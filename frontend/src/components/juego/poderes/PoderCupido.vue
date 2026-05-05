@@ -67,93 +67,74 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch, computed, defineProps, defineEmits } from 'vue'
+import { useStore } from 'vuex'
 import axiosInstance from '@/plugins/axios'
-import { mapGetters } from 'vuex'
 
-export default {
-  name: 'PoderCupido',
+const props = defineProps({
+  jugadorSeleccionado: { type: Object, default: null },
+})
 
-  props: {
-    jugadorSeleccionado: { type: Object, default: null },
-  },
+const emit = defineEmits(['flechazo', 'finalizarTurno'])
 
-  emits: ['flechazo', 'finalizarTurno'],
+const store = useStore()
 
-  data() {
-    return {
-      enamorado1: null,
-      enamorado2: null,
-      poderUsado: false,
-    }
-  },
+const enamorado1 = ref(null)
+const enamorado2 = ref(null)
+const poderUsado = ref(false)
 
-  computed: {
-    ...mapGetters('sala', ['codigoSala']),
-  },
+const codigoSala = computed(() => store.getters['sala/codigoSala'])
 
-  watch: {
-    jugadorSeleccionado(jugador) {
-      if (!jugador || this.poderUsado) return
-      if (this.enamorado1?.idUsuario === jugador.idUsuario) return
-      if (this.enamorado2?.idUsuario === jugador.idUsuario) return
-      if (!this.enamorado1) {
-        this.enamorado1 = jugador
-      } else if (!this.enamorado2) {
-        this.enamorado2 = jugador
-      }
-    },
-  },
+watch(() => props.jugadorSeleccionado, (jugador) => {
+  if (!jugador || poderUsado.value) return
+  if (enamorado1.value?.idUsuario === jugador.idUsuario) return
+  if (enamorado2.value?.idUsuario === jugador.idUsuario) return
+  if (!enamorado1.value) {
+    enamorado1.value = jugador
+  } else if (!enamorado2.value) {
+    enamorado2.value = jugador
+  }
+})
 
-  methods: {
-    quitarEnamorado(numero) {
-      if (numero === 1) this.enamorado1 = null
-      else this.enamorado2 = null
-    },
+const quitarEnamorado = (numero) => {
+  if (numero === 1) enamorado1.value = null
+  else enamorado2.value = null
+}
 
-    async confirmarFlechazo() {
-      if (!this.enamorado1 || !this.enamorado2 || this.poderUsado) return
+const confirmarFlechazo = async () => {
+  if (!enamorado1.value || !enamorado2.value || poderUsado.value) return
 
-      console.log('🏹 CUPIDO - codigoSala:', this.codigoSala)
-      console.log('🏹 CUPIDO - enamorado1:', this.enamorado1)
-      console.log('🏹 CUPIDO - enamorado2:', this.enamorado2)
-      console.log('🏹 CUPIDO - URL:', `/partida/${this.codigoSala}/habilidad`)
-      console.log('🏹 CUPIDO - body:', {
-        nombreHabilidad: 'flechazo',
-        objetivos: [this.enamorado1.idUsuario, this.enamorado2.idUsuario],
-      })
-      try {
-        await axiosInstance.post(`/partida/${this.codigoSala}/habilidad`, {
-          nombreHabilidad: 'flechazo',
-          objetivos: [this.enamorado1.idUsuario, this.enamorado2.idUsuario],
-        })
+  try {
+    await axiosInstance.post(`/partida/${codigoSala.value}/habilidad`, {
+      nombreHabilidad: 'flechazo',
+      objetivos: [enamorado1.value.idUsuario, enamorado2.value.idUsuario],
+    })
 
-        this.$store.dispatch('sala/setEnamorados', {
-          jugador1: this.enamorado1.nombre,
-          jugador2: this.enamorado2.nombre,
-        })
-        this.$store.dispatch('sala/setCupidoUsado')
+    store.dispatch('sala/setEnamorados', {
+      jugador1: enamorado1.value.nombre,
+      jugador2: enamorado2.value.nombre,
+    })
+    store.dispatch('sala/setCupidoUsado')
 
-        this.poderUsado = true
+    poderUsado.value = true
 
-        this.$emit('flechazo', {
-          jugador1: this.enamorado1,
-          jugador2: this.enamorado2,
-        })
-      } catch (error) {
-        this.$store.dispatch('toast/mostrar', {
-          mensaje: 'Error al usar el flechazo',
-          tipo: 'error',
-        })
-      }
-    },
+    emit('flechazo', {
+      jugador1: enamorado1.value,
+      jugador2: enamorado2.value,
+    })
+  } catch (error) {
+    store.dispatch('toast/mostrar', {
+      mensaje: 'Error al usar el flechazo',
+      tipo: 'error',
+    })
+  }
+}
 
-    resetear() {
-      this.enamorado1 = null
-      this.enamorado2 = null
-      this.poderUsado = false
-    },
-  },
+const resetear = () => {
+  enamorado1.value = null
+  enamorado2.value = null
+  poderUsado.value = false
 }
 </script>
 

@@ -88,34 +88,31 @@
   </main>
 </template>
 
-<script>
+<script setup>
+import { ref, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import ListaPersonajes from '@/components/juego/ListaPersonajes.vue'
 
-export default {
-  name: 'PersonajesView',
-  components: { ListaPersonajes },
+const router = useRouter()
+const listaPersonajes = ref(null)
 
-  methods: {
-    irABando(bando) {
+const irABando = (bando) => {
+  if (listaPersonajes.value) {
+    listaPersonajes.value.abrirBando(bando)
+  }
 
-      if (this.$refs.listaPersonajes) {
-        this.$refs.listaPersonajes.abrirBando(bando);
+  nextTick(() => {
+    setTimeout(() => {
+      const el = document.getElementById('lista-' + bando)
+      if (el) {
+        el.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start',
+          inline: 'nearest'
+        })
       }
-
-      this.$nextTick(() => {
-        setTimeout(() => {
-          const el = document.getElementById('lista-' + bando);
-          if (el) {
-            el.scrollIntoView({ 
-              behavior: 'smooth', 
-              block: 'start',
-              inline: 'nearest'
-            });
-          }
-        }, 100);
-      });
-    },
-  },
+    }, 100)
+  })
 }
 </script>
 

@@ -76,11 +76,13 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 import axiosInstance from '@/plugins/axios'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
-import { mapGetters } from 'vuex'
 import IndicadorDiaNoche from '@/components/juego/IndicadorDiaNoche.vue'
 import PanelControlNarrador from '@/components/juego/PanelControlNarrador.vue'
 import MesaJugadores from '@/components/juego/MesaJugadores.vue'
@@ -89,555 +91,529 @@ import lunaImg from '@/assets/imgs/luna.jpg'
 import ListaPersonajes from '@/components/juego/ListaPersonajes.vue'
 import ListaReglas from '@/components/juego/ListaReglas.vue'
 
-export default {
-  name: 'NarradorView',
-  components: {
-    IndicadorDiaNoche,
-    PanelControlNarrador,
-    MesaJugadores,
-    ListaPersonajes,
-    ListaReglas,
-  },
+const router = useRouter()
+const store = useStore()
 
-  data() {
-    return {
-      esDia: true,
-      stompClient: null,
-      idSesionActual: null,
-      seccionActiva: null,
-      solImg,
-      lunaImg,
-      modoEventos: false,
-      jugadorSeleccionado: null,
-      sesionActualTipo: null,
-      avisoSesion: null,
-      jugadoresYaActuadosEstaNoche: [],
-      eventosYaUsadosEstaNoche: false,
+const esDia = ref(true)
+const stompClient = ref(null)
+const idSesionActual = ref(null)
+const seccionActiva = ref(null)
+const modoEventos = ref(false)
+const jugadorSeleccionado = ref(null)
+const sesionActualTipo = ref(null)
+const avisoSesion = ref(null)
+const jugadoresYaActuadosEstaNoche = ref([])
+const eventosYaUsadosEstaNoche = ref(false)
+const votacionActiva = ref(false)
+const tipoVotacionLocal = ref(null)
+
+const nombre = computed(() => store.getters['auth/nombre'])
+const codigoSala = computed(() => store.getters['sala/codigoSala'])
+const jugadoresConRol = computed(() => store.getters['sala/jugadoresConRol'])
+const enamorados = computed(() => store.getters['sala/enamorados'])
+const cupidoUsado = computed(() => store.getters['sala/cupidoUsado'])
+const semiMuertos = computed(() => store.getters['sala/semiMuertos'])
+
+const hayAlcalde = computed(() => jugadoresConRol.value.some((j) => j.alcalde))
+
+const jugadoresConRolConEnamorados = computed(() => {
+  if (!enamorados.value) return jugadoresConRol.value
+  return jugadoresConRol.value.map((j) => ({
+    ...j,
+    esEnamorado: j.nombre === enamorados.value.jugador1 || j.nombre === enamorados.value.jugador2,
+  }))
+})
+
+const textoAlcalde = computed(() => {
+  const alcalde = jugadoresConRol.value.find((j) => j.alcalde)
+  return alcalde ? alcalde.nombre : 'Elecciones pendientes'
+})
+
+const cargarDatos = async () => {
+  if (!codigoSala.value) {
+    const codigoGuardado = sessionStorage.getItem('codigoSala')
+    if (codigoGuardado) {
+      store.dispatch('sala/unirse', codigoGuardado)
+    } else {
+      store.dispatch('toast/mostrar', { mensaje: 'No hay sala activa', tipo: 'error' })
+      router.push('/')
+      return
     }
-  },
+  }
 
-  computed: {
-    ...mapGetters('auth', ['nombre']),
-    ...mapGetters('sala', [
-      'codigoSala',
-      'jugadoresConRol',
-      'enamorados',
-      'cupidoUsado',
-      'semiMuertos',
-    ]),
+  try {
+    const res = await axiosInstance.get(`/salas/${codigoSala.value}/roles`)
+    store.dispatch('sala/setJugadoresConRol', res.data)
+  } catch (error) {
+    store.dispatch('toast/mostrar', { mensaje: 'Error al cargar jugadores', tipo: 'error' })
+  }
 
-    hayAlcalde() {
-      return this.jugadoresConRol.some((j) => j.alcalde)
-    },
+  try {
+    const res = await axiosInstance.get(`/partida/${codigoSala.value}/sesion-activa`)
+    if (res.data?.abierta) {
+      idSesionActual.value = res.data.idSesion
+    }
+  } catch {
+    // No hay sesión activa, es normal
+  }
 
-    jugadoresConRolConEnamorados() {
-      if (!this.enamorados) return this.jugadoresConRol
-      return this.jugadoresConRol.map((j) => ({
-        ...j,
-        esEnamorado: j.nombre === this.enamorados.jugador1 || j.nombre === this.enamorados.jugador2,
-      }))
-    },
+  conectarWebSocket()
+}
 
-    textoAlcalde() {
-      const alcalde = this.jugadoresConRol.find((j) => j.alcalde)
-      return alcalde ? alcalde.nombre : 'Elecciones pendientes'
-    },
-  },
+const cambiarFase = async (fase) => {
+  try {
+    const esNoche = fase === 'noche'
+    esDia.value = !esNoche
 
-  async created() {
-    if (!this.codigoSala) {
-      const codigoGuardado = sessionStorage.getItem('codigoSala')
-      if (codigoGuardado) {
-        this.$store.dispatch('sala/unirse', codigoGuardado)
-      } else {
-        this.$store.dispatch('toast/mostrar', { mensaje: 'No hay sala activa', tipo: 'error' })
-        this.$router.push('/')
-        return
-      }
+    if (esNoche) {
+      eventosYaUsadosEstaNoche.value = false
+      jugadoresYaActuadosEstaNoche.value = []
+    } else {
+      await confirmarMuertesSemimuertos()
+      store.dispatch('sala/reiniciarVotos')
+      store.dispatch('sala/setTipoVotacion', null)
     }
 
-    try {
-      const res = await axiosInstance.get(`/salas/${this.codigoSala}/roles`)
-      this.$store.dispatch('sala/setJugadoresConRol', res.data)
-    } catch (error) {
-      this.$store.dispatch('toast/mostrar', { mensaje: 'Error al cargar jugadores', tipo: 'error' })
-    }
+    await axiosInstance.put(`/partida/${codigoSala.value}/fase`)
+    store.dispatch('toast/mostrar', {
+      mensaje: esNoche ? 'Cae la noche sobre Castronegro' : 'La aldea despierta ¡Buenos días!',
+      tipo: esNoche ? 'noche' : 'dia',
+    })
+  } catch (error) {
+    store.dispatch('toast/mostrar', {
+      mensaje:
+        error.response?.status === 409
+          ? 'Cierra la votación antes de cambiar la fase'
+          : 'Error al cambiar la fase',
+      tipo: 'error',
+    })
+  }
+}
 
-    try {
-      const res = await axiosInstance.get(`/partida/${this.codigoSala}/sesion-activa`)
-      if (res.data?.abierta) {
-        this.idSesionActual = res.data.idSesion
-      }
-    } catch {
-      // No hay sesión activa, es normal
-    }
-
-    this.conectarWebSocket()
-  },
-
-  beforeUnmount() {
-    if (this.stompClient) {
-      this.stompClient.deactivate()
-      this.stompClient = null
-    }
-  },
-
-  methods: {
-    async cambiarFase(fase) {
-      try {
-        const esNoche = fase === 'noche'
-        this.esDia = !esNoche
-
-        if (esNoche) {
-          this.eventosYaUsadosEstaNoche = false
-          this.jugadoresYaActuadosEstaNoche = []
-        } else {
-          // Al amanecer — confirmar muertes de semimuertos pendientes
-          await this.confirmarMuertesSemimuertos()
-          // Resetear votos al cambiar a día
-          this.$store.dispatch('sala/reiniciarVotos')
-          this.$store.dispatch('sala/setTipoVotacion', null)
-        }
-
-        await axiosInstance.put(`/partida/${this.codigoSala}/fase`)
-        this.$store.dispatch('toast/mostrar', {
-          mensaje: esNoche ? 'Cae la noche sobre Castronegro' : 'La aldea despierta ¡Buenos días!',
-          tipo: esNoche ? 'noche' : 'dia',
-        })
-      } catch (error) {
-        this.$store.dispatch('toast/mostrar', {
-          mensaje:
-            error.response?.status === 409
-              ? 'Cierra la votación antes de cambiar la fase'
-              : 'Error al cambiar la fase',
-          tipo: 'error',
-        })
-      }
-    },
-
-    // Confirma la muerte definitiva de todos los semimuertos al amanecer
-    async confirmarMuertesSemimuertos() {
-      const semimuertos = [...this.semiMuertos]
-      console.log('🌅 Confirmando muertes al amanecer:', semimuertos)
-      for (const nombre of semimuertos) {
-        const jugador = this.jugadoresConRol.find((j) => j.nombre === nombre)
-        if (jugador) {
-          try {
-            await axiosInstance.put(
-              `/partida/${this.codigoSala}/jugador/${jugador.idUsuario}/confirmar-muerte`,
-            )
-            console.log('✅ Muerte confirmada:', nombre)
-          } catch (error) {
-            console.error(
-              '❌ Error confirmando muerte de',
-              nombre,
-              ':',
-              error.response?.status,
-              error.response?.data,
-            )
-          }
-        }
-      }
-    },
-
-    conectarWebSocket() {
-      const token = this.$store.getters['auth/token']
-      const cliente = new Client({
-        webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
-        connectHeaders: { Authorization: `Bearer ${token}` },
-      })
-
-      cliente.onConnect = () => {
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/fase`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          this.esDia = payload.fase === 'DIA'
-          this.$store.dispatch('sala/setFase', payload.fase)
-
-          if (payload.fase === 'NOCHE') {
-            this.eventosYaUsadosEstaNoche = false
-            this.jugadoresYaActuadosEstaNoche = []
-          }
-
-          if (payload.fase === 'DIA') {
-            // Resetear votos al amanecer
-            this.$store.dispatch('sala/reiniciarVotos')
-            this.$store.dispatch('sala/setTipoVotacion', null)
-          }
-        })
-
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/muerte`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          this.$store.dispatch('sala/marcarMuerto', payload.nombreJugador)
-          // Quitar de semimuertos si estaba
-          this.$store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
-        })
-
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/alcalde`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          if (payload.tipo === 'ALCALDE_ELEGIDO') {
-            this.$store.dispatch('sala/designarAlcalde', payload.nombreAlcalde)
-            this.$store.dispatch('sala/reiniciarVotos')
-            this.$store.dispatch('toast/mostrar', {
-              mensaje: `¡${payload.nombreAlcalde} ha sido elegido alcalde!`,
-              tipo: 'aviso',
-            })
-          }
-        })
-
-        // El narrador siempre actualiza votos (ve todo)
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/votos`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          this.$store.dispatch('sala/actualizarVotos', payload.votos)
-        })
-
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/fin`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          this.$store.dispatch('sala/setResultado', {
-            bandoGanador: payload.bandoGanador,
-            mensaje: payload.mensaje,
-          })
-          this.$router.push({ name: 'resultados' })
-        })
-
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/votacion`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          console.log('📩 VOTACION PAYLOAD COMPLETO:', JSON.stringify(payload))
-
-          if (payload.tipo === 'VOTACION_ABIERTA') {
-            this.votacionActiva = true
-            this.tipoVotacionLocal = payload.tipoVotacion
-            this.$store.dispatch('sala/setTipoVotacion', payload.tipoVotacion)
-
-            switch (payload.tipoVotacion) {
-              case 'ALCALDE':
-                this.$store.dispatch('toast/mostrar', {
-                  mensaje: 'Elecciones de alcalde abiertas',
-                  tipo: 'info',
-                })
-                break
-              case 'DIA':
-                this.$store.dispatch('toast/mostrar', {
-                  mensaje: 'Votación de linchamiento en curso',
-                  tipo: 'info',
-                })
-                break
-              case 'LOBOS':
-                this.$store.dispatch('toast/mostrar', {
-                  mensaje: 'Los lobos salen de cazería...',
-                  tipo: 'licantropia',
-                })
-                break
-            }
-            return
-          }
-
-          if (payload.tipo === 'VOTACION_CERRADA') {
-            this.votacionActiva = false
-            this.tipoVotacionLocal = null
-            this.$store.dispatch('sala/setTipoVotacion', null)
-            return
-          }
-
-          // Resultado de votación de lobos — marcar semimuerto
-          if (payload.tipo === 'LOBOS' && payload.nombreEliminado) {
-            this.$store.dispatch('sala/marcarSemimuerto', payload.nombreEliminado)
-            this.avisoSesion = `Los lobos han devorado a ${payload.nombreEliminado} esta noche`
-            setTimeout(() => {
-              this.avisoSesion = null
-            }, 6000)
-          }
-        })
-
-        cliente.subscribe(`/topic/partida/${this.codigoSala}/turno`, (msg) => {
-          const payload = JSON.parse(msg.body)
-
-          if (payload.tipo === 'TURNO_FINALIZADO') {
-            if (
-              this.jugadorSeleccionado &&
-              !this.jugadoresYaActuadosEstaNoche.includes(this.jugadorSeleccionado.nombre)
-            ) {
-              this.jugadoresYaActuadosEstaNoche.push(this.jugadorSeleccionado.nombre)
-            }
-
-            this.avisoSesion = `${payload.nombreJugador} ha finalizado su turno`
-            setTimeout(() => {
-              this.avisoSesion = null
-            }, 4000)
-
-            if (this.idSesionActual) {
-              axiosInstance
-                .put(`/partida/${this.codigoSala}/votacion/${this.idSesionActual}/cerrar`)
-                .then(() => {
-                  this.idSesionActual = null
-                  this.sesionActualTipo = null
-                  this.jugadorSeleccionado = null
-                })
-                .catch(() => {})
-            }
-          }
-
-          if (payload.tipo === 'BRUJA_VIDA') {
-            this.$store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
-            this.avisoSesion = `La bruja ha salvado a ${payload.nombreJugador} esta noche`
-            setTimeout(() => {
-              this.avisoSesion = null
-            }, 5000)
-            return
-          }
-
-          if (payload.tipo === 'FLECHAZO') {
-            this.$store.dispatch('sala/setEnamorados', {
-              jugador1: payload.jugador1,
-              jugador2: payload.jugador2,
-            })
-            this.$store.dispatch('sala/setCupidoUsado')
-          }
-
-          if (payload.tipo === 'MUERTE_ENAMORADO') {
-            const jugador = this.jugadoresConRol.find((j) => j.nombre === payload.nombreJugador)
-            if (jugador) {
-              axiosInstance
-                .put(`/partida/${this.codigoSala}/jugador/${jugador.idUsuario}/confirmar-muerte`)
-                .catch(() => {})
-            }
-          }
-          if (payload.tipo === 'MENTOR_ELEGIDO') {
-            const mentor = this.jugadoresConRol.find((j) => j.nombre === payload.nombreMentor)
-            if (mentor) mentor.esMentor = true
-
-            this.avisoSesion = `El Niño Salvaje ha elegido a ${payload.nombreMentor} como su mentor`
-            setTimeout(() => {
-              this.avisoSesion = null
-            }, 5000)
-            return
-          }
-        })
-      }
-
-      cliente.activate()
-      this.stompClient = cliente
-    },
-
-    async iniciarVotacionLinchamiento() {
-      try {
-        const res = await axiosInstance.post(`/partida/${this.codigoSala}/votacion/abrir`, {
-          tipo: 'DIA',
-        })
-        this.idSesionActual = res.data
-        this.votacionActiva = true
-        this.tipoVotacion = 'DIA'
-      } catch (error) {
-        this.$store.dispatch('toast/mostrar', {
-          mensaje:
-            error.response?.status === 409
-              ? 'Ya hay una votación abierta'
-              : 'Error al iniciar votación',
-          tipo: 'error',
-        })
-      }
-    },
-
-    async iniciarVotacionAlcalde() {
-      try {
-        const res = await axiosInstance.post(`/partida/${this.codigoSala}/votacion/abrir`, {
-          tipo: 'ALCALDE',
-        })
-        this.idSesionActual = res.data
-      } catch (error) {
-        this.$store.dispatch('toast/mostrar', {
-          mensaje:
-            error.response?.status === 409
-              ? 'Ya hay una votación abierta'
-              : 'Error al iniciar elecciones',
-          tipo: 'error',
-        })
-      }
-    },
-
-    async finalizarVotacion() {
-      if (!this.idSesionActual) {
-        this.$store.dispatch('toast/mostrar', {
-          mensaje: 'No hay ninguna votación activa',
-          tipo: 'aviso',
-        })
-        return
-      }
+const confirmarMuertesSemimuertos = async () => {
+  const semimuertos = [...semiMuertos.value]
+  console.log('🌅 Confirmando muertes al amanecer:', semimuertos)
+  for (const nombre of semimuertos) {
+    const jugador = jugadoresConRol.value.find((j) => j.nombre === nombre)
+    if (jugador) {
       try {
         await axiosInstance.put(
-          `/partida/${this.codigoSala}/votacion/${this.idSesionActual}/cerrar`,
+          `/partida/${codigoSala.value}/jugador/${jugador.idUsuario}/confirmar-muerte`,
         )
-        this.idSesionActual = null
-        this.$store.dispatch('sala/reiniciarVotos')
-        this.$store.dispatch('sala/setTipoVotacion', null)
+        console.log('✅ Muerte confirmada:', nombre)
       } catch (error) {
-        this.$store.dispatch('toast/mostrar', {
-          mensaje: 'Error al finalizar votación',
-          tipo: 'error',
+        console.error(
+          '❌ Error confirmando muerte de',
+          nombre,
+          ':',
+          error.response?.status,
+          error.response?.data,
+        )
+      }
+    }
+  }
+}
+
+const conectarWebSocket = () => {
+  const token = store.getters['auth/token']
+  const cliente = new Client({
+    webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+    connectHeaders: { Authorization: `Bearer ${token}` },
+  })
+
+  cliente.onConnect = () => {
+    cliente.subscribe(`/topic/partida/${codigoSala.value}/fase`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      esDia.value = payload.fase === 'DIA'
+      store.dispatch('sala/setFase', payload.fase)
+
+      if (payload.fase === 'NOCHE') {
+        eventosYaUsadosEstaNoche.value = false
+        jugadoresYaActuadosEstaNoche.value = []
+      }
+
+      if (payload.fase === 'DIA') {
+        store.dispatch('sala/reiniciarVotos')
+        store.dispatch('sala/setTipoVotacion', null)
+      }
+    })
+
+    cliente.subscribe(`/topic/partida/${codigoSala.value}/muerte`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      store.dispatch('sala/marcarMuerto', payload.nombreJugador)
+      store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
+    })
+
+    cliente.subscribe(`/topic/partida/${codigoSala.value}/alcalde`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      if (payload.tipo === 'ALCALDE_ELEGIDO') {
+        store.dispatch('sala/designarAlcalde', payload.nombreAlcalde)
+        store.dispatch('sala/reiniciarVotos')
+        store.dispatch('toast/mostrar', {
+          mensaje: `¡${payload.nombreAlcalde} ha sido elegido alcalde!`,
+          tipo: 'aviso',
         })
       }
-    },
+    })
 
-    iniciarEventos() {
-      if (!this.modoEventos && this.eventosYaUsadosEstaNoche) {
-        this.avisoSesion = 'Los eventos nocturnos ya han terminado esta noche'
-        setTimeout(() => {
-          this.avisoSesion = null
-        }, 4000)
+    cliente.subscribe(`/topic/partida/${codigoSala.value}/votos`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      store.dispatch('sala/actualizarVotos', payload.votos)
+    })
+
+    cliente.subscribe(`/topic/partida/${codigoSala.value}/fin`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      store.dispatch('sala/setResultado', {
+        bandoGanador: payload.bandoGanador,
+        mensaje: payload.mensaje,
+      })
+      router.push({ name: 'resultados' })
+    })
+
+    cliente.subscribe(`/topic/partida/${codigoSala.value}/votacion`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      console.log('📩 VOTACION PAYLOAD COMPLETO:', JSON.stringify(payload))
+
+      if (payload.tipo === 'VOTACION_ABIERTA') {
+        votacionActiva.value = true
+        tipoVotacionLocal.value = payload.tipoVotacion
+        store.dispatch('sala/setTipoVotacion', payload.tipoVotacion)
+
+        switch (payload.tipoVotacion) {
+          case 'ALCALDE':
+            store.dispatch('toast/mostrar', {
+              mensaje: 'Elecciones de alcalde abiertas',
+              tipo: 'info',
+            })
+            break
+          case 'DIA':
+            store.dispatch('toast/mostrar', {
+              mensaje: 'Votación de linchamiento en curso',
+              tipo: 'info',
+            })
+            break
+          case 'LOBOS':
+            store.dispatch('toast/mostrar', {
+              mensaje: 'Los lobos salen de cazer��a...',
+              tipo: 'licantropia',
+            })
+            break
+        }
         return
       }
 
-      this.modoEventos = !this.modoEventos
-
-      if (this.modoEventos) {
-        this.jugadoresYaActuadosEstaNoche = []
-      } else {
-        this.eventosYaUsadosEstaNoche = true
-        this.jugadorSeleccionado = null
-        this.avisoSesion = null
-        this.$store.dispatch('sala/setTurnoActivo', null)
+      if (payload.tipo === 'VOTACION_CERRADA') {
+        votacionActiva.value = false
+        tipoVotacionLocal.value = null
+        store.dispatch('sala/setTipoVotacion', null)
+        return
       }
 
-      this.stompClient.publish({
-        destination: `/topic/partida/${this.codigoSala}/turno`,
+      if (payload.tipo === 'LOBOS' && payload.nombreEliminado) {
+        store.dispatch('sala/marcarSemimuerto', payload.nombreEliminado)
+        avisoSesion.value = `Los lobos han devorado a ${payload.nombreEliminado} esta noche`
+        setTimeout(() => {
+          avisoSesion.value = null
+        }, 6000)
+      }
+    })
+
+    cliente.subscribe(`/topic/partida/${codigoSala.value}/turno`, (msg) => {
+      const payload = JSON.parse(msg.body)
+
+      if (payload.tipo === 'TURNO_FINALIZADO') {
+        if (
+          jugadorSeleccionado.value &&
+          !jugadoresYaActuadosEstaNoche.value.includes(jugadorSeleccionado.value.nombre)
+        ) {
+          jugadoresYaActuadosEstaNoche.value.push(jugadorSeleccionado.value.nombre)
+        }
+
+        avisoSesion.value = `${payload.nombreJugador} ha finalizado su turno`
+        setTimeout(() => {
+          avisoSesion.value = null
+        }, 4000)
+
+        if (idSesionActual.value) {
+          axiosInstance
+            .put(`/partida/${codigoSala.value}/votacion/${idSesionActual.value}/cerrar`)
+            .then(() => {
+              idSesionActual.value = null
+              sesionActualTipo.value = null
+              jugadorSeleccionado.value = null
+            })
+            .catch(() => {})
+        }
+      }
+
+      if (payload.tipo === 'BRUJA_VIDA') {
+        store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
+        avisoSesion.value = `La bruja ha salvado a ${payload.nombreJugador} esta noche`
+        setTimeout(() => {
+          avisoSesion.value = null
+        }, 5000)
+        return
+      }
+
+      if (payload.tipo === 'FLECHAZO') {
+        store.dispatch('sala/setEnamorados', {
+          jugador1: payload.jugador1,
+          jugador2: payload.jugador2,
+        })
+        store.dispatch('sala/setCupidoUsado')
+      }
+
+      if (payload.tipo === 'MUERTE_ENAMORADO') {
+        const jugador = jugadoresConRol.value.find((j) => j.nombre === payload.nombreJugador)
+        if (jugador) {
+          axiosInstance
+            .put(`/partida/${codigoSala.value}/jugador/${jugador.idUsuario}/confirmar-muerte`)
+            .catch(() => {})
+        }
+      }
+      if (payload.tipo === 'MENTOR_ELEGIDO') {
+        const mentor = jugadoresConRol.value.find((j) => j.nombre === payload.nombreMentor)
+        if (mentor) mentor.esMentor = true
+
+        avisoSesion.value = `El Niño Salvaje ha elegido a ${payload.nombreMentor} como su mentor`
+        setTimeout(() => {
+          avisoSesion.value = null
+        }, 5000)
+        return
+      }
+    })
+  }
+
+  cliente.activate()
+  stompClient.value = cliente
+}
+
+const iniciarVotacionLinchamiento = async () => {
+  try {
+    const res = await axiosInstance.post(`/partida/${codigoSala.value}/votacion/abrir`, {
+      tipo: 'DIA',
+    })
+    idSesionActual.value = res.data
+    votacionActiva.value = true
+  } catch (error) {
+    store.dispatch('toast/mostrar', {
+      mensaje:
+        error.response?.status === 409
+          ? 'Ya hay una votación abierta'
+          : 'Error al iniciar votación',
+      tipo: 'error',
+    })
+  }
+}
+
+const iniciarVotacionAlcalde = async () => {
+  try {
+    const res = await axiosInstance.post(`/partida/${codigoSala.value}/votacion/abrir`, {
+      tipo: 'ALCALDE',
+    })
+    idSesionActual.value = res.data
+  } catch (error) {
+    store.dispatch('toast/mostrar', {
+      mensaje:
+        error.response?.status === 409
+          ? 'Ya hay una votación abierta'
+          : 'Error al iniciar elecciones',
+      tipo: 'error',
+    })
+  }
+}
+
+const finalizarVotacion = async () => {
+  if (!idSesionActual.value) {
+    store.dispatch('toast/mostrar', {
+      mensaje: 'No hay ninguna votación activa',
+      tipo: 'aviso',
+    })
+    return
+  }
+  try {
+    await axiosInstance.put(
+      `/partida/${codigoSala.value}/votacion/${idSesionActual.value}/cerrar`,
+    )
+    idSesionActual.value = null
+    store.dispatch('sala/reiniciarVotos')
+    store.dispatch('sala/setTipoVotacion', null)
+  } catch (error) {
+    store.dispatch('toast/mostrar', {
+      mensaje: 'Error al finalizar votación',
+      tipo: 'error',
+    })
+  }
+}
+
+const iniciarEventos = () => {
+  if (!modoEventos.value && eventosYaUsadosEstaNoche.value) {
+    avisoSesion.value = 'Los eventos nocturnos ya han terminado esta noche'
+    setTimeout(() => {
+      avisoSesion.value = null
+    }, 4000)
+    return
+  }
+
+  modoEventos.value = !modoEventos.value
+
+  if (modoEventos.value) {
+    jugadoresYaActuadosEstaNoche.value = []
+  } else {
+    eventosYaUsadosEstaNoche.value = true
+    jugadorSeleccionado.value = null
+    avisoSesion.value = null
+    store.dispatch('sala/setTurnoActivo', null)
+  }
+
+  stompClient.value.publish({
+    destination: `/topic/partida/${codigoSala.value}/turno`,
+    body: JSON.stringify({
+      tipo: modoEventos.value ? 'EVENTOS_INICIADOS' : 'EVENTOS_FINALIZADOS',
+      nombreJugador: null,
+    }),
+  })
+}
+
+const activarTurnoJugador = async (jugador) => {
+  if (!modoEventos.value) return
+
+  const esCazadorMuerto =
+    (jugador.nombreRol || '').toLowerCase() === 'cazador' && !jugador.estaVivo
+
+  if (!jugador.estaVivo && !esCazadorMuerto) {
+    return
+  }
+
+  if (jugador.nombreRol === 'Cupido' && cupidoUsado.value) {
+    avisoSesion.value = '¡Cupido ya usó sus poderes, no puede volver a usarlos en esta partida!'
+    setTimeout(() => {
+      avisoSesion.value = null
+    }, 4000)
+    return
+  }
+
+  if (
+    jugador.nombreRol === 'Vidente' &&
+    jugadoresYaActuadosEstaNoche.value.includes(jugador.nombre)
+  ) {
+    avisoSesion.value = '¡La Vidente ya usó su poder esta noche!'
+    setTimeout(() => {
+      avisoSesion.value = null
+    }, 4000)
+    return
+  }
+
+  if (
+    jugador.nombreRol === 'Niña' &&
+    jugadoresYaActuadosEstaNoche.value.includes(jugador.nombre)
+  ) {
+    avisoSesion.value = '¡La Niña ya usó su poder esta noche!'
+    setTimeout(() => {
+      avisoSesion.value = null
+    }, 4000)
+    return
+  }
+
+  if (idSesionActual.value) {
+    avisoSesion.value = `Cierra el turno de ${jugadorSeleccionado.value?.nombre} antes de activar otro jugador`
+    setTimeout(() => {
+      avisoSesion.value = null
+    }, 4000)
+    return
+  }
+
+  jugadorSeleccionado.value = jugador
+  store.dispatch('sala/setTurnoActivo', jugador)
+
+  const esLobo = jugador.nombreRol === 'Lobo'
+
+  if (esLobo) {
+    try {
+      const res = await axiosInstance.post(`/partida/${codigoSala.value}/votacion/abrir`, {
+        tipo: 'LOBOS',
+      })
+      idSesionActual.value = res.data
+      sesionActualTipo.value = 'LOBOS'
+
+      const lobosVivos = jugadoresConRol.value.filter(
+        (j) => j.nombreRol === 'Lobo' && j.estaVivo,
+      )
+      stompClient.value.publish({
+        destination: `/topic/partida/${codigoSala.value}/turno`,
         body: JSON.stringify({
-          tipo: this.modoEventos ? 'EVENTOS_INICIADOS' : 'EVENTOS_FINALIZADOS',
-          nombreJugador: null,
+          tipo: 'TURNO_LOBOS',
+          nombresLobos: lobosVivos.map((j) => j.nombre),
         }),
       })
-    },
+    } catch (error) {
+      store.dispatch('toast/mostrar', {
+        mensaje:
+          error.response?.status === 409
+            ? 'Ya hay una votación abierta'
+            : 'Error al iniciar turno de lobos',
+        tipo: 'error',
+      })
+    }
+  } else {
+    try {
+      const res = await axiosInstance.post(`/partida/${codigoSala.value}/votacion/abrir`, {
+        tipo: 'HABILIDAD',
+      })
+      idSesionActual.value = res.data
+      sesionActualTipo.value = 'HABILIDAD'
 
-    async activarTurnoJugador(jugador) {
-      if (!this.modoEventos) return
+      stompClient.value.publish({
+        destination: `/topic/partida/${codigoSala.value}/turno`,
+        body: JSON.stringify({
+          tipo: 'TURNO_JUGADOR',
+          nombreJugador: jugador.nombre,
+          rolActivo: jugador.nombreRol,
+        }),
+      })
 
-      // Permitir activar al Cazador aunque esté muerto
-      const esCazadorMuerto =
-        (jugador.nombreRol || '').toLowerCase() === 'cazador' && !jugador.estaVivo
-
-      if (!jugador.estaVivo && !esCazadorMuerto) {
-        // No activar jugadores muertos que no sean el Cazador
-        return
+      const toastsPorRol = {
+        Vidente: { mensaje: 'La Vidente está teniendo una visión...', tipo: 'videncia' },
+        Bruja: { mensaje: 'La Bruja prepara sus pociones...', tipo: 'brujeria' },
+        Cupido: { mensaje: 'Cupido está lanzando sus flechas de amor...', tipo: 'amorio' },
       }
 
-      if (jugador.nombreRol === 'Cupido' && this.cupidoUsado) {
-        this.avisoSesion = '¡Cupido ya usó sus poderes, no puede volver a usarlos en esta partida!'
-        setTimeout(() => {
-          this.avisoSesion = null
-        }, 4000)
-        return
+      const toastRol = toastsPorRol[jugador.nombreRol]
+      if (toastRol) {
+        store.dispatch('toast/mostrar', toastRol)
       }
-
-      if (
-        jugador.nombreRol === 'Vidente' &&
-        this.jugadoresYaActuadosEstaNoche.includes(jugador.nombre)
-      ) {
-        this.avisoSesion = '¡La Vidente ya usó su poder esta noche!'
-        setTimeout(() => {
-          this.avisoSesion = null
-        }, 4000)
-        return
-      }
-
-      if (
-        jugador.nombreRol === 'Niña' &&
-        this.jugadoresYaActuadosEstaNoche.includes(jugador.nombre)
-      ) {
-        this.avisoSesion = '¡La Niña ya usó su poder esta noche!'
-        setTimeout(() => {
-          this.avisoSesion = null
-        }, 4000)
-        return
-      }
-
-      if (this.idSesionActual) {
-        this.avisoSesion = `Cierra el turno de ${this.jugadorSeleccionado?.nombre} antes de activar otro jugador`
-        setTimeout(() => {
-          this.avisoSesion = null
-        }, 4000)
-        return
-      }
-
-      this.jugadorSeleccionado = jugador
-      this.$store.dispatch('sala/setTurnoActivo', jugador)
-
-      const esLobo = jugador.nombreRol === 'Lobo'
-
-      if (esLobo) {
-        try {
-          const res = await axiosInstance.post(`/partida/${this.codigoSala}/votacion/abrir`, {
-            tipo: 'LOBOS',
-          })
-          this.idSesionActual = res.data
-          this.sesionActualTipo = 'LOBOS'
-
-          const lobosVivos = this.jugadoresConRol.filter(
-            (j) => j.nombreRol === 'Lobo' && j.estaVivo,
-          )
-          this.stompClient.publish({
-            destination: `/topic/partida/${this.codigoSala}/turno`,
-            body: JSON.stringify({
-              tipo: 'TURNO_LOBOS',
-              nombresLobos: lobosVivos.map((j) => j.nombre),
-            }),
-          })
-        } catch (error) {
-          this.$store.dispatch('toast/mostrar', {
-            mensaje:
-              error.response?.status === 409
-                ? 'Ya hay una votación abierta'
-                : 'Error al iniciar turno de lobos',
-            tipo: 'error',
-          })
-        }
-      } else {
-        try {
-          const res = await axiosInstance.post(`/partida/${this.codigoSala}/votacion/abrir`, {
-            tipo: 'HABILIDAD',
-          })
-          this.idSesionActual = res.data
-          this.sesionActualTipo = 'HABILIDAD'
-
-          this.stompClient.publish({
-            destination: `/topic/partida/${this.codigoSala}/turno`,
-            body: JSON.stringify({
-              tipo: 'TURNO_JUGADOR',
-              nombreJugador: jugador.nombre,
-               rolActivo: jugador.nombreRol, // ← añade esto
-            }),
-          })
-
-          const toastsPorRol = {
-            Vidente: { mensaje: 'La Vidente está teniendo una visión...', tipo: 'videncia' },
-            Bruja: { mensaje: 'La Bruja prepara sus pociones...', tipo: 'brujeria' },
-            Cupido: { mensaje: 'Cupido está lanzando sus flechas de amor...', tipo: 'amorio' },
-          }
-
-          const toastRol = toastsPorRol[jugador.nombreRol]
-          if (toastRol) {
-            this.$store.dispatch('toast/mostrar', toastRol)
-          }
-        } catch (error) {
-          this.$store.dispatch('toast/mostrar', {
-            mensaje:
-              error.response?.status === 409
-                ? 'Ya hay una votación abierta'
-                : 'Error al iniciar turno',
-            tipo: 'error',
-          })
-        }
-      }
-      if (
-        jugador.nombreRol === 'Niño Salvaje' &&
-        this.jugadoresYaActuadosEstaNoche.includes(jugador.nombre)
-      ) {
-        this.avisoSesion = '¡El Niño Salvaje ya eligió su mentor!'
-        setTimeout(() => {
-          this.avisoSesion = null
-        }, 4000)
-        return
-      }
-    },
-  },
+    } catch (error) {
+      store.dispatch('toast/mostrar', {
+        mensaje:
+          error.response?.status === 409
+            ? 'Ya hay una votación abierta'
+            : 'Error al iniciar turno',
+        tipo: 'error',
+      })
+    }
+  }
+  if (
+    jugador.nombreRol === 'Niño Salvaje' &&
+    jugadoresYaActuadosEstaNoche.value.includes(jugador.nombre)
+  ) {
+    avisoSesion.value = '¡El Niño Salvaje ya eligió su mentor!'
+    setTimeout(() => {
+      avisoSesion.value = null
+    }, 4000)
+    return
+  }
 }
+
+onMounted(() => {
+  cargarDatos()
+})
+
+onUnmounted(() => {
+  if (stompClient.value) {
+    stompClient.value.deactivate()
+    stompClient.value = null
+  }
+})
 </script>
 
 <style scoped>

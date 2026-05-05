@@ -53,36 +53,30 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'PanelControlNarrador',
-  props: {
-    esDia: { type: Boolean, default: true },
-    hayAlcalde: { type: Boolean, default: false },
-    sesionActiva: { type: Boolean, default: false },
-    sesionActualTipo: { type: String, default: null },
-  },
-  emits: [
-    'votarAlcalde',
-    'votarLinchamiento',
-    'finalizarVotacion',
-    'eventos',
-    'verPersonajes',
-    'verReglas',
-  ],
+<script setup>
+import { ref, defineProps, defineEmits } from 'vue'
 
-  data() {
-    return {
-      eventosActivos: false,
-    }
-  },
+const props = defineProps({
+  esDia: { type: Boolean, default: true },
+  hayAlcalde: { type: Boolean, default: false },
+  sesionActiva: { type: Boolean, default: false },
+  sesionActualTipo: { type: String, default: null },
+})
 
-  methods: {
-    toggleEventos() {
-      this.eventosActivos = !this.eventosActivos
-      this.$emit('eventos')
-    },
-  },
+const emit = defineEmits([
+  'votarAlcalde',
+  'votarLinchamiento',
+  'finalizarVotacion',
+  'eventos',
+  'verPersonajes',
+  'verReglas',
+])
+
+const eventosActivos = ref(false)
+
+const toggleEventos = () => {
+  eventosActivos.value = !eventosActivos.value
+  emit('eventos')
 }
 </script>
 

@@ -68,7 +68,8 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch, defineProps, defineEmits } from 'vue'
 import PoderLobo from './poderes/PoderLobo.vue'
 import PoderVidente from './poderes/PoderVidente.vue'
 import PoderCupido from './poderes/PoderCupido.vue'
@@ -77,65 +78,58 @@ import PoderCazador from './poderes/PoderCazador.vue'
 import PoderNinno from './poderes/PoderNinno.vue'
 import PoderNinna from './poderes/PoderNinna.vue'
 
-export default {
-  name: 'ZonaPoderes',
-  components: {
-    PoderLobo,
-    PoderVidente,
-    PoderCupido,
-    PoderBruja,
-    PoderCazador,
-    PoderNinno,
-    PoderNinna,
-  },
+const props = defineProps({
+  miRol: { type: String, default: null },
+  jugadorSeleccionado: { type: Object, default: null },
+  esMiTurno: { type: Boolean, default: false },
+  esDia: { type: Boolean, default: true },
+})
 
-  props: {
-    miRol: { type: String, default: null },
-    jugadorSeleccionado: { type: Object, default: null },
-    esMiTurno: { type: Boolean, default: false },
-    esDia: { type: Boolean, default: true },
-  },
+const emit = defineEmits([
+  'devorar',
+  'premonicion',
+  'flechazo',
+  'finalizarTurno',
+  'envenenar',
+  'vidaUsada',
+  'disparo',
+  'mentorElegido',
+])
 
-  emits: [
-    'devorar',
-    'premonicion',
-    'flechazo',
-    'finalizarTurno',
-    'envenenar',
-    'vidaUsada',
-    'disparo',
-    'mentorElegido',
-  ],
+const poderVidente = ref(null)
+const poderLobo = ref(null)
+const poderCupido = ref(null)
+const poderBruja = ref(null)
+const poderCazador = ref(null)
+const poderNinno = ref(null)
+const poderNinna = ref(null)
 
-  watch: {
-    esMiTurno(nuevo) {
-      if (!nuevo) {
-        this.$refs.poderVidente?.resetear()
-        this.$refs.poderLobo?.resetear()
-        this.$refs.poderCupido?.resetear()
-        this.$refs.poderBruja?.resetear()
-        this.$refs.poderCazador?.resetear()
-        this.$refs.poderNinno?.resetear()
-        this.$refs.poderNinna?.resetear()
-      }
-    },
-    esDia(nuevoValor) {
-      if (!nuevoValor) {
-        this.$refs.poderVidente?.resetear()
-        this.$refs.poderNinna?.resetearNoche()
-      }
-    },
-  },
+watch(() => props.esMiTurno, (nuevo) => {
+  if (!nuevo) {
+    poderVidente.value?.resetear()
+    poderLobo.value?.resetear()
+    poderCupido.value?.resetear()
+    poderBruja.value?.resetear()
+    poderCazador.value?.resetear()
+    poderNinno.value?.resetear()
+    poderNinna.value?.resetear()
+  }
+})
 
-  methods: {
-    esRol(rol) {
-      return (this.miRol || '').toLowerCase() === rol.toLowerCase()
-    },
-    finalizarPremonicion() {
-      this.$refs.poderVidente?.resetear()
-      this.$emit('finalizarTurno')
-    },
-  },
+watch(() => props.esDia, (nuevoValor) => {
+  if (!nuevoValor) {
+    poderVidente.value?.resetear()
+    poderNinna.value?.resetearNoche()
+  }
+})
+
+const esRol = (rol) => {
+  return (props.miRol || '').toLowerCase() === rol.toLowerCase()
+}
+
+const finalizarPremonicion = () => {
+  poderVidente.value?.resetear()
+  emit('finalizarTurno')
 }
 </script>
 

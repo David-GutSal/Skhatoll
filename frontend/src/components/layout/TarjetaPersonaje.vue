@@ -44,15 +44,14 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'TarjetaPersonaje',
-  props: {
-    personaje: { type: Object, required: true },
-    color: { type: String, required: true },
-    bando: { type: String, required: true },
-  },
-}
+<script setup>
+import { defineProps } from 'vue'
+
+defineProps({
+  personaje: { type: Object, required: true },
+  color: { type: String, required: true },
+  bando: { type: String, required: true },
+})
 </script>
 
 <style scoped>

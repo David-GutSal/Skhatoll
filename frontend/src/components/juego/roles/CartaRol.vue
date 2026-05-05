@@ -121,52 +121,34 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed, defineProps, defineEmits } from 'vue'
+import { useStore } from 'vuex'
 import { getImagenRol, getColorBando } from '@/data/roles.js'
-import { mapGetters } from 'vuex'
 
-export default {
-  name: 'CartaRol',
+const props = defineProps({
+  modoVista: { type: String, default: 'jugador' },
+  nombreRol: { type: String, default: null },
+  descripcion: { type: String, default: '' },
+  bando: { type: String, default: null },
+  jugador: { type: Object, default: () => ({}) },
+  jugadorSeleccionado: { type: Object, default: null },
+  modoEventos: { type: Boolean, default: false },
+  esEnamorado: { type: Boolean, default: false },
+  esEnvenenado: { type: Boolean, default: false },
+})
 
-  props: {
-    modoVista: { type: String, default: 'jugador' },
-    nombreRol: { type: String, default: null },
-    descripcion: { type: String, default: '' },
-    bando: { type: String, default: null },
-    jugador: { type: Object, default: () => ({}) },
-    jugadorSeleccionado: { type: Object, default: null },
-    modoEventos: { type: Boolean, default: false },
-    esEnamorado: { type: Boolean, default: false },
-    esEnvenenado: { type: Boolean, default: false },
-  },
+const emit = defineEmits(['seleccionar'])
 
-  emits: ['seleccionar'],
+const store = useStore()
 
-  computed: {
-    ...mapGetters('sala', ['tipoVotacion']),
+const tipoVotacion = computed(() => store.getters['sala/tipoVotacion'])
 
-    imagen() {
-      return getImagenRol(this.nombreRol)
-    },
-    colorBando() {
-      return getColorBando(this.bando)
-    },
-    nombreRolJugador() {
-      return this.jugador?.rol || this.jugador?.nombreRol || null
-    },
-    rolJugador() {
-      return this.jugador?.bando || null
-    },
-    esVotacionLobos() {
-      return this.tipoVotacion === 'LOBOS'
-    },
-  },
-
-  methods: {
-    getImagenRol,
-    getColorBando,
-  },
-}
+const imagen = computed(() => getImagenRol(props.nombreRol))
+const colorBando = computed(() => getColorBando(props.bando))
+const nombreRolJugador = computed(() => props.jugador?.rol || props.jugador?.nombreRol || null)
+const rolJugador = computed(() => props.jugador?.bando || null)
+const esVotacionLobos = computed(() => tipoVotacion.value === 'LOBOS')
 </script>
 
 <style scoped>

@@ -108,26 +108,26 @@ export default {
 
 .poder-noche {
   background: rgba(0, 0, 0, 0.85);
-  border: 3px solid #cc0000;
+  border: 3px solid var(--color-rojo);
 }
 
 .poder-dia {
   background: rgba(0, 0, 0, 0.7);
-  border: 3px solid #e4ba03;
+  border: 3px solid var(--color-dorado);
 }
 
 .poder-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.3rem;
   font-weight: 700;
-  color: #cc0000;
+  color: var(--color-rojo);
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
 .poder-descripcion {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   color: #ccc;
   font-size: 0.9rem;
   text-align: center;
@@ -141,10 +141,10 @@ export default {
   gap: 8px;
   padding: 12px 24px;
   border-radius: 10px;
-  border: 3px solid #cc0000;
+  border: 3px solid var(--color-rojo);
   background: transparent;
-  color: #cc0000;
-  font-family: 'Raleway', Arial, sans-serif;
+  color: var(--color-rojo);
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.95rem;
   cursor: pointer;
@@ -154,7 +154,7 @@ export default {
 }
 
 .btn-poder:hover:not(:disabled) {
-  background: #cc0000;
+  background: var(--color-rojo);
   color: white;
 }
 
@@ -172,7 +172,7 @@ export default {
 }
 
 .revelacion-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.1rem;
   font-weight: 700;
   color: white;
@@ -183,7 +183,7 @@ export default {
 }
 
 .revelacion-titulo i {
-  color: #cc0000;
+  color: var(--color-rojo);
 }
 
 .carta-revelada {

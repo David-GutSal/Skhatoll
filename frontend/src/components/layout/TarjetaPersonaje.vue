@@ -62,7 +62,7 @@ defineProps({
   border: 6px solid;
   overflow: hidden;
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.9);
-  transition: all 0.3s ease;
+  transition: var(--transition-normal);
 }
 
 .tarjeta:hover {
@@ -134,7 +134,7 @@ defineProps({
 }
 
 .tarjeta-nombre {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.95rem;
   font-weight: 700;
   margin-bottom: 12px;
@@ -147,7 +147,7 @@ defineProps({
 }
 
 .tarjeta-bando {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.1rem;
   font-style: italic;
   margin-bottom: 14px;
@@ -156,16 +156,16 @@ defineProps({
 .tarjeta-subtitulo,
 .tarjeta-descripcion,
 .tarjeta-poderes {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.05rem;
   line-height: 1.65;
   color: #ddd;
 }
 
 .poderes-label {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-weight: 700;
-  color: #e4ba03;
+  color: var(--color-dorado);
 }
 
 @media (max-width: 992px) {

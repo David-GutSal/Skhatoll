@@ -105,10 +105,10 @@ const toggleEventos = () => {
   gap: 8px;
   padding: 12px 20px;
   border-radius: 10px;
-  border: 3px solid #e4ba03;
+  border: 3px solid var(--color-dorado);
   background: white;
-  color: #e4ba03;
-  font-family: 'Raleway', Arial, sans-serif;
+  color: var(--color-dorado);
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.9rem;
   letter-spacing: 0.04em;
@@ -122,8 +122,8 @@ const toggleEventos = () => {
 }
 
 .btn-panel:hover {
-  background: #e4ba03;
-  color: #000;
+  background: var(--color-dorado);
+  color: var(--color-black);
   transform: scale(0.96);
 }
 
@@ -140,8 +140,8 @@ const toggleEventos = () => {
 .aviso-seleccion {
   width: 100%;
   text-align: center;
-  color: #cc0000;
-  font-family: 'Raleway', Arial, sans-serif;
+  color: var(--color-rojo);
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.9rem;
   padding: 6px 0 0;
@@ -152,24 +152,24 @@ const toggleEventos = () => {
 }
 
 .noche .btn-eventos {
-  background: #cc0000;
+  background: var(--color-rojo);
   color: #000;
   border-color: white;
 }
 
 .noche .btn-eventos:hover {
   background: white;
-  color: #cc0000;
+  color: var(--color-rojo);
 }
 
 .noche .btn-finalizar-lobos {
   background: transparent;
-  color: #e4ba03;
-  border-color: #e4ba03;
+  color: var(--color-dorado);
+  border-color: var(--color-dorado);
 }
 
 .noche .btn-finalizar-lobos:hover {
-  background: #e4ba03;
+  background: var(--color-dorado);
   color: #000;
 }
 
@@ -187,10 +187,10 @@ const toggleEventos = () => {
   gap: 6px;
   padding: 10px 20px;
   border-radius: 10px;
-  border: 3px solid #e4ba03;
+  border: 3px solid var(--color-dorado);
   background: transparent;
   color: white;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.85rem;
   cursor: pointer;
@@ -202,18 +202,18 @@ const toggleEventos = () => {
 
 .btn-info:hover {
   background: #006199;
-  color: #e4ba03;
+  color: var(--color-dorado);
   transform: scale(0.96);
 }
 
 .noche .btn-info {
-  border-color: #cc0000;
+  border-color: var(--color-rojo);
   color: #ffffff;
 }
 
 .noche .btn-info:hover {
   background: white;
-  color: #cc0000;
+  color: var(--color-rojo);
 }
 
 @media (max-width: 768px) {

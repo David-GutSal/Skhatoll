@@ -109,21 +109,21 @@ export default {
   width: 100%;
   max-width: 500px;
   background: rgba(0, 0, 0, 0.85);
-  border: 3px solid #cc0000;
+  border: 3px solid var(--color-rojo);
 }
 
 .poder-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.3rem;
   font-weight: 700;
-  color: #cc0000;
+  color: var(--color-rojo);
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
 .poder-descripcion {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   color: #ccc;
   font-size: 0.9rem;
   text-align: center;
@@ -138,10 +138,10 @@ export default {
   padding: 14px 20px;
   border-radius: 10px;
   width: 100%;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 1rem;
-  transition: all 0.2s ease;
+  transition: var(--transition-fast);
 }
 
 .victima-vacia {
@@ -152,7 +152,7 @@ export default {
 
 .victima-activa {
   background: rgba(204, 0, 0, 0.15);
-  border: 2px solid #cc0000;
+  border: 2px solid var(--color-rojo);
   color: white;
   box-shadow:
     0 0 8px rgba(204, 0, 0, 0.4),
@@ -160,7 +160,7 @@ export default {
 }
 
 .victima-activa i {
-  color: #cc0000;
+  color: var(--color-rojo);
 }
 
 .victima-placeholder {
@@ -174,10 +174,10 @@ export default {
   gap: 8px;
   padding: 12px 24px;
   border-radius: 10px;
-  border: 3px solid #cc0000;
+  border: 3px solid var(--color-rojo);
   background: transparent;
-  color: #cc0000;
-  font-family: 'Raleway', Arial, sans-serif;
+  color: var(--color-rojo);
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.95rem;
   cursor: pointer;
@@ -187,7 +187,7 @@ export default {
 }
 
 .btn-poder:hover:not(:disabled) {
-  background: #cc0000;
+  background: var(--color-rojo);
   color: white;
 }
 
@@ -208,10 +208,10 @@ export default {
 }
 
 .votos-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 0.95rem;
   font-weight: 700;
-  color: #cc0000;
+  color: var(--color-rojo);
   margin: 0 0 4px 0;
   display: flex;
   align-items: center;
@@ -222,7 +222,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 0.9rem;
   color: white;
 }

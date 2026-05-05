@@ -106,7 +106,7 @@ const irUnirse = () => {
   border: 5px solid #000;
   padding: 18px 32px;
   font-size: 1.1rem;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-weight: 700;
   letter-spacing: 0.05em;
   border-radius: 10px;
@@ -125,7 +125,7 @@ const irUnirse = () => {
 
 .subtitulo {
   color: #ffffff;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.5rem;
   font-style: italic;
   letter-spacing: 0.05em;

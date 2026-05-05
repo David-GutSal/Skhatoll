@@ -114,7 +114,7 @@ onUnmounted(() => {
   border-radius: 15px;
   background: rgba(10, 10, 10, 0.96);
   border-left: 5px solid;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.2rem;
   font-weight: 700;
   color: white;
@@ -139,7 +139,7 @@ onUnmounted(() => {
 
 .toast-error,
 .toast-licantropia {
-  border-color: #cc0000;
+  border-color: var(--color-rojo);
 }
 .toast-error .toast-icono,
 .toast-licantropia .toast-icono {
@@ -147,17 +147,17 @@ onUnmounted(() => {
 }
 .toast-error .toast-barra,
 .toast-licantropia .toast-barra {
-  background: #cc0000;
+  background: var(--color-rojo);
 }
 
 .toast-aviso {
-  border-color: #e4ba03;
+  border-color: var(--color-dorado);
 }
 .toast-aviso .toast-icono {
-  color: #e4ba03;
+  color: var(--color-dorado);
 }
 .toast-aviso .toast-barra {
-  background: #e4ba03;
+  background: var(--color-dorado);
 }
 
 .toast-info {
@@ -279,7 +279,7 @@ onUnmounted(() => {
 }
 
 .fa-sun {
-  color: #e4ba03;
+  color: var(--color-dorado);
 }
 
 @keyframes entrar {

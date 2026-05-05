@@ -126,7 +126,7 @@ const resetearNoche = () => {
 }
 
 .poder-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.3rem;
   font-weight: 700;
   color: #5dade2;
@@ -136,7 +136,7 @@ const resetearNoche = () => {
 }
 
 .poder-descripcion {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   color: #ccc;
   font-size: 0.9rem;
   text-align: center;
@@ -244,7 +244,7 @@ const resetearNoche = () => {
 }
 
 .frase-ninna {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 0.9rem;
   color: #ccc;
   margin: 0;
@@ -272,7 +272,7 @@ const resetearNoche = () => {
   background: rgba(93, 173, 226, 0.15);
   border: 1px solid #5dade2;
   color: white;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 0.85rem;
   font-weight: 700;
 }
@@ -299,7 +299,7 @@ const resetearNoche = () => {
   padding: 16px 24px;
   width: 100%;
   border: none;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 1rem;
   cursor: pointer;
@@ -346,14 +346,5 @@ const resetearNoche = () => {
   transform: translateY(0);
 }
 
-@keyframes aparecer {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+
 </style>

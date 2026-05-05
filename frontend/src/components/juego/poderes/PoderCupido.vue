@@ -161,7 +161,7 @@ const resetear = () => {
 }
 
 .poder-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.3rem;
   font-weight: 700;
   color: #ff69b4;
@@ -171,7 +171,7 @@ const resetear = () => {
 }
 
 .poder-descripcion {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   color: #ccc;
   font-size: 0.9rem;
   text-align: center;
@@ -196,7 +196,7 @@ const resetear = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: var(--transition-fast);
 }
 
 .hueco-activo {
@@ -212,7 +212,7 @@ const resetear = () => {
   align-items: center;
   gap: 8px;
   color: #555;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 0.85rem;
 }
 
@@ -229,7 +229,7 @@ const resetear = () => {
   width: 100%;
   position: relative;
   color: white;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.95rem;
 }
@@ -254,7 +254,7 @@ const resetear = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s ease;
+  transition: background var(--transition-fast);
 }
 
 .btn-quitar:hover:not(:disabled) {
@@ -285,7 +285,7 @@ const resetear = () => {
 }
 
 .instruccion {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   color: #888;
   font-size: 0.85rem;
   margin: 0;
@@ -303,7 +303,7 @@ const resetear = () => {
   border: 3px solid #ff69b4;
   background: transparent;
   color: #ff69b4;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.95rem;
   cursor: pointer;
@@ -328,10 +328,10 @@ const resetear = () => {
   gap: 8px;
   padding: 10px 20px;
   border-radius: 10px;
-  border: 2px solid #e4ba03;
+  border: 2px solid var(--color-dorado);
   background: transparent;
-  color: #e4ba03;
-  font-family: 'Raleway', Arial, sans-serif;
+  color: var(--color-dorado);
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.9rem;
   cursor: pointer;
@@ -341,7 +341,7 @@ const resetear = () => {
 }
 
 .btn-finalizar:hover {
-  background: #e4ba03;
+  background: var(--color-dorado);
   color: #000;
 }
 </style>

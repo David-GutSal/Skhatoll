@@ -135,10 +135,10 @@ onUnmounted(() => {
 }
 
 .titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 2.5rem;
   font-weight: bold;
-  color: #cc0000;
+  color: var(--color-rojo);
   text-align: center;
   margin-bottom: 20px;
 }
@@ -147,12 +147,12 @@ onUnmounted(() => {
   display: block;
   width: 100%;
   margin: 20px 0;
-  border: 5px solid #cc0000;
+  border: 5px solid var(--color-rojo);
   object-fit: cover;
 }
 
 .texto {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.5rem;
   font-weight: bold;
   color: white;
@@ -170,11 +170,11 @@ onUnmounted(() => {
 
 .btn-eliminado {
   background: #000;
-  color: #cc0000;
+  color: var(--color-rojo);
   border: none;
   padding: 14px 32px;
   border-radius: 10px;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.5rem;
   font-weight: 700;
   cursor: pointer;

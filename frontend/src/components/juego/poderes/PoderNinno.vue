@@ -113,7 +113,7 @@ const resetear = () => {
 }
 
 .titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.8rem;
   font-weight: 700;
   color: white;
@@ -121,7 +121,7 @@ const resetear = () => {
 }
 
 .subtitulo {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.2rem;
   font-weight: 700;
   color: #5dade2;
@@ -135,10 +135,10 @@ const resetear = () => {
   padding: 14px 20px;
   border-radius: 10px;
   width: 100%;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 1rem;
-  transition: all 0.2s ease;
+  transition: var(--transition-fast);
 }
 
 .mentor-vacio {
@@ -174,7 +174,7 @@ const resetear = () => {
   border: 3px solid #5dade2;
   background: #5dade2;
   color: white;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.95rem;
   cursor: pointer;
@@ -214,21 +214,12 @@ const resetear = () => {
   background: rgba(93, 173, 226, 0.1);
   border: 2px solid #5dade2;
   color: #5dade2;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.9rem;
   width: 100%;
-  animation: aparecer 0.4s ease;
+  animation: fade-in-up 0.4s ease;
 }
 
-@keyframes aparecer {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+
 </style>

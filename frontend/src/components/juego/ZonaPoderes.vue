@@ -154,10 +154,10 @@ const finalizarPremonicion = () => {
   gap: 8px;
   padding: 10px 20px;
   border-radius: 10px;
-  border: 2px solid #e4ba03;
+  border: 2px solid var(--color-dorado);
   background: transparent;
-  color: #e4ba03;
-  font-family: 'Raleway', Arial, sans-serif;
+  color: var(--color-dorado);
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.9rem;
   cursor: pointer;
@@ -167,7 +167,7 @@ const finalizarPremonicion = () => {
 }
 
 .btn-finalizar:hover {
-  background: #e4ba03;
+  background: var(--color-dorado);
   color: #000;
 }
 </style>

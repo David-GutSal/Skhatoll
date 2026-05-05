@@ -265,7 +265,7 @@ onUnmounted(() => {
 }
 
 .intro-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 2.5rem;
   font-weight: 700;
   color: white;
@@ -273,7 +273,7 @@ onUnmounted(() => {
 }
 
 .intro-texto {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.2rem;
   color: white;
   line-height: 1.6;
@@ -324,22 +324,22 @@ onUnmounted(() => {
   margin: 0 auto 18px;
   aspect-ratio: 1 / 1;
   object-fit: cover;
-  border: 4px solid #cc0000;
+  border: 4px solid var(--color-rojo);
   border-radius: 15px;
   display: block;
 }
 
 .ficha-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.9rem;
   font-weight: bold;
-  color: #cc0000;
+  color: var(--color-rojo);
   text-align: center;
   margin-bottom: 15px;
 }
 
 .ficha-texto {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1rem;
   color: white;
   text-align: left;
@@ -354,15 +354,15 @@ onUnmounted(() => {
 }
 
 .ficha-lista li {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 0.9rem;
   color: white;
   line-height: 1.6;
   margin-bottom: 4px;
 }
 
-.ficha-lista li::marker { color: #e4ba03; }
-.icono-ficha { color: #cc0000; }
+.ficha-lista li::marker { color: var(--color-dorado); }
+.icono-ficha { color: var(--color-rojo); }
 
 /* PARTE 3: Tabla + Consejos en fila, debajo de 1420px */
 .tabla-consejos-wrapper {
@@ -404,16 +404,16 @@ onUnmounted(() => {
 }
 
 .tabla-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 2rem;
   font-weight: 700;
-  color: #cc0000;
+  color: var(--color-rojo);
   text-align: center;
   margin-bottom: 16px;
 }
 
 .tabla-texto {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.2rem;
   color: white;
   margin-bottom: 15px;
@@ -421,9 +421,9 @@ onUnmounted(() => {
 }
 
 .tabla-wrapper {
-  background: #3a3a3a;
+background: var(--color-gris-medio);
   border-radius: 15px;
-  border: 6px solid #cc0000;
+  border: 6px solid var(--color-rojo);
   overflow: hidden;
   margin-top: 20px;
   width: 100%;
@@ -436,11 +436,11 @@ onUnmounted(() => {
 }
 
 .fila-cabecera th {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.7rem;
   color: white;
   font-weight: bold;
-  background: #e4ba03;
+  background: var(--color-dorado);
   padding: 16px 6px;
   text-align: center;
   word-break: break-word;
@@ -448,7 +448,7 @@ onUnmounted(() => {
 }
 
 .tabla-juego td {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.9rem;
   font-weight: 700;
   color: white;
@@ -457,7 +457,7 @@ onUnmounted(() => {
 }
 
 .fila-gris { background: #3a3a3a; }
-.fila-roja { background: #cc0000; }
+.fila-roja { background: var(--color-rojo); }
 
 @media (max-width: 1120px) {
   .fila-cabecera th { font-size: 1.1rem; padding: 12px 4px; }
@@ -473,7 +473,7 @@ onUnmounted(() => {
 .tarjeta-consejo {
   flex: 1;
   border-radius: 15px;
-  border: 5px solid #e4ba03;
+  border: 5px solid var(--color-dorado);
   min-height: 300px;
   display: flex;
   flex-direction: column;
@@ -503,7 +503,7 @@ onUnmounted(() => {
 }
 
 .portada-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 2rem;
   font-weight: bold;
   margin: 0;
@@ -524,7 +524,7 @@ onUnmounted(() => {
 }
 
 .consejo-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.8rem;
   font-weight: bold;
   margin: 0;
@@ -535,7 +535,7 @@ onUnmounted(() => {
 }
 
 .consejo-parrafo {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.2rem;
   font-weight: 600;
   line-height: 1.6;
@@ -561,7 +561,7 @@ onUnmounted(() => {
 .btn-nav {
   background: none;
   border: none;
-  color: #e4ba03;
+  color: var(--color-dorado);
   font-size: 2.2rem;
   cursor: pointer;
   transition: transform 0.25s ease;
@@ -570,7 +570,7 @@ onUnmounted(() => {
 .btn-nav:hover { transform: scale(1.2); }
 
 .consejos-contador {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   color: white;
   font-size: 1.4rem;
 }
@@ -590,10 +590,10 @@ onUnmounted(() => {
 }
 
 .juegos-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 2rem;
   font-weight: bold;
-  color: #e4ba03;
+  color: var(--color-dorado);
   margin: 0;
 }
 
@@ -606,7 +606,7 @@ onUnmounted(() => {
 .btn-carrusel {
   background: none;
   border: none;
-  color: #e4ba03;
+  color: var(--color-dorado);
   font-size: 2rem;
   cursor: pointer;
   flex-shrink: 0;
@@ -643,10 +643,10 @@ onUnmounted(() => {
 }
 
 .juego-titulo-link {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1rem;
   font-weight: bold;
-  color: #e4ba03;
+  color: var(--color-dorado);
   text-decoration: none;
   display: block;
   margin-bottom: 6px;
@@ -654,10 +654,10 @@ onUnmounted(() => {
   cursor: pointer;
 }
 
-.juego-titulo-link:hover {color: #cc0000; }
+.juego-titulo-link:hover {color: var(--color-rojo); }
 
 .juego-texto {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 0.8rem;
   color: white;
   margin: 0;

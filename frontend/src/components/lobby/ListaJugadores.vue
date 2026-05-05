@@ -84,7 +84,7 @@ const esNarrador = (jugador) => jugador.nombre === props.nombreNarrador
 }
 
 .titulo-lista {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.5rem;
   font-weight: 700;
   color: white;
@@ -95,7 +95,7 @@ const esNarrador = (jugador) => jugador.nombre === props.nombreNarrador
 }
 
 .subtitulo-lista {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-style: italic;
   color: white;
   font-size: 1rem;
@@ -155,7 +155,7 @@ const esNarrador = (jugador) => jugador.nombre === props.nombreNarrador
 
 .jugador-nombre {
   flex: 1;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.05rem;
   font-weight: 700;
 }
@@ -164,7 +164,7 @@ const esNarrador = (jugador) => jugador.nombre === props.nombreNarrador
 .lista-jugador .jugador-nombre { color: #8b0000; }
 
 .jugador-nombre.es-narrador {
-  color: #cc0000;
+color: var(--color-rojo);
 }
 
 .lista-jugador .jugador-nombre.es-narrador {
@@ -181,7 +181,7 @@ const esNarrador = (jugador) => jugador.nombre === props.nombreNarrador
 }
 
 .mensaje-pie {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-style: italic;
   font-size: 1.2rem;
   margin: 4px 0 0 0;
@@ -196,6 +196,6 @@ const esNarrador = (jugador) => jugador.nombre === props.nombreNarrador
   margin-top: 2px;
 }
 
-.mensaje-creador { color: #cc0000; }
+.mensaje-creador { color: var(--color-rojo); }
 .mensaje-jugador { color: white; }
 </style>

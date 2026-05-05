@@ -46,7 +46,7 @@ onUnmounted(() => {
 
 <style>
 body {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   margin: 0;
 }
 
@@ -56,7 +56,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
 }
 
 #app {
@@ -78,7 +78,7 @@ h6 {
 }
 
 .sticky-navbar.scrolled {
-  outline: 2px solid #e4ba03;
+  outline: 2px solid var(--color-dorado);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.95);
 }
 

@@ -116,7 +116,7 @@ onUnmounted(() => {
 }
 
 .texto-tu-rol {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 3rem;
   font-weight: 700;
   color: white;
@@ -134,7 +134,7 @@ onUnmounted(() => {
 
 .caja-carta {
   background: #000;
-  border: 10px solid #e4ba03 !important;
+  border: 10px solid var(--color-dorado) !important;
   border-radius: 16px;
   overflow: hidden;
   max-width: 340px;
@@ -160,7 +160,7 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   padding: 6px 12px;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -182,7 +182,7 @@ onUnmounted(() => {
 }
 
 .campo-label {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.75rem;
   color: white;
@@ -191,7 +191,7 @@ onUnmounted(() => {
 }
 
 .campo-valor {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 0.95rem;
   color: #aaa;
 }
@@ -209,98 +209,16 @@ onUnmounted(() => {
   gap: 16px;
 }
 
-.spinner {
-  width: 52px;
-  height: 52px;
-  border: 4px solid rgba(255, 255, 255, 0.15);
-  border-top-color: #e4ba03;
-  border-radius: 50%;
-  animation: girar 0.9s linear infinite;
-}
 
-@keyframes girar {
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 .texto-espera-rol {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-style: italic;
   color: #aaa;
   margin: 0;
 }
 
-.frases-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  max-width: 600px;
-  width: 100%;
-}
 
-.logo-frase {
-  height: 36px;
-  width: auto;
-  object-fit: contain;
-  flex-shrink: 0;
-  opacity: 0.8;
-}
 
-.frase-caja {
-  flex: 1;
-  background: #000;
-  padding: 10px 16px;
-  border-radius: 6px;
-  min-height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
-.frase {
-  font-family: 'Raleway', Arial, sans-serif;
-  font-style: italic;
-  color: white;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  text-align: center;
-  margin: 0;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.6s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-@media (max-width: 600px) {
-  .texto-tu-rol {
-    font-size: 2rem;
-  }
-  .caja-carta {
-    max-width: 280px;
-  }
-  .frases-wrapper {
-    gap: 10px;
-  }
-  .logo-frase {
-    height: 26px;
-  }
-  .frase {
-    font-size: 0.8rem;
-  }
-}
-
-@media (max-width: 380px) {
-  .texto-tu-rol {
-    font-size: 1.6rem;
-  }
-  .logo-frase {
-    display: none;
-  }
-}
 </style>

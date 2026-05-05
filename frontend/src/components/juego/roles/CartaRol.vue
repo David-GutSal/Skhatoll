@@ -162,7 +162,7 @@ const esVotacionLobos = computed(() => tipoVotacion.value === 'LOBOS')
   overflow: hidden;
   max-width: 340px;
   width: 100%;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
 }
 
 .carta-imagen-wrapper {
@@ -183,7 +183,7 @@ const esVotacionLobos = computed(() => tipoVotacion.value === 'LOBOS')
   left: 0;
   right: 0;
   padding: 6px 12px;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -197,7 +197,7 @@ const esVotacionLobos = computed(() => tipoVotacion.value === 'LOBOS')
 }
 
 .carta-nombre {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.5rem;
   font-weight: 700;
   color: white;
@@ -207,7 +207,7 @@ const esVotacionLobos = computed(() => tipoVotacion.value === 'LOBOS')
 }
 
 .carta-descripcion {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   color: #ccc;
   font-size: 1rem;
   line-height: 1.6;
@@ -228,7 +228,7 @@ const esVotacionLobos = computed(() => tipoVotacion.value === 'LOBOS')
   transition:
     transform 0.15s ease,
     border-color 0.2s ease;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   position: relative;
 }
 
@@ -315,7 +315,7 @@ const esVotacionLobos = computed(() => tipoVotacion.value === 'LOBOS')
     0 0 10px white,
     0 0 20px rgba(255, 255, 255, 0.8),
     0 0 30px rgba(255, 255, 255, 0.4);
-  transition: all 0.2s ease;
+  transition: var(--transition-fast);
   animation: flashVoto 0.4s ease;
 }
 
@@ -332,7 +332,7 @@ const esVotacionLobos = computed(() => tipoVotacion.value === 'LOBOS')
 }
 
 .carta-mesa.alcalde {
-  border: 4px solid #e4ba03 !important;
+  border: 4px solid var(--color-dorado) !important;
   box-shadow:
     0 0 8px rgba(228, 186, 3, 0.5),
     0 0 18px rgba(228, 186, 3, 0.25);
@@ -363,7 +363,7 @@ const esVotacionLobos = computed(() => tipoVotacion.value === 'LOBOS')
 }
 
 .carta-mesa-nombre {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1rem;
   font-weight: bold;
   color: white;
@@ -400,18 +400,18 @@ const esVotacionLobos = computed(() => tipoVotacion.value === 'LOBOS')
 
 .alcalde-inline {
   margin-left: 6px;
-  color: #e4ba03;
+  color: var(--color-dorado);
   font-size: 1rem;
 }
 
 .alcalde-inline i {
-  color: #e4ba03;
+  color: var(--color-dorado);
 }
 
 .badge-votos {
   background: rgba(0, 0, 0, 0.7);
-  color: #e4ba03;
-  border: 2px solid #e4ba03;
+  color: var(--color-dorado);
+  border: 2px solid var(--color-dorado);
   padding: 2px 6px;
   border-radius: 6px;
   font-size: 1.5rem;
@@ -421,7 +421,7 @@ const esVotacionLobos = computed(() => tipoVotacion.value === 'LOBOS')
 .badge-votos-lobo {
   background: rgba(139, 0, 0, 0.8);
   color: #ff4444;
-  border: 2px solid #cc0000;
+  border: 2px solid var(--color-rojo);
   padding: 2px 6px;
   border-radius: 6px;
   font-size: 1.5rem;

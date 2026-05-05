@@ -184,7 +184,7 @@ const limpiarSala = () => {
 }
 
 .cuadro-victoria { border: 8px solid white; }
-.cuadro-derrota { border: 8px solid #cc0000; }
+.cuadro-derrota { border: 8px solid var(--color-rojo); }
 .cuadro-empate { border: 8px solid white; }
 .cuadro-enamorados { border: 8px solid #531e8f; }
 
@@ -194,33 +194,33 @@ const limpiarSala = () => {
 }
 
 .titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-weight: 700;
   font-size: clamp(2rem, 6vw, 4rem);
   text-align: center;
   margin: 24px 15px 8px;
 }
 
-.titulo-victoria { color: #e4ba03; }
-.titulo-derrota { color: #cc0000; }
+.titulo-victoria { color: var(--color-dorado); }
+.titulo-derrota { color: var(--color-rojo); }
 .titulo-empate { color: #4a90d9; }
 .titulo-enamorados { color: #ff69b4; }
-.titulo-narrador { color: #e4ba03; font-size: clamp(2rem, 4vw, 2.5rem); }
+.titulo-narrador { color: var(--color-dorado); font-size: clamp(2rem, 4vw, 2.5rem); }
 
-.texto-lobos { color: #cc0000; }
+.texto-lobos { color: var(--color-rojo); }
 .texto-aldeanos { color: #2d9e2d; }
 .texto-enamorados { color: #ff69b4; }
 
 .subtitulo {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: clamp(1rem, 2vw, 1.2rem);
   text-align: center;
   margin: 0 15px 16px;
   font-weight: 700;
 }
 
-.subtitulo-victoria, .subtitulo-narrador { color: #e4ba03; }
-.subtitulo-derrota { color: #cc0000; }
+.subtitulo-victoria, .subtitulo-narrador { color: var(--color-dorado); }
+.subtitulo-derrota { color: var(--color-rojo); }
 .subtitulo-empate { color: #4a90d9; }
 .subtitulo-enamorados { color: white; }
 .fa-heart{color:#ff69b4;}
@@ -232,24 +232,24 @@ const limpiarSala = () => {
   max-height: 380px;
 }
 
-.imagen-victoria { border-top: 5px solid #e4ba03; border-bottom: 5px solid #e4ba03; }
-.imagen-derrota { border-top: 5px solid #cc0000; border-bottom: 5px solid #cc0000; }
+.imagen-victoria { border-top: 5px solid var(--color-dorado); border-bottom: 5px solid var(--color-dorado); }
+.imagen-derrota { border-top: 5px solid var(--color-rojo); border-bottom: 5px solid var(--color-rojo); }
 .imagen-empate { border-top: 5px solid #4a90d9; border-bottom: 5px solid #4a90d9; }
 .imagen-enamorados { border-top: 5px solid #531e8f; border-bottom: 5px solid #5b2d8e; }
 
 .botones { display: flex; gap: 16px; justify-content: center; padding: 24px 15px; }
 
 .btn-resultado {
-  background: #cc0000;
+  background: var(--color-rojo);
   color: white;
   padding: 14px 28px;
   border-radius: 10px;
   font-weight: 700;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: var(--transition-fast);
 }
 
-.btn-resultado:hover { background: white; color: #cc0000; }
+.btn-resultado:hover { background: white; color: var(--color-rojo); }
 .btn-empate { background: #4a90d9; }
 .btn-empate:hover { color: #4a90d9; background: white; }
 .btn-enamorados { background: #531e8f; }

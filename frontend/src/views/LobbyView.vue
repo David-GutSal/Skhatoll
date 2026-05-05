@@ -264,7 +264,7 @@ onMounted(() => {
 }
 
 .titulo-lobby {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-weight: 700;
   font-size: 2.5rem;
   color: white;
@@ -307,7 +307,7 @@ onMounted(() => {
 }
 
 .titulo-caja {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 2.5rem;
   font-weight: 700;
   color: white;
@@ -322,7 +322,7 @@ onMounted(() => {
   width: 100%;
   border-radius: 50px;
   overflow: hidden;
-  border: 5px solid #e4ba03;
+  border: 5px solid var(--color-dorado);
   background: white;
 }
 
@@ -348,7 +348,7 @@ onMounted(() => {
   color: white;
   font-size: 1.4rem;
   border-radius: 0 50px 50px 0;
-  transition: background 0.2s ease;
+  transition: background var(--transition-fast);
   flex-shrink: 0;
 }
 
@@ -357,7 +357,7 @@ onMounted(() => {
 }
 
 .subtitulo-caja {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-style: italic;
   color: #ccc;
   font-size: 1.2rem;
@@ -371,7 +371,7 @@ onMounted(() => {
   border: none;
   padding: 14px 36px;
   border-radius: 10px;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.1rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -386,8 +386,8 @@ onMounted(() => {
 }
 
 .boton-iniciar:hover {
-  background: #e4ba03;
-  color: #000;
+  background: var(--color-dorado);
+  color: var(--color-black);
 }
 
 .boton-iniciar:active {
@@ -405,7 +405,7 @@ onMounted(() => {
 }
 
 .texto-redes {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   color: white;
   font-weight: 700;
   font-size: 1.1rem;
@@ -427,7 +427,7 @@ onMounted(() => {
   height: 60px;
   border-radius: 50%;
   background: white;
-  transition: background 0.2s ease;
+  transition: background var(--transition-fast);
   flex-shrink: 0;
   text-decoration: none;
 }
@@ -490,7 +490,7 @@ onMounted(() => {
   border: none;
   padding: 13px 28px;
   border-radius: 10px;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
@@ -513,7 +513,7 @@ onMounted(() => {
   border: none;
   padding: 13px 28px;
   border-radius: 10px;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
@@ -524,7 +524,7 @@ onMounted(() => {
 }
 
 .boton-salir-jugador:hover {
-  background: #000;
+  background: var(--color-black);
 }
 .boton-salir-jugador:active {
   transform: scale(0.95);
@@ -534,8 +534,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #cc0000;
-  font-family: 'Cinzel', Arial, sans-serif;
+  color: var(--color-rojo);
+  font-family: var(--font-cinzel);
   font-weight: 700;
   font-size: 0.95rem;
   padding: 10px 14px;
@@ -545,7 +545,7 @@ onMounted(() => {
 }
 
 .mensaje-union {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-style: italic;
   color: white;
   font-size: 0.95rem;

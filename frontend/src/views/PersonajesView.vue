@@ -119,14 +119,14 @@ const irABando = (bando) => {
 <style scoped>
 
 .intro-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 2.5rem;
   font-weight: bolder;
   color: white;
 }
 
 .narrador-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 2rem;
   font-weight: 700;
   color: #4a90d9;
@@ -139,7 +139,7 @@ const irABando = (bando) => {
 }
 
 .intro-texto {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.2rem;
   color: white;
   line-height: 1.6;
@@ -147,12 +147,12 @@ const irABando = (bando) => {
 
 .bandos-lista {
   list-style: square;
-  color: #e4ba03;
+  color: var(--color-dorado);
   font-size: 1.5rem;
 }
 
 .bando-nombre {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.2rem;
   font-weight: 700;
 }
@@ -163,15 +163,15 @@ const irABando = (bando) => {
 }
 
 .bando-link:hover {
-  color: #e4ba03 !important;
+  color: var(--color-dorado) !important;
 }
 
 .bando-bien-texto { color: #2d9e2d; }
-.bando-mal-texto { color: #cc0000; }
+.bando-mal-texto { color: var(--color-rojo); }
 .bando-neutral-texto { color: #868686; }
 
 .intro-img {
-  border: 5px solid #e4ba03;
+  border: 5px solid var(--color-dorado);
   border-radius: 15px;
   object-fit: cover;
 }

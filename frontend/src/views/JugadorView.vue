@@ -562,7 +562,7 @@ onUnmounted(() => {
 }
 
 .mesa-turno-activo :deep(.mesa-wrapper) {
-  border-color: #e4ba03 !important;
+  border-color: var(--color-dorado) !important;
   box-shadow:
     0 0 12px rgba(228, 186, 3, 0.6),
     0 0 28px rgba(228, 186, 3, 0.3);
@@ -574,22 +574,22 @@ onUnmounted(() => {
   gap: 10px;
   padding: 14px 20px;
   border-radius: 10px;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.95rem;
-  animation: aparecer 0.4s ease;
+  animation: fade-in-up 0.4s ease;
 }
 
 .evento-dia {
   background: rgba(0, 0, 0, 0.6);
-  border: 2px solid #e4ba03;
-  color: #e4ba03;
+  border: 2px solid var(--color-dorado);
+  color: var(--color-dorado);
 }
 
 .evento-noche {
   background: rgba(0, 0, 0, 0.7);
-  border: 2px solid #cc0000;
-  color: #cc0000;
+  border: 2px solid var(--color-rojo);
+  color: var(--color-rojo);
 }
 
 .cuadro-turno {
@@ -600,12 +600,12 @@ onUnmounted(() => {
   padding: 14px 20px;
   border-radius: 10px;
   background: rgba(0, 0, 0, 0.85);
-  border: 2px solid #e4ba03;
-  color: #e4ba03;
-  font-family: 'Raleway', Arial, sans-serif;
+  border: 2px solid var(--color-dorado);
+  color: var(--color-dorado);
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.95rem;
-  animation: aparecer 0.4s ease;
+  animation: fade-in-up 0.4s ease;
 }
 
 .cuadro-turno-texto {
@@ -620,10 +620,10 @@ onUnmounted(() => {
   gap: 6px;
   padding: 8px 16px;
   border-radius: 8px;
-  border: 2px solid #e4ba03;
+  border: 2px solid var(--color-dorado);
   background: transparent;
-  color: #e4ba03;
-  font-family: 'Raleway', Arial, sans-serif;
+  color: var(--color-dorado);
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.85rem;
   cursor: pointer;
@@ -634,8 +634,8 @@ onUnmounted(() => {
 }
 
 .btn-ir-poderes:hover {
-  background: #e4ba03;
-  color: #000;
+  background: var(--color-dorado);
+  color: var(--color-black);
 }
 
 .footer-aldea {
@@ -674,16 +674,7 @@ onUnmounted(() => {
   }
 }
 
-@keyframes aparecer {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+
 
 .boton-arriba-wrapper {
   display: flex;
@@ -701,7 +692,7 @@ onUnmounted(() => {
   color: white;
   padding: 16px 36px;
   border-radius: 10px;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.2rem;
   font-weight: 700;
   letter-spacing: 0.08em;

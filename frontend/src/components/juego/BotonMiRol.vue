@@ -88,8 +88,8 @@ const nombreEnamorado = computed(() => {
   color: white;
   border: none;
   padding: 16px 36px;
-  border-radius: 10px;
-  font-family: 'Cinzel', Arial, sans-serif;
+  border-radius: var(--border-radius-md);
+  font-family: var(--font-cinzel);
   font-size: 1.2rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -97,7 +97,7 @@ const nombreEnamorado = computed(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: background 0.2s ease, transform 0.15s ease;
+  transition: background var(--transition-fast), transform 0.15s ease;
 }
 
 .boton-mirol:hover {
@@ -113,15 +113,15 @@ const nombreEnamorado = computed(() => {
   color: #ff69b4;
   border: 3px solid #ff69b4;
   padding: 16px 24px;
-  border-radius: 10px;
-  font-family: 'Cinzel', Arial, sans-serif;
+  border-radius: var(--border-radius-md);
+  font-family: var(--font-cinzel);
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background var(--transition-fast), color var(--transition-fast);
 }
 
 .boton-enamorado:hover {
@@ -160,7 +160,7 @@ const nombreEnamorado = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s ease;
+  transition: background var(--transition-fast);
 }
 
 .panel-cerrar:hover {
@@ -169,7 +169,7 @@ const nombreEnamorado = computed(() => {
 }
 
 .panel-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.1rem;
   font-weight: 700;
   color: #ff69b4;
@@ -185,7 +185,7 @@ const nombreEnamorado = computed(() => {
 }
 
 .panel-texto {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   color: #ccc;
   font-size: 0.9rem;
   line-height: 1.6;
@@ -224,7 +224,7 @@ const nombreEnamorado = computed(() => {
   align-items: center;
   justify-content: center;
   z-index: 1;
-  transition: background 0.2s ease;
+  transition: background var(--transition-fast);
 }
 
 .modal-cerrar:hover {

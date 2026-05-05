@@ -657,10 +657,10 @@ onUnmounted(() => {
   gap: 10px;
   padding: 12px 20px;
   border-radius: 12px;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.3rem;
   font-weight: 700;
-  color: #cc0000;
+  color: var(--color-rojo);
   align-self: flex-start;
 }
 
@@ -686,15 +686,15 @@ onUnmounted(() => {
 
 .carta-dia {
   background: white;
-  border: 8px solid #e4ba03;
+  border: 8px solid var(--color-dorado);
 }
 .carta-noche {
   background: #000;
-  border: 8px solid #cc0000;
+  border: 8px solid var(--color-rojo);
 }
 
 .carta-fase-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-weight: 700;
   font-size: clamp(1.2rem, 3vw, 2.5rem);
   margin: 0;
@@ -702,10 +702,10 @@ onUnmounted(() => {
 }
 
 .carta-dia .carta-fase-titulo {
-  color: #e4ba03;
+  color: var(--color-dorado);
 }
 .carta-noche .carta-fase-titulo {
-  color: #cc0000;
+  color: var(--color-rojo);
 }
 
 .carta-fase-img {
@@ -716,14 +716,14 @@ onUnmounted(() => {
 }
 
 .carta-dia .carta-fase-img {
-  border: 5px solid #e4ba03;
+  border: 5px solid var(--color-dorado);
 }
 .carta-noche .carta-fase-img {
-  border: 5px solid #cc0000;
+  border: 5px solid var(--color-rojo);
 }
 
 .carta-fase-texto {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: clamp(0.85rem, 1.2vw, 1.2rem);
   text-align: center;
@@ -733,10 +733,10 @@ onUnmounted(() => {
 }
 
 .carta-dia .carta-fase-texto {
-  color: #e4ba03;
+  color: var(--color-dorado);
 }
 .carta-noche .carta-fase-texto {
-  color: #cc0000;
+  color: var(--color-rojo);
 }
 
 .mesa-wrapper-outer :deep(.mesa-wrapper) {
@@ -751,12 +751,12 @@ onUnmounted(() => {
 
 .seccion-dia {
   background: rgba(0, 0, 0, 0.7);
-  border: 5px solid #e4ba03;
+  border: 5px solid var(--color-dorado);
 }
 
 .seccion-noche {
   background: rgba(0, 0, 0, 0.85);
-  border: 5px solid #cc0000;
+  border: 5px solid var(--color-rojo);
 }
 
 .footer-aldea {
@@ -808,24 +808,15 @@ onUnmounted(() => {
   padding: 12px 20px;
   border-radius: 10px;
   background: rgba(0, 0, 0, 0.85);
-  border: 2px solid #e4ba03;
-  color: #e4ba03;
-  font-family: 'Raleway', Arial, sans-serif;
+  border: 2px solid var(--color-dorado);
+  color: var(--color-dorado);
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.9rem;
-  animation: aparecer 0.4s ease;
+  animation: fade-in-up 0.4s ease;
 }
 
-@keyframes aparecer {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+
 
 .columna-izquierda {
   display: flex;
@@ -840,10 +831,10 @@ onUnmounted(() => {
   width: 250px;
   padding: 14px 20px;
   border-radius: 10px;
-  background: #e4ba03;
+  background: var(--color-dorado);
   border: 3px white solid;
   color: #000;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: bold;
 }
 

@@ -106,7 +106,7 @@ export default {
 }
 
 .titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-weight: 700;
   font-size: 1.8rem;
   color: white;
@@ -115,7 +115,7 @@ export default {
 }
 
 .subtitulo {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 1rem;
   color: #2980b9;
@@ -130,10 +130,10 @@ export default {
   padding: 14px 20px;
   border-radius: 10px;
   width: 100%;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 1rem;
-  transition: all 0.2s ease;
+  transition: var(--transition-fast);
 }
 
 .victima-vacia {
@@ -171,7 +171,7 @@ export default {
   border: 3px solid #2980b9;
   background: #2980b9;
   color: white;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 1rem;
   cursor: pointer;
@@ -189,8 +189,8 @@ export default {
 
 /* Estado tras disparar: rojo y más pequeño */
 .btn-disparar.disparado {
-  background: #cc0000;
-  border-color: #cc0000;
+  background: var(--color-rojo);
+  border-color: var(--color-rojo);
   transform: scale(0.9);
   cursor: not-allowed;
 }
@@ -202,7 +202,7 @@ export default {
 
 /* ── Mensaje post-disparo ── */
 .mensaje-disparo {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 0.9rem;
   font-style: italic;
   color: #888;
@@ -211,17 +211,8 @@ export default {
   align-items: center;
   gap: 8px;
   margin: 0;
-  animation: aparecer 0.5s ease;
+  animation: fade-in-up 0.4s ease;
 }
 
-@keyframes aparecer {
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+
 </style>

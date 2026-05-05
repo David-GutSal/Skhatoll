@@ -207,7 +207,7 @@ export default {
   align-items: center;
   gap: 15px;
   position: relative;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
 }
 
 .auth-icon {
@@ -244,7 +244,7 @@ export default {
 .auth-link:hover,
 .auth-link:active,
 .auth-link.activo {
-  color: #cc0000;
+  color: var(--color-rojo);
 }
 
 .dropdown {
@@ -265,11 +265,11 @@ export default {
 
 .dropdown-login {
   background: #ffffff;
-  border: 3px solid #cc0000;
+  border: 3px solid var(--color-rojo);
 }
 
 .login-title {
-  color: #cc0000;
+  color: var(--color-rojo);
   font-weight: 700;
   font-size: 1.5rem;
   margin: 0 0 4px 0;
@@ -277,7 +277,7 @@ export default {
 
 .dropdown-registro {
   background: #111111;
-  border: 3px solid #cc0000;
+  border: 3px solid var(--color-rojo);
 }
 
 .registro-title {
@@ -302,7 +302,7 @@ export default {
 
 .dropdown-input:focus {
   outline: none;
-  border-color: #cc0000;
+  border-color: var(--color-rojo);
 }
 
 .dropdown-input-registro {
@@ -316,7 +316,7 @@ export default {
 }
 
 .dropdown-input-registro:focus {
-  border-color: #cc0000;
+  border-color: var(--color-rojo);
 }
 
 .dropdown-btn {
@@ -334,7 +334,7 @@ export default {
 }
 
 .btn-login {
-  background: #cc0000;
+  background: var(--color-rojo);
   color: white;
 }
 

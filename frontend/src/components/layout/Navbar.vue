@@ -1,5 +1,5 @@
 <template>
-  <nav class="navbar">
+  <nav class="navbar" id="mi-navbar">
     <router-link to="/">Inicio</router-link>
     <router-link to="/sala">Sala de juegos</router-link>
     <router-link to="/reglas">Reglas y juegos</router-link>
@@ -7,10 +7,7 @@
   </nav>
 </template>
 
-<script>
-export default {
-  name:"Navbar"
-}
+<script setup>
 </script>
 
 <style scoped>
@@ -19,7 +16,7 @@ export default {
   display:flex;
   justify-content:center;
   gap:40px;
-  padding:18px 40px;
+  padding:28px 40px;
   background:#000000;
   min-height: 60px;
   align-items: center;
@@ -29,9 +26,9 @@ export default {
 .navbar a{
   color: white;
   text-decoration: none;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 1.4rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   position: relative;
@@ -44,7 +41,7 @@ export default {
   left: 0;
   width: 0%;
   height: 2px;
-  background: #cc0000;
+  background: var(--color-rojo);
   transition: width 0.3s ease;
 }
 
@@ -53,32 +50,34 @@ export default {
 }
 
 .navbar a:hover {
-  color: #cc0000;
+  color: var(--color-rojo);
   border-bottom-color: transparent;
 }
 
 .navbar a:active {
-  color: #cc0000;
-  border-bottom-color: #cc0000;
+  color: var(--color-rojo);
+  border-bottom-color: var(--color-rojo);
 }
  
 .navbar a.router-link-exact-active {
-  color: #cc0000;
+  color: var(--color-rojo);
   font-weight: 800;
-  border-bottom-color: #cc0000;
+  border-bottom-color: var(--color-rojo);
 }
 
 .navbar a.router-link-exact-active::after {
   width: 100%;
 }
  
-@media (max-width: 690px) {
+@media (max-width: 970px) {
   .navbar {
     flex-direction: column;
     gap: 14px;
     padding: 18px 20px;
     align-items: center;
   }
+
+  .navbar a {font-size: 1.2rem;}
 }
 
 </style>

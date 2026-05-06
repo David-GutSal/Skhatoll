@@ -1,5 +1,5 @@
 <template>
-  <footer class="footer">
+  <footer class="footer" id="mi-footer">
     <div class="footer-wrapper">
       <img :src="footerImg" alt="" class="footer-buildings" />
       
@@ -27,15 +27,8 @@
   </footer>
 </template>
 
-<script>
+<script setup>
 import footerImg from '@/assets/imgs/footer-castronegro.svg'
-
-export default {
-  name: 'Footer',
-  data() {
-    return { footerImg }
-  },
-}
 </script>
 
 <style scoped>
@@ -104,7 +97,7 @@ export default {
 }
 
 .footer-copy {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: clamp(1rem, 2vw, 1.2rem);
   font-weight: 600;
   color: white;
@@ -123,7 +116,7 @@ export default {
 }
 
 .footer-nav a {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: clamp(1rem, 2.2vw, 1.2rem);
   font-weight: 600;
   color: white;
@@ -133,7 +126,7 @@ export default {
 }
 
 .footer-nav a:hover {
-  color: #cc0000;
+  color: var(--color-rojo);
 }
 
 @media (max-width: 1150px) {

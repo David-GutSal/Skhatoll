@@ -1,6 +1,5 @@
 <template>
   <div class="topbar">
-
     <div class="logo">
       <img src="@/assets/imgs/logo-provisional.png" alt="logo" />
     </div>
@@ -9,9 +8,13 @@
       <i class="fa-solid fa-user auth-icon"></i>
 
       <span v-if="!estaAutenticado" class="auth-links">
-
         <span class="auth-link-wrapper">
-          <a href="#" class="auth-link" :class="{ activo: mostrarLogin }" @click.prevent="toggleLogin">
+          <a
+            href="#"
+            class="auth-link"
+            :class="{ activo: mostrarLogin }"
+            @click.prevent="toggleLogin"
+          >
             INICIAR SESIÓN
           </a>
           <div v-if="mostrarLogin" class="dropdown dropdown-login">
@@ -35,7 +38,12 @@
         <span class="separator">|</span>
 
         <span class="auth-link-wrapper">
-          <a href="#" class="auth-link" :class="{ activo: mostrarRegistro }" @click.prevent="toggleRegistro">
+          <a
+            href="#"
+            class="auth-link"
+            :class="{ activo: mostrarRegistro }"
+            @click.prevent="toggleRegistro"
+          >
             REGISTRARSE
           </a>
           <div v-if="mostrarRegistro" class="dropdown dropdown-registro">
@@ -52,14 +60,17 @@
               placeholder="Contraseña"
               class="dropdown-input dropdown-input-registro"
             />
-            <button class="dropdown-btn btn-registro" @click.prevent="handleRegistro">REGÍSTRATE</button>
+            <button class="dropdown-btn btn-registro" @click.prevent="handleRegistro">
+              REGÍSTRATE
+            </button>
           </div>
         </span>
-
       </span>
 
       <span v-else class="auth-links">
-        <span class="auth-bienvenido">Bienvenido,  <span id="nombramarillo">{{ nombre }}</span> </span>
+        <span class="auth-bienvenido"
+          >Bienvenido, <span id="nombramarillo">{{ nombre }}</span></span
+        >
         <span class="separator">|</span>
         <a href="#" class="auth-link auth-salir" @click.prevent="handleLogout">
           <i class="fa-solid fa-right-from-bracket"></i> SALIR
@@ -132,12 +143,17 @@ export default {
           password: this.loginPassword,
         })
         this.login({ token: res.data.token, nombre: res.data.nombre, uuid: res.data.codigoUuid })
+        this.$store.dispatch('toast/mostrar', { mensaje: '¡Éxito al iniciar sesión!', tipo: 'exito' })
         this.cerrarModales()
         this.loginNombre = ''
         this.loginPassword = ''
       } catch (error) {
         console.error('Error login:', error)
-        alert(error.response?.status === 401 ? 'Credenciales incorrectas' : 'Error al iniciar sesión')
+        this.$store.dispatch('toast/mostrar', {
+          mensaje:
+            error.response?.status === 401 ? 'Credenciales incorrectas' : 'Error al iniciar sesión',
+          tipo: 'error',
+        })
       }
     },
 
@@ -151,10 +167,17 @@ export default {
         this.cerrarModales()
         this.registroNombre = ''
         this.registroPassword = ''
-        alert('Registro exitoso. ¡Bienvenido ' + res.data.nombre + '!')
+        this.$store.dispatch('toast/mostrar', {
+          mensaje: `Registro exitoso. ¡Bienvenido ${res.data.nombre}!`,
+          tipo: 'exito',
+        })
       } catch (error) {
         console.error('Error registro:', error)
-        alert(error.response?.status === 409 ? 'Ese nombre ya está en uso' : 'Error al registrarse')
+        this.$store.dispatch('toast/mostrar', {
+          mensaje:
+            error.response?.status === 409 ? 'Ese nombre ya está en uso' : 'Error al registrarse',
+          tipo: 'error',
+        })
       }
     },
   },
@@ -162,7 +185,6 @@ export default {
 </script>
 
 <style scoped>
-
 .topbar {
   display: flex;
   justify-content: space-between;
@@ -185,7 +207,7 @@ export default {
   align-items: center;
   gap: 15px;
   position: relative;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
 }
 
 .auth-icon {
@@ -197,7 +219,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   letter-spacing: 0.05em;
 }
 
@@ -214,16 +236,15 @@ export default {
 .auth-link {
   color: white;
   text-decoration: none;
-  font-weight: 600;
+  font-weight: bold;
   cursor: pointer;
   transition: color 0.2s ease;
-
 }
 
 .auth-link:hover,
 .auth-link:active,
 .auth-link.activo {
-  color: #cc0000;
+  color: var(--color-rojo);
 }
 
 .dropdown {
@@ -244,11 +265,11 @@ export default {
 
 .dropdown-login {
   background: #ffffff;
-  border: 3px solid #cc0000;
+  border: 3px solid var(--color-rojo);
 }
 
 .login-title {
-  color: #cc0000;
+  color: var(--color-rojo);
   font-weight: 700;
   font-size: 1.5rem;
   margin: 0 0 4px 0;
@@ -256,7 +277,7 @@ export default {
 
 .dropdown-registro {
   background: #111111;
-  border: 3px solid #cc0000;
+  border: 3px solid var(--color-rojo);
 }
 
 .registro-title {
@@ -270,9 +291,10 @@ export default {
 .dropdown-input {
   width: 100%;
   padding: 10px 14px;
-  border: 1.5px solid #ccc;
+  border: 1.5px solid #5a5a5a;
   border-radius: 3px;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  font-weight: bold;
   box-sizing: border-box;
   background: #fff;
   color: #222;
@@ -280,7 +302,7 @@ export default {
 
 .dropdown-input:focus {
   outline: none;
-  border-color: #cc0000;
+  border-color: var(--color-rojo);
 }
 
 .dropdown-input-registro {
@@ -294,7 +316,7 @@ export default {
 }
 
 .dropdown-input-registro:focus {
-  border-color: #cc0000;
+  border-color: var(--color-rojo);
 }
 
 .dropdown-btn {
@@ -312,12 +334,12 @@ export default {
 }
 
 .btn-login {
-  background: #cc0000;
+  background: var(--color-rojo);
   color: white;
 }
 
 .btn-login:hover {
-  background: #990000;
+  background: #000000;
 }
 
 .btn-registro {
@@ -326,17 +348,16 @@ export default {
 }
 
 .btn-registro:hover {
-  background: #e0e0e0;
+  background: #990000;
 }
 
 .auth-bienvenido {
   color: white;
   font-size: 1.35rem;
   font-weight: 600;
-
 }
 
-#nombramarillo{
+#nombramarillo {
   color: #ebc310;
 }
 
@@ -360,11 +381,9 @@ export default {
   .auth {
     justify-content: center;
   }
-
-  .auth-icon{
+  .auth-icon {
     display: none;
   }
-
   .dropdown {
     width: 240px;
     right: 50%;

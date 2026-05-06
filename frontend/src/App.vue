@@ -10,51 +10,53 @@
       </div>
     </template>
 
-    <router-view />
-     <Footer v-if="!$route.meta.sinLayout" />
+    <router-view v-slot="{ Component }">
+      <transition name="fade" mode="out-in">
+        <component :is="Component" />
+      </transition>
+    </router-view>
+
+    <ToastNotificacion />
+    <Footer v-if="!$route.meta.sinLayout" />
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
 import TopBar from '@/components/layout/TopBar.vue'
 import Header from '@/components/layout/Header.vue'
 import Navbar from '@/components/layout/Navbar.vue'
-import Footer from '@/components/layout/Footer.vue';
+import Footer from '@/components/layout/Footer.vue'
+import ToastNotificacion from '@/components/layout/ToastNotificacion.vue'
 
-export default {
-  name: 'App',
-  components: { TopBar, Header, Navbar, Footer},
+const hayScroll = ref(false)
 
-  data() {
-    return {
-      hayScroll: false,
-    }
-  },
-
-  mounted() {
-    window.addEventListener('scroll', this.detectarScroll)
-  },
-
-  unmounted() {
-    window.removeEventListener('scroll', this.detectarScroll)
-  },
-
-  methods: {
-    detectarScroll() {
-      this.hayScroll = window.scrollY > 0
-    },
-  },
+const detectarScroll = () => {
+  hayScroll.value = window.scrollY > 0
 }
+
+onMounted(() => {
+  window.addEventListener('scroll', detectarScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', detectarScroll)
+})
 </script>
 
 <style>
 body {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   margin: 0;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Cinzel', Arial, sans-serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-cinzel);
 }
 
 #app {
@@ -76,7 +78,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .sticky-navbar.scrolled {
-  outline: 2px solid #e4ba03;
+  outline: 2px solid var(--color-dorado);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.95);
 }
 
@@ -90,5 +92,15 @@ h1, h2, h3, h4, h5, h6 {
   .sticky-navbar {
     top: 150px;
   }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

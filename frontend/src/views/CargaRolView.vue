@@ -45,85 +45,62 @@
   </div>
 </template>
 
-<script>
-import { mapActions } from 'vuex'
+<script setup>
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 import { FRASES, getImagenRol, getColorBando } from '@/data/roles.js'
 
-export default {
-  name: 'CargaRolView',
+const router = useRouter()
+const store = useStore()
 
-  data() {
-    return {
-      nombreRol: '',
-      descripcionRol: '',
-      bando: '',
-      fraseActual: 0,
-      FRASES,
-      intervaloFrases: null,
-    }
-  },
+const nombreRol = ref('')
+const descripcionRol = ref('')
+const bando = ref('')
+const fraseActual = ref(0)
+const intervaloFrases = ref(null)
 
-  computed: {
-    imagenRol() {
-      return getImagenRol(this.nombreRol)
-    },
-    colorBando() {
-      return getColorBando(this.bando)
-    },
-  },
+const imagenRol = computed(() => getImagenRol(nombreRol.value))
+const colorBando = computed(() => getColorBando(bando.value))
 
-  created() {
-    const esCreador = this.$store.getters['sala/esCreador']
-    if (esCreador) {
-      this.$router.push({ name: 'esperaNarrador' })
-      return
-    }
-
-/* Info profesor: previa para que se puedan ver sin tiempo las vistas de espera
-    Descomentar para ver e ir a ir a router/index.js para habilitar los enlaces al router
-    Vista espera de los jugadores: http://localhost:5173/preview-carga
-    Vista  espera narrador: http://localhost:5173/preview-espera */
-//Texto de relleno
-    /*this.nombreRol = 'BRUJA'
-    this.descripcionRol = 'Posees dos pociones...'
-    this.bando = 'aldea'
-*/
-    this.intervaloFrases = setInterval(() => {
-      this.fraseActual = (this.fraseActual + 1) % FRASES.length
-    }, 8000)
-
-    const nombreRol = this.$store.getters['sala/miRol']
-    if (nombreRol) {
-      this.cargarRol(nombreRol)
-      setTimeout(() => this.$router.push({ name: 'jugador' }), 5000)
-    } else {
-      const unwatch = this.$watch(
-        () => this.$store.getters['sala/miRol'],
-        (nuevoRol) => {
-          if (nuevoRol) {
-            this.cargarRol(nuevoRol)
-            setTimeout(() => this.$router.push({ name: 'jugador' }), 5000)
-            unwatch()
-          }
-        },
-      )
-    }
-  },
-
-  beforeUnmount() {
-    clearInterval(this.intervaloFrases)
-  },
-
-  methods: {
-    ...mapActions('sala', ['setRol']),
-
-    cargarRol(nombreRol) {
-      this.nombreRol = nombreRol
-      this.descripcionRol = this.$store.getters['sala/miRolDescripcion']
-      this.bando = this.$store.getters['sala/miBando']
-    },
-  },
+const cargarRol = (nombre) => {
+  nombreRol.value = nombre
+  descripcionRol.value = store.getters['sala/miRolDescripcion']
+  bando.value = store.getters['sala/miBando']
 }
+
+onMounted(() => {
+  const esCreador = store.getters['sala/esCreador']
+  if (esCreador) {
+    router.push({ name: 'esperaNarrador' })
+    return
+  }
+
+  intervaloFrases.value = setInterval(() => {
+    fraseActual.value = (fraseActual.value + 1) % FRASES.length
+  }, 8000)
+
+  const rol = store.getters['sala/miRol']
+  if (rol) {
+    cargarRol(rol)
+    setTimeout(() => router.push({ name: 'jugador' }), 5000)
+  } else {
+    const unwatch = watch(
+      () => store.getters['sala/miRol'],
+      (nuevoRol) => {
+        if (nuevoRol) {
+          cargarRol(nuevoRol)
+          setTimeout(() => router.push({ name: 'jugador' }), 5000)
+          unwatch()
+        }
+      },
+    )
+  }
+})
+
+onUnmounted(() => {
+  clearInterval(intervaloFrases.value)
+})
 </script>
 
 <style scoped>
@@ -139,7 +116,7 @@ export default {
 }
 
 .texto-tu-rol {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 3rem;
   font-weight: 700;
   color: white;
@@ -157,7 +134,7 @@ export default {
 
 .caja-carta {
   background: #000;
-  border: 10px solid #e4ba03 !important;
+  border: 10px solid var(--color-dorado) !important;
   border-radius: 16px;
   overflow: hidden;
   max-width: 340px;
@@ -183,7 +160,7 @@ export default {
   left: 0;
   right: 0;
   padding: 6px 12px;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -205,7 +182,7 @@ export default {
 }
 
 .campo-label {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.75rem;
   color: white;
@@ -214,7 +191,7 @@ export default {
 }
 
 .campo-valor {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 0.95rem;
   color: #aaa;
 }
@@ -232,98 +209,16 @@ export default {
   gap: 16px;
 }
 
-.spinner {
-  width: 52px;
-  height: 52px;
-  border: 4px solid rgba(255, 255, 255, 0.15);
-  border-top-color: #e4ba03;
-  border-radius: 50%;
-  animation: girar 0.9s linear infinite;
-}
 
-@keyframes girar {
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 .texto-espera-rol {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-style: italic;
   color: #aaa;
   margin: 0;
 }
 
-.frases-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  max-width: 600px;
-  width: 100%;
-}
 
-.logo-frase {
-  height: 36px;
-  width: auto;
-  object-fit: contain;
-  flex-shrink: 0;
-  opacity: 0.8;
-}
 
-.frase-caja {
-  flex: 1;
-  background: #000;
-  padding: 10px 16px;
-  border-radius: 6px;
-  min-height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
-.frase {
-  font-family: 'Raleway', Arial, sans-serif;
-  font-style: italic;
-  color: white;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  text-align: center;
-  margin: 0;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.6s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-@media (max-width: 600px) {
-  .texto-tu-rol {
-    font-size: 2rem;
-  }
-  .caja-carta {
-    max-width: 280px;
-  }
-  .frases-wrapper {
-    gap: 10px;
-  }
-  .logo-frase {
-    height: 26px;
-  }
-  .frase {
-    font-size: 0.8rem;
-  }
-}
-
-@media (max-width: 380px) {
-  .texto-tu-rol {
-    font-size: 1.6rem;
-  }
-  .logo-frase {
-    display: none;
-  }
-}
 </style>

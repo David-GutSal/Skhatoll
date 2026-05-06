@@ -1,15 +1,12 @@
 package com.skhatoll.backend.service.impl.sala;
 
 import com.skhatoll.backend.dto.sala.*;
-import com.skhatoll.backend.entities.Rol;
-import com.skhatoll.backend.entities.Sala;
-import com.skhatoll.backend.entities.SalaUsuario;
-import com.skhatoll.backend.repository.RolRepository;
-import com.skhatoll.backend.repository.SalaRepository;
-import com.skhatoll.backend.repository.SalaUsuarioRepository;
-import com.skhatoll.backend.entities.Usuario;
-import com.skhatoll.backend.repository.UsuarioRepository;
+import com.skhatoll.backend.entities.*;
+import com.skhatoll.backend.repository.*;
+import com.skhatoll.backend.service.interfaces.jugador.IJugadorService;
 import com.skhatoll.backend.service.interfaces.sala.ISalaService;
+import com.skhatoll.backend.util.constants.ErrorMessages;
+import com.skhatoll.backend.util.constants.GameConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -20,6 +17,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import static com.skhatoll.backend.util.constants.ErrorMessages.*;
+import static com.skhatoll.backend.util.constants.GameConstants.*;
+
 @Service
 @RequiredArgsConstructor
 public class SalaService implements ISalaService {
@@ -29,6 +29,8 @@ public class SalaService implements ISalaService {
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
     private final SalaSocketService salaSocketService;
+    private final IJugadorService jugadorService;
+    private final HabilidadSalaRepository habilidadSalaRepository;
 
     // -------------------------------------------------------
     // Obtener el usuario autenticado desde el contexto de Security
@@ -73,7 +75,7 @@ public class SalaService implements ISalaService {
         Usuario usuario = getUsuarioAutenticado();
 
         Sala sala = salaRepository.findByCodigoSala(request.getCodigoSala())
-                .orElseThrow(() -> new IllegalArgumentException("Sala no encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException(SALA_NO_ENCONTRADA));
 
         if (sala.getEstadoSala() != Sala.EstadoSala.CREADA) {
             throw new IllegalStateException("La sala no está disponible para unirse");
@@ -98,27 +100,8 @@ public class SalaService implements ISalaService {
         salaUsuarioRepository.save(salaUsuario);
 
         // Notificar a todos en el lobby que hay un nuevo jugador
-        List<JugadorDto> jugadoresActualizados = getJugadores(request.getCodigoSala());
+        List<JugadorDto> jugadoresActualizados = jugadorService.getJugadores(request.getCodigoSala());
         salaSocketService.notificarNuevoJugador(request.getCodigoSala(), jugadoresActualizados);
-    }
-
-    // -------------------------------------------------------
-    // Obtener lista de jugadores de una sala
-    // -------------------------------------------------------
-    public List<JugadorDto> getJugadores(String codigoSala) {
-        Sala sala = salaRepository.findByCodigoSala(codigoSala)
-                .orElseThrow(() -> new IllegalArgumentException("Sala no encontrada"));
-
-        return salaUsuarioRepository.findBySala_IdSala(sala.getIdSala())
-                .stream()
-                .map(su -> new JugadorDto(
-                        su.getUsuario().getIdUsuario(),
-                        su.getUsuario().getNombre(),
-                        su.getUsuario().getCodigoUuid(),
-                        su.getEstaVivo(),
-                        su.getUsuario().getIdUsuario().equals(sala.getNarrador().getIdUsuario()),
-                        sala.getAlcalde() != null && su.getUsuario().getIdUsuario().equals(sala.getAlcalde().getIdUsuario())))
-                .toList();
     }
 
     // -------------------------------------------------------
@@ -129,7 +112,7 @@ public class SalaService implements ISalaService {
         Usuario solicitante = getUsuarioAutenticado();
 
         Sala sala = salaRepository.findByCodigoSala(codigoSala)
-                .orElseThrow(() -> new IllegalArgumentException("Sala no encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException(SALA_NO_ENCONTRADA));
 
         if (!sala.getNarrador().getIdUsuario().equals(solicitante.getIdUsuario())) {
             throw new IllegalStateException("Solo el creador puede asignar el narrador");
@@ -142,7 +125,7 @@ public class SalaService implements ISalaService {
         }
 
         Usuario nuevoNarrador = usuarioRepository.findById(request.getIdUsuario())
-                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+                .orElseThrow(() -> new IllegalArgumentException(USUARIO_NO_ENCONTRADO));
 
         sala.setNarrador(nuevoNarrador);
         salaRepository.save(sala);
@@ -159,15 +142,14 @@ public class SalaService implements ISalaService {
         Usuario solicitante = getUsuarioAutenticado();
 
         Sala sala = salaRepository.findByCodigoSala(codigoSala)
-                .orElseThrow(() -> new IllegalArgumentException("Sala no encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException(SALA_NO_ENCONTRADA));
 
         if (!sala.getNarrador().getIdUsuario().equals(solicitante.getIdUsuario())) {
-            throw new IllegalStateException("Solo el narrador puede iniciar la partida");
+            throw new IllegalStateException(SOLO_NARRADOR);
         }
 
         List<SalaUsuario> jugadores = salaUsuarioRepository.findBySala_IdSala(sala.getIdSala());
 
-        // Excluir al narrador de la asignación de roles
         List<SalaUsuario> jugadoresSinNarrador = jugadores.stream()
                 .filter(su -> !su.getUsuario().getIdUsuario()
                         .equals(sala.getNarrador().getIdUsuario()))
@@ -180,24 +162,29 @@ public class SalaService implements ISalaService {
                     "Se necesitan al menos " + sala.getMinJugadores() + " jugadores para iniciar");
         }
 
-        // Calcular número de lobos: 1 lobo por cada 4 jugadores (mínimo 1)
         int numLobos = Math.max(1, totalJugadores / 4);
 
-        // Obtener roles de BD
-        Rol rolLobo = rolRepository.findByNombre("Lobo")
+        Rol rolLobo = rolRepository.findByNombre(ROL_LOBO)
                 .orElseThrow(() -> new IllegalStateException("Rol Lobo no encontrado en BD"));
-        Rol rolAldeano = rolRepository.findByNombre("Aldeano")
+
+        List<Rol> rolesAldea = rolRepository.findByBando(Rol.Bando.aldea);
+
+        Rol rolAldeano = rolRepository.findByNombre(ROL_ALDEANO)
                 .orElseThrow(() -> new IllegalStateException("Rol Aldeano no encontrado en BD"));
 
-        // Construir lista de roles a repartir
+        rolesAldea = rolesAldea.stream()
+                .filter(rol -> !rol.getNombre().equals(ROL_ALDEANO))
+                .collect(Collectors.toList());
+
+        Collections.shuffle(rolesAldea);
+
+        int numRolesAldea = totalJugadores - numLobos;
+
         List<Rol> rolesARepartir = new ArrayList<>();
-        for (int i = 0; i < numLobos; i++) rolesARepartir.add(rolLobo);
-        for (int i = 0; i < totalJugadores - numLobos; i++) rolesARepartir.add(rolAldeano);
 
         // Mezclar aleatoriamente
         Collections.shuffle(rolesARepartir);
 
-        // Asignar roles y notificar a cada jugador por WebSocket privado
         for (int i = 0; i < jugadoresSinNarrador.size(); i++) {
             SalaUsuario su = jugadoresSinNarrador.get(i);
             Rol rol = rolesARepartir.get(i);
@@ -205,17 +192,18 @@ public class SalaService implements ISalaService {
             su.setRol(rol);
             salaUsuarioRepository.save(su);
 
+            asignarHabilidades(su, rol);
+
             salaSocketService.enviarRolPrivado(
                     su.getUsuario().getNombre(),
                     new SalaSocketService.RolAsignadoEvent(
-                            "ROL_ASIGNADO",
+                            WS_EVENTO_ROL_ASIGNADO,
                             rol.getIdRol(),
                             rol.getNombre(),
                             rol.getDescripcion(),
                             rol.getBando().name()));
         }
 
-        // Cambiar estado de la sala e informar a todos
         sala.setEstadoSala(Sala.EstadoSala.INICIADA);
         salaRepository.save(sala);
 
@@ -237,25 +225,6 @@ public class SalaService implements ISalaService {
 
         List<JugadorDto> jugadoresActualizados = getJugadores(codigoSala);
         salaSocketService.notificarNuevoJugador(codigoSala, jugadoresActualizados);
-    }
-
-    @Transactional
-    public void cerrarSala(String codigoSala) {
-        Usuario solicitante = getUsuarioAutenticado();
-
-        Sala sala = salaRepository.findByCodigoSala(codigoSala)
-                .orElseThrow(() -> new IllegalArgumentException("Sala no encontrada"));
-
-        if (!sala.getNarrador().getIdUsuario().equals(solicitante.getIdUsuario())) {
-            throw new IllegalStateException("Solo el narrador puede cerrar la sala");
-        }
-
-        // Notificar a todos antes de borrar
-        salaSocketService.notificarSalaCerrada(codigoSala);
-
-        // Borrar todos los jugadores y la sala
-        salaUsuarioRepository.deleteBySala_IdSala(sala.getIdSala());
-        salaRepository.delete(sala);
     }
 
     // -------------------------------------------------------
@@ -281,11 +250,10 @@ public class SalaService implements ISalaService {
         Usuario solicitante = getUsuarioAutenticado();
 
         Sala sala = salaRepository.findByCodigoSala(codigoSala)
-                .orElseThrow(() -> new IllegalArgumentException("Sala no encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException(SALA_NO_ENCONTRADA));
 
-        // Solo el narrador puede ver los roles
         if (!sala.getNarrador().getIdUsuario().equals(solicitante.getIdUsuario())) {
-            throw new IllegalStateException("Solo el narrador puede ver los roles");
+            throw new IllegalStateException(SOLO_NARRADOR);
         }
 
         return salaUsuarioRepository.findBySala_IdSala(sala.getIdSala())
@@ -297,8 +265,56 @@ public class SalaService implements ISalaService {
                         su.getUsuario().getNombre(),
                         su.getUsuario().getCodigoUuid(),
                         su.getEstaVivo(),
-                        su.getRol() != null ? su.getRol().getNombre() : "Sin rol",
+                        su.getRol() != null ? su.getRol().getNombre() : ROL_SIN_ROL,
                         su.getRol() != null ? su.getRol().getBando().name() : ""))
                 .toList();
+    }
+
+    @Transactional
+    public void salirDeSala(String codigoSala) {
+        Usuario usuario = getUsuarioAutenticado();
+
+        Sala sala = salaRepository.findByCodigoSala(codigoSala)
+                .orElseThrow(() -> new IllegalArgumentException(ErrorMessages.SALA_NO_ENCONTRADA));
+
+        if (sala.getEstadoSala() != Sala.EstadoSala.CREADA) {
+            throw new IllegalStateException("No puedes salir de una partida que ya ha comenzado");
+        }
+
+        if (sala.getNarrador().getIdUsuario().equals(usuario.getIdUsuario())) {
+            throw new IllegalStateException("El narrador no puede abandonar la sala");
+        }
+
+        SalaUsuario salaUsuario = salaUsuarioRepository
+                .findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), usuario.getIdUsuario())
+                .orElseThrow(() -> new IllegalArgumentException(ErrorMessages.JUGADOR_NO_EN_SALA));
+
+        salaUsuarioRepository.delete(salaUsuario);
+
+        List<JugadorDto> jugadoresActualizados = jugadorService.getJugadores(codigoSala);
+        salaSocketService.notificarJugadorSalio(codigoSala, jugadoresActualizados);
+    }
+
+    private void asignarHabilidades(SalaUsuario salaUsuario, Rol rol) {
+        List<String> habilidades = switch (rol.getNombre()) {
+            case GameConstants.ROL_BRUJA -> List.of(
+                    GameConstants.HAB_POCION_VIDA,
+                    GameConstants.HAB_POCION_MUERTE);
+            case GameConstants.ROL_CAZADOR -> List.of(
+                    GameConstants.HAB_DISPARO);
+            case GameConstants.ROL_CUPIDO -> List.of(
+                    GameConstants.HAB_FLECHAZO);
+            case GameConstants.ROL_NINO_SALVAJE -> List.of(
+                    GameConstants.HAB_MODELO);
+            default -> List.of();
+        };
+
+        habilidades.forEach(nombre -> {
+            HabilidadSala habilidad = HabilidadSala.builder()
+                    .idSalaUsuario(salaUsuario)
+                    .nombre(nombre)
+                    .build();
+            habilidadSalaRepository.save(habilidad);
+        });
     }
 }

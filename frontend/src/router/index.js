@@ -11,6 +11,7 @@ import NarradorView from '../views/NarradorView.vue'
 import JugadorView from '../views/JugadorView.vue'
 import ResultadosView from '../views/ResultadosView.vue'
 import EsperaNarradorView from '../views/EsperaNarradorView.vue'
+import EliminadoView from '../views/EliminadoView.vue'
 
 const routes = [
   {
@@ -40,7 +41,7 @@ const routes = [
     component: LobbyView,
   },
 
-   {
+  {
     path: '/carga-rol',
     name: 'cargaRol',
     component: CargaRolView,
@@ -67,7 +68,7 @@ const routes = [
     component: JugadorView,
     meta: { sinLayout: true },
   },
-  
+
   {
     path: '/resultados',
     name: 'resultados',
@@ -75,8 +76,15 @@ const routes = [
     meta: { sinLayout: true },
   },
 
+  {
+    path: '/eliminado',
+    name: 'eliminado',
+    component: EliminadoView,
+    meta: { sinLayout: true },
+  },
+
   // Añade esto temporalmente en el router para previsualizar las pantallas de carga en CargaRolView
-/*{ path: '/preview-carga', component: CargaRolView, meta: { sinLayout: true } },
+  /*{ path: '/preview-carga', component: CargaRolView, meta: { sinLayout: true } },
   { path: '/preview-espera', component: EsperaNarradorView, meta: { sinLayout: true } },
 // Igual para las opciones de victoria y derrota
   { path: '/preview-resultados', component: ResultadosView, meta: { sinLayout: true } }
@@ -86,6 +94,40 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+scrollBehavior(to, from, savedPosition) {
+  if (savedPosition) {
+    return savedPosition
+  }
+
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      if (to.path === '/') {
+        resolve({ top: 0, behavior: 'smooth' })
+      } else {
+        const ancho = window.innerWidth
+        let posicionFinal = 0
+
+        if (ancho > 1200) {
+          posicionFinal = 410
+        } 
+        else if (ancho <= 1200 && ancho > 847) {
+          posicionFinal = 180
+        } 
+        else if (ancho <= 847 && ancho > 480) {
+          posicionFinal = 170
+        } 
+        else {
+          posicionFinal = 140
+        }
+
+        resolve({ 
+          top: posicionFinal, 
+          behavior: 'smooth' 
+        })
+      }
+    }, 500)
+    })
+  },
 })
 
 export default router

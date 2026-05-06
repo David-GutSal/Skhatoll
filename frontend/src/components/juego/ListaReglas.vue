@@ -138,7 +138,7 @@ export default {
 }
 
 .reglas-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 2.2rem;
   font-weight: bold;
   color: white;
@@ -161,13 +161,13 @@ export default {
   padding: 15px 0;
   cursor: pointer;
   text-align: left;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 2rem;
   font-weight: bold;
 }
 
-.dorado { color: #e4ba03; }
-.rojo { color: #cc0000; }
+.dorado { color: var(--color-dorado); }
+.rojo { color: var(--color-rojo); }
 
 .desplegable-contenido {
   padding: 20px 10px 15px;
@@ -177,7 +177,7 @@ export default {
 }
 
 .reglas-texto {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.5rem;
   font-weight: 600;
   color: white;
@@ -187,14 +187,14 @@ export default {
 }
 
 #cajavictoria{
-  background-color: #e4ba03;
+  background-color: var(--color-dorado);
   padding: 20px;
   font-weight: bolder;
   border-radius: 15px;
 }
 
 .icono-rojo {
-  color: #cc0000;
+  color: var(--color-rojo);
   margin-right: 5px;
 }
 
@@ -206,10 +206,10 @@ export default {
 }
 
 .narrador-voz {
-  color: #cc0000;
+  color: var(--color-rojo);
   font-style: italic;
   padding-left: 16px;
-  border-left: 3px solid #cc0000;
+  border-left: 3px solid var(--color-rojo);
 }
 
 .reglas-lista {
@@ -219,9 +219,9 @@ export default {
 }
 
 .reglas-lista li {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.3rem;
-  color: #e4ba03;
+  color: var(--color-dorado);
   line-height: 1.6;
   margin: 7px;
 }
@@ -230,24 +230,29 @@ export default {
   display: block;
   max-width: 100%;
   margin: 0 auto;
-  border: 6px solid #e4ba03;
-  border-radius: 15px;
   transition: transform 0.4s ease;
+  height: auto;
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
 }
 
 .imagen-hover-zoom {
   position: relative;
   display: inline-block;
-  max-width: 100%;
+  max-width: fit-content;
   margin: 0 auto;
+   overflow: hidden; 
   cursor: zoom-in;
+  border: 6px solid var(--color-dorado);
+  border-radius: 15px;
 }
 
 .imagen-hover-zoom:hover .img-resumen {
-  transform: scale(1.1);
+  transform: scale(1.3);
 }
 
 .lupa-hover {
+  z-index: 10;
   position: absolute;
   top: 20px;
   right: 20px;
@@ -261,7 +266,7 @@ export default {
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: all 0.3s ease;
+  transition: var(--transition-normal);
   pointer-events: none;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }

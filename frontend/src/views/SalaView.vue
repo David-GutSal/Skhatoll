@@ -1,7 +1,6 @@
 <template>
   <div class="contenedor-sala">
     <div class="caja-sala">
-
       <h1 class="titulo">Sala de Juegos</h1>
 
       <div class="imagen-wrapper">
@@ -12,39 +11,41 @@
         </div>
       </div>
 
-      <p class="subtitulo"> <i class="fa-solid fa-feather-pointed"></i> Adéntrate en la aldea de Castronegro, elige entre unirte a una partida o crear tu propia aventura...</p>
-
+      <p class="subtitulo">
+        <i class="fa-solid fa-feather-pointed"></i> Adéntrate en la aldea de Castronegro, elige
+        entre unirte a una partida o crear tu propia aventura...
+      </p>
     </div>
   </div>
 </template>
 
-<script>
+<script setup>
+import { useStore } from 'vuex'
+import { useRouter } from 'vue-router'
 import axiosInstance from '@/plugins/axios'
-import { mapActions } from 'vuex'
 
-export default {
-  name: 'SalaView',
-  methods: {
-    ...mapActions('sala', ['crearSala']),
-    async handleCrearSala() {
-      try {
-        const res = await axiosInstance.post('/salas/crear')
-        this.crearSala(res.data.codigoSala)
-        this.$router.push({ name: 'lobby' })
-      } catch (error) {
-        alert('Error al crear la sala')
-      }
-    },
-    irUnirse() {
-      this.$store.dispatch('sala/unirse', null)
-      this.$router.push({ name: 'lobby' })
-    },
-  },
+const store = useStore()
+const router = useRouter()
+
+store.dispatch('sala/resetSala')
+
+const handleCrearSala = async () => {
+  try {
+    const res = await axiosInstance.post('/salas/crear')
+    store.dispatch('sala/crearSala', res.data.codigoSala)
+    router.push({ name: 'lobby' })
+  } catch (error) {
+    store.dispatch('toast/mostrar', { mensaje: 'Error al crear la sala', tipo: 'error' })
+  }
+}
+
+const irUnirse = () => {
+  store.dispatch('sala/unirse', null)
+  router.push({ name: 'lobby' })
 }
 </script>
 
 <style scoped>
-
 .contenedor-sala {
   display: flex;
   justify-content: center;
@@ -105,13 +106,15 @@ export default {
   border: 5px solid #000;
   padding: 18px 32px;
   font-size: 1.1rem;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-weight: 700;
   letter-spacing: 0.05em;
   border-radius: 10px;
   cursor: pointer;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
-  transition: background 0.6s ease, transform 0.35s ease;
+  transition:
+    background 0.6s ease,
+    transform 0.35s ease;
 }
 
 .boton-sala:hover {
@@ -122,7 +125,7 @@ export default {
 
 .subtitulo {
   color: #ffffff;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.5rem;
   font-style: italic;
   letter-spacing: 0.05em;
@@ -133,14 +136,12 @@ export default {
   .caja-sala {
     width: 70%;
     padding: 24px 16px;
-    
   }
 }
 
 @media (max-width: 765px) {
   .caja-sala {
     width: 85%;
-    
   }
   .botones-sala {
     flex-direction: column;
@@ -154,8 +155,8 @@ export default {
   }
 
   .botones-sala {
-  gap: 20px;
-  padding: 15px;
+    gap: 20px;
+    padding: 15px;
   }
 }
 
@@ -166,15 +167,14 @@ export default {
   }
 
   .botones-sala {
-  gap: 10px;
-  padding: 10px;
+    gap: 10px;
+    padding: 10px;
   }
 
   .boton-sala {
-  padding: 10px 20px;
-  font-size: 1rem;
-  font-weight: 500;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 500;
   }
-
 }
 </style>

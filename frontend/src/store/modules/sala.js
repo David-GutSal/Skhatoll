@@ -1,6 +1,3 @@
-// Al principio de sala.js, añadir el import
-import axiosInstance from '@/plugins/axios'
-
 export default {
   namespaced: true,
 
@@ -16,12 +13,27 @@ export default {
     mensajeFin: null,
     fase: 'DIA',
     narradorActual: null,
+    turnoActivo: null,
+    semiMuertos: [],
+    enamorados: null,
+    cupidoUsado: false,
+    tipoVotacion: null,
+    brujaPocionVidaUsada: false,
+    brujaPocionMuerteUsada: false,
+    mentorNinno: null,
   }),
 
   mutations: {
     SET_SALA(state, { codigoSala, esCreador }) {
       state.codigoSala = codigoSala
       state.esCreador = esCreador
+    },
+    RESET_SALA(state) {
+      state.jugadores = []
+      state.jugadoresConRol = []
+      state.tipoVotacion = null
+      state.enamorados = null
+      state.semiMuertos = []
     },
     SET_JUGADORES(state, jugadores) {
       state.jugadores = jugadores
@@ -38,11 +50,44 @@ export default {
       state.fase = fase
     },
     MARCAR_MUERTO(state, nombreJugador) {
-      // Actualiza en ambas listas
       const j1 = state.jugadores.find((j) => j.nombre === nombreJugador)
-      if (j1) j1.estaVivo = false
+      if (j1) {
+        j1.estaVivo = false
+        j1.muerteConfirmada = true
+      }
       const j2 = state.jugadoresConRol.find((j) => j.nombre === nombreJugador)
-      if (j2) j2.estaVivo = false
+      if (j2) {
+        j2.estaVivo = false
+        j2.muerteConfirmada = true
+      }
+    },
+    MARCAR_SEMIMUERTO(state, nombreJugador) {
+      if (!state.semiMuertos.includes(nombreJugador)) {
+        state.semiMuertos.push(nombreJugador)
+      }
+      const j1 = state.jugadores.find((j) => j.nombre === nombreJugador)
+      if (j1) {
+        j1.estaVivo = false
+        j1.muerteConfirmada = false
+      }
+      const j2 = state.jugadoresConRol.find((j) => j.nombre === nombreJugador)
+      if (j2) {
+        j2.estaVivo = false
+        j2.muerteConfirmada = false
+      }
+    },
+    QUITAR_SEMIMUERTO(state, nombreJugador) {
+      state.semiMuertos = state.semiMuertos.filter((n) => n !== nombreJugador)
+      const j1 = state.jugadores.find((j) => j.nombre === nombreJugador)
+      if (j1) {
+        j1.estaVivo = true
+        j1.muerteConfirmada = false
+      }
+      const j2 = state.jugadoresConRol.find((j) => j.nombre === nombreJugador)
+      if (j2) {
+        j2.estaVivo = true
+        j2.muerteConfirmada = false
+      }
     },
     ACTUALIZAR_VOTOS(state, votos) {
       const actualizar = (lista) => {
@@ -100,21 +145,53 @@ export default {
       state.miRolDescripcion = null
       state.miBando = null
       state.fase = 'DIA'
+      state.turnoActivo = null
+      state.semiMuertos = []
+      state.enamorados = null
+      state.cupidoUsado = false
+      state.tipoVotacion = null
+      state.brujaPocionVidaUsada = false
+      state.brujaPocionMuerteUsada = false
+      state.mentorNinno = null
     },
-
     SET_NARRADOR(state, nombreNarrador) {
+      state.narradorActual = nombreNarrador
+    },
+    SET_TURNO_ACTIVO(state, jugador) {
+      state.turnoActivo = jugador
+    },
+    SET_ENAMORADOS(state, { jugador1, jugador2 }) {
+      state.enamorados = { jugador1, jugador2 }
+    },
+    SET_CUPIDO_USADO(state) {
+      state.cupidoUsado = true
+    },
+    SET_TIPO_VOTACION(state, tipo) {
+      state.tipoVotacion = tipo
+    },
+    SET_BRUJA_POCION_VIDA(state) {
+      state.brujaPocionVidaUsada = true
+    },
+    SET_BRUJA_POCION_MUERTE(state) {
+      state.brujaPocionMuerteUsada = true
+    },
+    SET_MENTOR_NINNO(state, nombreMentor) {
+      state.mentorNinno = nombreMentor
       state.narradorActual = nombreNarrador
     },
   },
 
   actions: {
     crearSala({ commit }, codigoSala) {
-      localStorage.setItem('codigoSala', codigoSala)
+      sessionStorage.setItem('codigoSala', codigoSala)
       commit('SET_SALA', { codigoSala, esCreador: true })
     },
     unirse({ commit }, codigoSala) {
-      localStorage.setItem('codigoSala', codigoSala)
+      sessionStorage.setItem('codigoSala', codigoSala)
       commit('SET_SALA', { codigoSala, esCreador: false })
+    },
+    resetSala({ commit }) {
+      commit('RESET_SALA')
     },
     setJugadores({ commit }, jugadores) {
       commit('SET_JUGADORES', jugadores)
@@ -147,32 +224,16 @@ export default {
     setResultado({ commit }, resultado) {
       commit('SET_RESULTADO', resultado)
     },
-    /*Añadido 1
-    salir({ commit, state }) {
-      const codigo = state.codigoSala
-      if (codigo) {
-        localStorage.removeItem('codigoSala')
-        // Llamada al backend — fire and forget, no bloqueamos la navegación
-        import('@/plugins/axios').then(({ default: axiosInstance }) => {
-          axiosInstance.delete(`/salas/${codigo}/salir`).catch(() => {})
-        })
-      }
-      commit('CLEAR_SALA')
-    },*/
-    //añadido 2
+    salir({ commit }) {
+      sessionStorage.removeItem('codigoSala')
     async salir({ commit, state }) {
       const codigo = state.codigoSala
       if (codigo) {
         localStorage.removeItem('codigoSala')
-        try {
-          await axiosInstance.delete(`/salas/${codigo}/salir`)
-        } catch (e) {
-          // Ignoramos errores (ej: ya no existe la sala)
-        }
       }
       commit('CLEAR_SALA')
     },
-//añadido 2
+
     async cerrarSala({ commit, state }) {
       const codigo = state.codigoSala
       if (codigo) {
@@ -185,6 +246,34 @@ export default {
     },
 
     setNarrador({ commit }, nombreNarrador) {
+      commit('SET_NARRADOR', nombreNarrador)
+    },
+    setTurnoActivo({ commit }, jugador) {
+      commit('SET_TURNO_ACTIVO', jugador)
+    },
+    marcarSemimuerto({ commit }, nombreJugador) {
+      commit('MARCAR_SEMIMUERTO', nombreJugador)
+    },
+    quitarSemimuerto({ commit }, nombreJugador) {
+      commit('QUITAR_SEMIMUERTO', nombreJugador)
+    },
+    setEnamorados({ commit }, pareja) {
+      commit('SET_ENAMORADOS', pareja)
+    },
+    setCupidoUsado({ commit }) {
+      commit('SET_CUPIDO_USADO')
+    },
+    setTipoVotacion({ commit }, tipo) {
+      commit('SET_TIPO_VOTACION', tipo)
+    },
+    setBrujaPocionVida({ commit }) {
+      commit('SET_BRUJA_POCION_VIDA')
+    },
+    setBrujaPocionMuerte({ commit }) {
+      commit('SET_BRUJA_POCION_MUERTE')
+    },
+    setMentorNinno({ commit }, nombreMentor) {
+      commit('SET_MENTOR_NINNO', nombreMentor)
       commit('SET_NARRADOR', nombreNarrador)
     },
   },
@@ -201,5 +290,13 @@ export default {
     bandoGanador: (state) => state.bandoGanador,
     mensajeFin: (state) => state.mensajeFin,
     narradorActual: (state) => state.narradorActual,
+    turnoActivo: (state) => state.turnoActivo,
+    semiMuertos: (state) => state.semiMuertos,
+    enamorados: (state) => state.enamorados,
+    cupidoUsado: (state) => state.cupidoUsado,
+    tipoVotacion: (state) => state.tipoVotacion,
+    brujaPocionVidaUsada: (state) => state.brujaPocionVidaUsada,
+    brujaPocionMuerteUsada: (state) => state.brujaPocionMuerteUsada,
+    mentorNinno:(state) => state.mentorNinno,
   },
 }

@@ -1,6 +1,5 @@
 <template>
   <div class="cabecera">
-
     <!-- Columna izquierda: Nombre del jugador + Narrador -->
     <div class="columna-izquierda">
       <div class="nombre-box" :class="esDia ? 'nombre-dia' : 'nombre-noche'">
@@ -9,51 +8,60 @@
       </div>
 
       <!-- Cuadro del Narrador - Solo para jugadores normales -->
-      <div 
+      <div
         v-if="!esNarrador && nombreNarrador"
         class="narrador-box"
         :class="esDia ? 'narrador-dia' : 'narrador-noche'"
       >
         <i class="fa-solid fa-book-open-reader"></i>
-        <span>El Narrador es: <strong>{{ nombreNarrador }}</strong></span>
+        <span
+          >El Narrador es: <strong>{{ nombreNarrador }}</strong></span
+        >
+      </div>
+
+      <div v-if="alcaldeNombre" class="cuadro-alcalde">
+        <i class="fa-solid fa-medal"></i>
+        <div class="alcalde-texto">
+          <span class="alcalde-titulo"
+            >Nuestro alcalde es: <strong>{{ textoAlcalde }}</strong></span
+          >
+          <span class="alcalde-frase"
+            >"Es el vecino el que elige al alcalde y es el alcalde el que quiere que sean los
+            vecinos el alcalde"</span
+          >
+        </div>
       </div>
     </div>
 
     <!-- Carta de fase (derecha) -->
     <div class="carta-fase" :class="esDia ? 'carta-dia' : 'carta-noche'">
       <p class="carta-fase-titulo">{{ esDia ? 'EL DÍA' : 'LA NOCHE' }}</p>
-      <img
-        :src="esDia ? solImg : lunaImg"
-        :alt="esDia ? 'Sol' : 'Luna'"
-        class="carta-fase-img"
-      />
+      <img :src="esDia ? solImg : lunaImg" :alt="esDia ? 'Sol' : 'Luna'" class="carta-fase-img" />
       <p class="carta-fase-texto">
-        {{ esDia
-          ? 'La cálida luz del Sol ahuyenta a las bestias, pero no a las sospechas'
-          : 'La clara luz de la luna ilumina a las bestias que acechan entre las sombras'
+        {{
+          esDia
+            ? 'La cálida luz del Sol ahuyenta a las bestias, pero no a las sospechas'
+            : 'La clara luz de la luna ilumina a las bestias que acechan entre las sombras'
         }}
       </p>
     </div>
-
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed, defineProps } from 'vue'
 import solImg from '@/assets/imgs/sol.jpg'
 import lunaImg from '@/assets/imgs/luna.jpg'
 
-export default {
-  name: 'CabeceraJugador',
-  props: {
-    nombreJugador: { type: String, default: '' },
-    esDia: { type: Boolean, default: true },
-    esNarrador: { type: Boolean, default: false },
-    nombreNarrador: { type: String, default: '' },
-  },
-  data() {
-    return { solImg, lunaImg }
-  },
-}
+const props = defineProps({
+  nombreJugador: { type: String, default: '' },
+  esDia: { type: Boolean, default: true },
+  esNarrador: { type: Boolean, default: false },
+  nombreNarrador: { type: String, default: '' },
+  alcaldeNombre: { type: String, default: '' },
+})
+
+const textoAlcalde = computed(() => props.alcaldeNombre || 'Elecciones pendientes')
 </script>
 
 <style scoped>
@@ -81,10 +89,10 @@ export default {
   padding: 12px 20px;
   border-radius: 12px;
   width: 400px;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.3rem;
   font-weight: 700;
-  color: #cc0000;
+  color: var(--color-rojo);
 }
 
 .nombre-dia {
@@ -102,7 +110,7 @@ export default {
   gap: 12px;
   padding: 12px 20px;
   border-radius: 10px;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.05rem;
   font-weight: 700;
   width: 400px;
@@ -112,13 +120,13 @@ export default {
 
 .narrador-dia {
   background: rgba(0, 0, 0, 0.82);
-  border-color: #e4ba03;
+  border-color: var(--color-dorado);
   color: #ffdd57;
 }
 
 .narrador-noche {
   background: rgba(0, 0, 0, 0.85);
-  border-color: #cc0000;
+  border-color: var(--color-rojo);
   color: #ff7777;
 }
 
@@ -143,24 +151,28 @@ export default {
 
 .carta-dia {
   background: white;
-  border: 8px solid #e4ba03;
+  border: 8px solid var(--color-dorado);
 }
 
 .carta-noche {
   background: #000;
-  border: 8px solid #cc0000;
+  border: 8px solid var(--color-rojo);
 }
 
 .carta-fase-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-weight: 700;
   font-size: clamp(1.2rem, 3vw, 2.5rem);
   margin: 0;
   text-align: center;
 }
 
-.carta-dia .carta-fase-titulo { color: #e4ba03; }
-.carta-noche .carta-fase-titulo { color: #cc0000; }
+.carta-dia .carta-fase-titulo {
+  color: var(--color-dorado);
+}
+.carta-noche .carta-fase-titulo {
+  color: var(--color-rojo);
+}
 
 .carta-fase-img {
   width: 100%;
@@ -169,11 +181,15 @@ export default {
   border-radius: 10px;
 }
 
-.carta-dia .carta-fase-img { border: 5px solid #e4ba03; }
-.carta-noche .carta-fase-img { border: 5px solid #cc0000; }
+.carta-dia .carta-fase-img {
+  border: 5px solid var(--color-dorado);
+}
+.carta-noche .carta-fase-img {
+  border: 5px solid var(--color-rojo);
+}
 
 .carta-fase-texto {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: clamp(0.85rem, 1.2vw, 1.2rem);
   text-align: center;
@@ -182,8 +198,12 @@ export default {
   font-style: italic;
 }
 
-.carta-dia .carta-fase-texto { color: #e4ba03; }
-.carta-noche .carta-fase-texto { color: #cc0000; }
+.carta-dia .carta-fase-texto {
+  color: var(--color-dorado);
+}
+.carta-noche .carta-fase-texto {
+  color: var(--color-rojo);
+}
 
 @media (max-width: 750px) {
   .cabecera {
@@ -200,5 +220,42 @@ export default {
     width: 100%;
     justify-content: center;
   }
+}
+
+.cuadro-alcalde {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 400px;
+  padding: 14px 20px;
+  border-radius: 10px;
+  background: var(--color-dorado);
+  border: 3px white solid;
+  color: #000;
+  font-family: var(--font-raleway);
+  font-weight: bold;
+}
+
+.cuadro-alcalde i {
+  font-size: 3rem;
+  flex-shrink: 0;
+}
+
+.alcalde-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.alcalde-titulo {
+  font-size: 1.2rem;
+  font-weight: bolder;
+}
+
+.alcalde-frase {
+  font-size: 1rem;
+  font-style: italic;
+  font-weight: 400;
+  color: #ffffff;
 }
 </style>

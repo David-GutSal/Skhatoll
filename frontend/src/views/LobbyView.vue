@@ -80,7 +80,7 @@
                 <input
                   class="input-jugador"
                   v-model="inputCodigo"
-                  placeholder="Código de sala"
+                  placeholder="######"
                   maxlength="20"
                 />
               </div>
@@ -112,194 +112,146 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 import axiosInstance from '@/plugins/axios'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
-import { mapGetters, mapActions } from 'vuex'
 import ListaJugadores from '@/components/lobby/ListaJugadores.vue'
 import bienvenidaImg from '@/assets/imgs/bienvenida.jpg'
 
-export default {
-  name: 'LobbyView',
-  components: { ListaJugadores },
+const router = useRouter()
+const store = useStore()
 
-  data() {
-    return {
-      inputCodigo: '',
-      mensajeUnion: false,
-      stompClient: null,
-      copiado: false,
-      bienvenidaImg,
-    }
-  },
+const inputCodigo = ref('')
+const mensajeUnion = ref(false)
+const stompClient = ref(null)
+const copiado = ref(false)
 
-  computed: {
-    ...mapGetters('sala', ['codigoSala', 'esCreador', 'jugadores']),
-    ...mapGetters('auth', ['nombre']),
+const codigoSala = computed(() => store.getters['sala/codigoSala'])
+const esCreador = computed(() => store.getters['sala/esCreador'])
+const jugadores = computed(() => store.getters['sala/jugadores'])
+const nombre = computed(() => store.getters['auth/nombre'])
 
-    nombreNarrador() {
-      const narrador = this.jugadores?.find((j) => j.esNarrador)
-      return narrador ? narrador.nombre : null
-    },
+const nombreNarrador = computed(() => {
+  const narrador = jugadores.value?.find((j) => j.esNarrador)
+  return narrador ? narrador.nombre : null
+})
 
-    soyNarrador() {
-      return this.nombreNarrador === this.nombre
-    },
-  },
-  watch: {
-    codigoSala(nuevo) {
-      if (nuevo) {
-        this.cargarJugadores()
-        this.conectarWebSocket()
-      }
-    },
-  },
+const soyNarrador = computed(() => nombreNarrador.value === nombre.value)
 
-  created() {
-    if (this.codigoSala) {
-      this.cargarJugadores()
-      this.conectarWebSocket()
-    }
-  },
-
-  beforeUnmount() {
-    if (this.stompClient) {
-      this.stompClient.deactivate()
-      this.stompClient = null
-    }
-  },
-
-  methods: {
-    ...mapActions('sala', ['unirse', 'setJugadores', 'salir']),
-
-    async copiarCodigo() {
-      await navigator.clipboard.writeText(this.codigoSala)
-      this.copiado = true
-      setTimeout(() => (this.copiado = false), 2000)
-    },
-
-    async cargarJugadores() {
-      try {
-        const res = await axiosInstance.get(`/salas/${this.codigoSala}/jugadores`)
-        this.setJugadores(res.data)
-      } catch (error) {
-        alert('Error al cargar jugadores')
-      }
-    },
-
-    async iniciarPartida() {
-      try {
-        await axiosInstance.post(`/salas/${this.codigoSala}/iniciar`)
-      } catch (error) {
-        console.log('Mensaje backend:', error.response?.data)
-        alert(error.response?.data || 'Error al iniciar')
-      }
-    },
-
-    async asignarNarrador(idUsuario) {
-      try {
-        await axiosInstance.put(`/salas/${this.codigoSala}/narrador`, { idUsuario })
-      } catch (error) {
-        alert('Error al asignar narrador')
-      }
-    },
-
-    async handleUnirse() {
-      try {
-        await axiosInstance.post('/salas/unirse', { codigoSala: this.inputCodigo })
-        this.unirse(this.inputCodigo)
-        this.mensajeUnion = true
-        await this.cargarJugadores()
-        this.conectarWebSocket()
-      } catch (error) {
-        alert(
-          error.response?.status === 409
-            ? 'Ya estás en esta sala o está llena'
-            : 'Sala no encontrada',
-        )
-      }
-    },
-
-    async copiarParaDiscord() {
-      await navigator.clipboard.writeText(
-        `¡Únete a mi partida de Hombres Lobo! Código: ${this.codigoSala}`,
-      )
-      alert('¡Código copiado! Pégalo en Discord')
-    },
-    //añadido 2
-    async salirSala() {
-      if (this.stompClient) {
-        this.stompClient.deactivate()
-        this.stompClient = null
-      }
-      if (this.esCreador) {
-        await this.$store.dispatch('sala/cerrarSala')
-      } else {
-        await this.$store.dispatch('sala/salir')
-      }
-      this.$router.push({ name: 'sala' })
-    },
-
-    conectarWebSocket() {
-      const token = this.$store.getters['auth/token']
-      const cliente = new Client({
-        webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
-        connectHeaders: { Authorization: `Bearer ${token}` },
-      })
-      cliente.onConnect = () => {
-        cliente.subscribe(`/topic/sala/${this.codigoSala}`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          if (payload.tipo === 'JUGADOR_UNIDO') {
-            this.setJugadores(payload.jugadores)
-          }
-          // Añadir esto:
-          if (payload.tipo === 'NARRADOR_ASIGNADO') {
-            this.setJugadores(payload.jugadores)
-            // Si yo soy el nuevo narrador, actualizo mi estado en el store
-            const nuevoNarrador = payload.jugadores.find((j) => j.esNarrador)
-            if (nuevoNarrador && nuevoNarrador.nombre === this.nombre) {
-              this.$store.commit('sala/SET_SALA', {
-                codigoSala: this.codigoSala,
-                esCreador: true,
-              })
-            } else {
-              // Si era creador y ya no lo es, actualizar también
-              this.$store.commit('sala/SET_SALA', {
-                codigoSala: this.codigoSala,
-                esCreador: false,
-              })
-            }
-          }
-        })
-        cliente.subscribe(`/topic/sala/${this.codigoSala}/inicio`, () => {
-          this.$router.push({ name: 'cargaRol' })
-        })
-        cliente.subscribe(`/user/queue/rol`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          if (payload.tipo === 'ROL_ASIGNADO') {
-            this.$store.dispatch('sala/setRol', {
-              nombreRol: payload.nombreRol,
-              descripcionRol: payload.descripcionRol,
-              bando: payload.bando,
-            })
-          }
-        })
-        //añadido 2
-        cliente.subscribe(`/topic/sala/${this.codigoSala}/cerrada`, () => {
-          if (this.stompClient) {
-            this.stompClient.deactivate()
-            this.stompClient = null
-          }
-          this.$store.commit('sala/CLEAR_SALA')
-          this.$router.push({ name: 'sala' })
-        })
-      }
-      cliente.activate()
-      this.stompClient = cliente
-    },
-  },
+const cargarJugadores = async () => {
+  if (!codigoSala.value) return
+  try {
+    const res = await axiosInstance.get(`/salas/${codigoSala.value}`)
+    store.dispatch('sala/setJugadores', res.data.jugadores)
+    store.dispatch('sala/setSala', {
+      codigoSala: res.data.codigoSala,
+      esCreador: res.data.esCreador,
+    })
+  } catch (error) {
+    console.error('Error al cargar jugadores:', error)
+  }
 }
+
+const conectarWebSocket = () => {
+  const token = store.getters['auth/token']
+  const cliente = new Client({
+    webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+    connectHeaders: { Authorization: `Bearer ${token}` },
+  })
+
+  let rolRecibido = false
+  let inicioRecibido = false
+
+  const intentarNavegar = () => {
+    if (rolRecibido && inicioRecibido) {
+      router.push({ name: 'cargaRol' })
+    }
+  }
+
+  cliente.subscribe(`/topic/sala/${codigoSala.value}/inicio`, () => {
+    setTimeout(() => {
+      const esCreador = store.getters['sala/esCreador']
+      if (esCreador) {
+        router.push({ name: 'esperaNarrador' })
+      } else {
+        router.push({ name: 'cargaRol' })
+      }
+    }, 500)
+  })
+
+  cliente.subscribe(`/user/queue/rol`, (msg) => {
+    const payload = JSON.parse(msg.body)
+    if (payload.tipo === 'ROL_ASIGNADO') {
+      store.dispatch('sala/setRol', {
+        nombreRol: payload.nombreRol,
+        descripcionRol: payload.descripcionRol,
+        bando: payload.bando,
+      })
+      rolRecibido = true
+      intentarNavegar()
+    }
+  })
+
+  cliente.subscribe(`/topic/sala/${codigoSala.value}`, (msg) => {
+    const payload = JSON.parse(msg.body)
+    if (payload.tipo === 'JUGADOR_UNIDO') {
+      store.dispatch('sala/setJugadores', payload.jugadores)
+      const ultimo = payload.jugadores[payload.jugadores.length - 1]
+      if (ultimo && ultimo.nombre !== nombre.value) {
+        store.dispatch('toast/mostrar', {
+          mensaje: `${ultimo.nombre} se ha unido a la partida`,
+          tipo: 'info',
+        })
+      }
+    }
+    if (payload.tipo === 'JUGADOR_SALIO') {
+      store.dispatch('sala/setJugadores', payload.jugadores)
+    }
+  })
+
+  cliente.activate()
+  stompClient.value = cliente
+}
+
+watch(codigoSala, (nuevo) => {
+  if (nuevo) {
+    cargarJugadores()
+    conectarWebSocket()
+  }
+})
+
+const copiarCodigo = () => {
+  navigator.clipboard.writeText(codigoSala.value)
+  copiado.value = true
+  setTimeout(() => {
+    copiado.value = false
+  }, 2000)
+}
+
+const abandonarSala = async () => {
+  if (stompClient.value) {
+    stompClient.value.deactivate()
+    stompClient.value = null
+  }
+  try {
+    await axiosInstance.delete(`/salas/${codigoSala.value}`)
+  } catch (error) {
+    console.error('Error al abandonar sala:', error)
+  }
+  store.dispatch('sala/salir')
+  router.push('/')
+}
+
+onMounted(() => {
+  if (codigoSala.value) {
+    cargarJugadores()
+    conectarWebSocket()
+  }
+})
 </script>
 
 <style scoped>
@@ -312,7 +264,7 @@ export default {
 }
 
 .titulo-lobby {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-weight: 700;
   font-size: 2.5rem;
   color: white;
@@ -355,7 +307,7 @@ export default {
 }
 
 .titulo-caja {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 2.5rem;
   font-weight: 700;
   color: white;
@@ -370,7 +322,7 @@ export default {
   width: 100%;
   border-radius: 50px;
   overflow: hidden;
-  border: 5px solid #e4ba03;
+  border: 5px solid var(--color-dorado);
   background: white;
 }
 
@@ -379,11 +331,11 @@ export default {
   padding: 14px 20px;
   background: transparent;
   border: none;
-  font-size: 2.7rem;
-  font-family: 'Cinzel', Arial, sans-serif;
-  font-weight: 700;
+  font-family: Arial, sans-serif;
+  font-size: 2rem;
+  font-weight: bold;
   color: #8b0000;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.4em;
   text-align: center;
   outline: none;
 }
@@ -391,12 +343,12 @@ export default {
 .boton-copiar {
   background: #8b0000;
   border: none;
-  padding: 14px 22px;
+  padding: 14px;
   cursor: pointer;
   color: white;
   font-size: 1.4rem;
   border-radius: 0 50px 50px 0;
-  transition: background 0.2s ease;
+  transition: background var(--transition-fast);
   flex-shrink: 0;
 }
 
@@ -405,7 +357,7 @@ export default {
 }
 
 .subtitulo-caja {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-style: italic;
   color: #ccc;
   font-size: 1.2rem;
@@ -419,7 +371,7 @@ export default {
   border: none;
   padding: 14px 36px;
   border-radius: 10px;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.1rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -434,8 +386,8 @@ export default {
 }
 
 .boton-iniciar:hover {
-  background: #e4ba03;
-  color: #000;
+  background: var(--color-dorado);
+  color: var(--color-black);
 }
 
 .boton-iniciar:active {
@@ -453,7 +405,7 @@ export default {
 }
 
 .texto-redes {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   color: white;
   font-weight: 700;
   font-size: 1.1rem;
@@ -475,7 +427,7 @@ export default {
   height: 60px;
   border-radius: 50%;
   background: white;
-  transition: background 0.2s ease;
+  transition: background var(--transition-fast);
   flex-shrink: 0;
   text-decoration: none;
 }
@@ -506,14 +458,14 @@ export default {
   background: white;
   border: 5px solid #a30000;
   border-radius: 50px;
-  font-size: 1.2rem;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-size: 1.8rem;
+  font-family: Arial, sans-serif;
   font-weight: bolder;
   color: #111;
   padding: 14px 24px;
   text-align: center;
   outline: none;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.5em;
 }
 
 .input-jugador::placeholder {
@@ -538,7 +490,7 @@ export default {
   border: none;
   padding: 13px 28px;
   border-radius: 10px;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
@@ -561,7 +513,7 @@ export default {
   border: none;
   padding: 13px 28px;
   border-radius: 10px;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
@@ -572,7 +524,7 @@ export default {
 }
 
 .boton-salir-jugador:hover {
-  background: #000;
+  background: var(--color-black);
 }
 .boton-salir-jugador:active {
   transform: scale(0.95);
@@ -582,8 +534,8 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #cc0000;
-  font-family: 'Cinzel', Arial, sans-serif;
+  color: var(--color-rojo);
+  font-family: var(--font-cinzel);
   font-weight: 700;
   font-size: 0.95rem;
   padding: 10px 14px;
@@ -593,7 +545,7 @@ export default {
 }
 
 .mensaje-union {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-style: italic;
   color: white;
   font-size: 0.95rem;

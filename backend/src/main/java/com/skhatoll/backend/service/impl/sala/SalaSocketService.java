@@ -1,6 +1,7 @@
 package com.skhatoll.backend.service.impl.sala;
 
 import com.skhatoll.backend.dto.sala.JugadorDto;
+import com.skhatoll.backend.util.constants.GameConstants;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+
+import static com.skhatoll.backend.util.constants.GameConstants.*;
 
 @Service
 @RequiredArgsConstructor
@@ -22,8 +25,8 @@ public class SalaSocketService {
     // -------------------------------------------------------
     public void notificarNuevoJugador(String codigoSala, List<JugadorDto> jugadores) {
         messagingTemplate.convertAndSend(
-                "/topic/sala/" + codigoSala,
-                new JugadoresActualizadosEvent("JUGADOR_UNIDO", jugadores));
+                String.format(WS_SALA, codigoSala),
+                new JugadoresActualizadosEvent(WS_EVENTO_JUGADOR_UNIDO, jugadores));
     }
 
     // -------------------------------------------------------
@@ -32,8 +35,8 @@ public class SalaSocketService {
     // -------------------------------------------------------
     public void notificarInicio(String codigoSala) {
         messagingTemplate.convertAndSend(
-                "/topic/sala/" + codigoSala + "/inicio",
-                new PartidaIniciadaEvent("PARTIDA_INICIADA"));
+                String.format(WS_SALA_INICIO, codigoSala),
+                new PartidaIniciadaEvent(WS_EVENTO_PARTIDA_INICIADA));
     }
 //añadido 2 MAP?
     public void notificarSalaCerrada(String codigoSala) {
@@ -50,7 +53,7 @@ public class SalaSocketService {
     public void enviarRolPrivado(String nombreUsuario, RolAsignadoEvent evento) {
         messagingTemplate.convertAndSendToUser(
                 nombreUsuario,
-                "/queue/rol",
+                WS_QUEUE_ROL,
                 evento);
     }
 
@@ -104,7 +107,25 @@ public class SalaSocketService {
 
     public void notificarAlcalde(String codigoSala, String nombreAlcalde) {
         messagingTemplate.convertAndSend(
-                "/topic/partida/" + codigoSala + "/alcalde",
-                new AlcaldeEvent("ALCALDE_ELEGIDO", nombreAlcalde));
+                String.format(WS_ALCALDE, codigoSala),
+                new AlcaldeEvent(WS_EVENTO_ALCALDE_ELEGIDO, nombreAlcalde));
+    }
+
+    public void notificarJugadorSalio(String codigoSala, List<JugadorDto> jugadores) {
+        messagingTemplate.convertAndSend(
+                String.format(GameConstants.WS_SALA, codigoSala),
+                new JugadoresActualizadosEvent(
+                        GameConstants.WS_EVENTO_JUGADOR_SALIO, jugadores));
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class CompañerosLobosEvent {
+        private String tipo;
+        private List<String> lobos;
+    }
+
+    public void enviarMensajePrivado(String nombreUsuario, String destino, Object evento) {
+        messagingTemplate.convertAndSendToUser(nombreUsuario, destino, evento);
     }
 }

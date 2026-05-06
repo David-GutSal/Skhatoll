@@ -13,10 +13,10 @@ export default {
       state.nombre = nombre
       state.uuid = uuid
 
-      // 🟢 GUARDAR EN LOCALSTORAGE
-      localStorage.setItem('token', token)
-      localStorage.setItem('nombre', nombre)
-      localStorage.setItem('uuid', uuid)
+      // 🟢 GUARDAR EN sessionStorage
+      sessionStorage.setItem('token', token)
+      sessionStorage.setItem('nombre', nombre)
+      sessionStorage.setItem('uuid', uuid)
     },
 
     CLEAR_AUTH(state) {
@@ -24,10 +24,10 @@ export default {
       state.nombre = null
       state.uuid = null
 
-      // 🔴 BORRAR LOCALSTORAGE
-      localStorage.removeItem('token')
-      localStorage.removeItem('nombre')
-      localStorage.removeItem('uuid')
+      // 🔴 BORRAR sessionStorage
+      sessionStorage.removeItem('token')
+      sessionStorage.removeItem('nombre')
+      sessionStorage.removeItem('uuid')
     },
   },
 

@@ -19,14 +19,14 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'IndicadorDiaNoche',
-  props: {
-    esDia: { type: Boolean, default: true },
-  },
-  emits: ['cambiarFase'],
-}
+<script setup>
+import { defineProps, defineEmits } from 'vue'
+
+defineProps({
+  esDia: { type: Boolean, default: true },
+})
+
+defineEmits(['cambiarFase'])
 </script>
 
 <style scoped>
@@ -37,7 +37,7 @@ export default {
   gap: 10px;
   padding: 12px 18px;
   border-radius: 50px;
-  border: 5px solid #e4ba03;
+  border: 5px solid var(--color-dorado);
   background: white;
   transition: background 0.3s ease, border-color 0.3s ease;
 }
@@ -63,19 +63,19 @@ export default {
 
 .btn-fase:hover {
   transform: scale(0.9);
-  color: #cc0000;
+  color: var(--color-rojo);
   background: #000;
 }
 
 .btn-fase:active {
   transform: scale(1.1);
-  color: #e4ba03;
+  color: var(--color-dorado);
   background: #000;
 }
 
 .indicador-wrapper.dia .btn-fase:first-child.activo {
   background: #0087bd;
-  color: #e4ba03;
+  color: var(--color-dorado);
 }
 
 .indicador-wrapper.noche .btn-fase:last-child.activo {

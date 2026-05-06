@@ -1,0 +1,1 @@
+package com.skhatoll.backend.dto.partida;

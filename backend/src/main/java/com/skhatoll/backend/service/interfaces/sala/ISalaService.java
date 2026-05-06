@@ -9,8 +9,6 @@ public interface ISalaService {
 
     void unirse(UnirseRequest request);
 
-    List<JugadorDto> getJugadores(String codigo);
-
     void asignarNarrador(String codigo, AsignarNarradorRequest request);
 
     void iniciarPartida(String codigo);
@@ -18,6 +16,4 @@ public interface ISalaService {
     List<JugadorRolDto> getJugadoresConRol(String codigo);
 
     void salirDeSala(String codigo);
-
-    void cerrarSala(String codigo);
 }

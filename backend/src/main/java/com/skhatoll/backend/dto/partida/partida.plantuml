@@ -1,0 +1,231 @@
+@startuml
+
+title __PARTIDA's Class Diagram__\n
+
+  namespace com.skhatoll.backend {
+    namespace dto.partida {
+      class com.skhatoll.backend.dto.partida.AbrirVotacionRequest {
+          + AbrirVotacionRequest()
+          + equals()
+          + getTipo()
+          + hashCode()
+          + setTipo()
+          + toString()
+          # canEqual()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.partida {
+      class com.skhatoll.backend.dto.partida.EstadoPartidaDto {
+          - estadoDia : String
+          - jugadores : List<JugadorDto>
+          - nombreAlcalde : String
+          - rondaActual : Integer
+          + EstadoPartidaDto()
+          + equals()
+          + getEstadoDia()
+          + getJugadores()
+          + getNombreAlcalde()
+          + getRondaActual()
+          + getSesionActiva()
+          + hashCode()
+          + setEstadoDia()
+          + setJugadores()
+          + setNombreAlcalde()
+          + setRondaActual()
+          + setSesionActiva()
+          + toString()
+          # canEqual()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.partida {
+      class com.skhatoll.backend.dto.partida.FinPartidaDto {
+          - bandoGanador : String
+          - mensaje : String
+          + FinPartidaDto()
+          + equals()
+          + getBandoGanador()
+          + getMensaje()
+          + hashCode()
+          + setBandoGanador()
+          + setMensaje()
+          + toString()
+          # canEqual()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.partida {
+      class com.skhatoll.backend.dto.partida.HabilidadRequest {
+          - nombreHabilidad : String
+          - objetivos : List<Integer>
+          + HabilidadRequest()
+          + equals()
+          + getNombreHabilidad()
+          + getObjetivos()
+          + hashCode()
+          + setNombreHabilidad()
+          + setObjetivos()
+          + toString()
+          # canEqual()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.partida {
+      class com.skhatoll.backend.dto.partida.HabilidadResultadoDto {
+          - detalle : Object
+          - nombreHabilidad : String
+          - objetivos : List<String>
+          - resultado : String
+          + HabilidadResultadoDto()
+          + equals()
+          + getDetalle()
+          + getNombreHabilidad()
+          + getObjetivos()
+          + getResultado()
+          + hashCode()
+          + setDetalle()
+          + setNombreHabilidad()
+          + setObjetivos()
+          + setResultado()
+          + toString()
+          # canEqual()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.partida {
+      class com.skhatoll.backend.dto.partida.MuerteConfirmadaDto {
+          - bando : String
+          - nombreJugador : String
+          - nombreRol : String
+          + MuerteConfirmadaDto()
+          + equals()
+          + getBando()
+          + getNombreJugador()
+          + getNombreRol()
+          + hashCode()
+          + setBando()
+          + setNombreJugador()
+          + setNombreRol()
+          + toString()
+          # canEqual()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.partida {
+      class com.skhatoll.backend.dto.partida.ResultadoVotacionDto {
+          - empate : boolean
+          - idSesion : Integer
+          - nombreEliminado : String
+          - nombreGanador : String
+          - tipo : String
+          + ResultadoVotacionDto()
+          + equals()
+          + getIdSesion()
+          + getNombreEliminado()
+          + getNombreGanador()
+          + getTipo()
+          + hashCode()
+          + isEmpate()
+          + setEmpate()
+          + setIdSesion()
+          + setNombreEliminado()
+          + setNombreGanador()
+          + setTipo()
+          + toString()
+          # canEqual()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.partida {
+      class com.skhatoll.backend.dto.partida.SesionActivaDto {
+          - fechaInicio : LocalDateTime
+          - idSesion : Integer
+          - ronda : Integer
+          - tipo : String
+          + SesionActivaDto()
+          + equals()
+          + getFechaInicio()
+          + getIdSesion()
+          + getRonda()
+          + getTipo()
+          + hashCode()
+          + setFechaInicio()
+          + setIdSesion()
+          + setRonda()
+          + setTipo()
+          + toString()
+          # canEqual()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.partida {
+      class com.skhatoll.backend.dto.partida.VotarRequest {
+          - idObjetivo : Integer
+          + VotarRequest()
+          + equals()
+          + getIdObjetivo()
+          + hashCode()
+          + setIdObjetivo()
+          + toString()
+          # canEqual()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.partida {
+      class com.skhatoll.backend.dto.partida.VotoDto {
+          - nombreObjetivo : String
+          - nombreVotante : String
+          + VotoDto()
+          + equals()
+          + getNombreObjetivo()
+          + getNombreVotante()
+          + hashCode()
+          + setNombreObjetivo()
+          + setNombreVotante()
+          + toString()
+          # canEqual()
+      }
+    }
+  }
+  
+
+  com.skhatoll.backend.dto.partida.AbrirVotacionRequest o-- com.skhatoll.backend.entities.SesionVotacion.TipoVotacion : tipo
+  com.skhatoll.backend.dto.partida.EstadoPartidaDto o-- com.skhatoll.backend.dto.partida.SesionActivaDto : sesionActiva
+
+
+right footer
+
+
+PlantUML diagram generated by SketchIt! (https://bitbucket.org/pmesmeur/sketch.it)
+For more information about this tool, please contact philippe.mesmeur@gmail.com
+endfooter
+
+@enduml

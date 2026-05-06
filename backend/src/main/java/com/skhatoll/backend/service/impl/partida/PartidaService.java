@@ -1,20 +1,24 @@
 package com.skhatoll.backend.service.impl.partida;
 
 import com.skhatoll.backend.dto.partida.*;
+import com.skhatoll.backend.dto.sala.JugadorDto;
 import com.skhatoll.backend.entities.*;
 import com.skhatoll.backend.repository.*;
 import com.skhatoll.backend.service.impl.sala.SalaSocketService;
 import com.skhatoll.backend.service.interfaces.partida.IPartidaService;
+import com.skhatoll.backend.service.interfaces.jugador.IJugadorService;
+import com.skhatoll.backend.util.constants.ErrorMessages;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.skhatoll.backend.util.constants.ErrorMessages.*;
+import static com.skhatoll.backend.util.constants.GameConstants.*;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +33,8 @@ public class PartidaService implements IPartidaService {
     private final SalaSocketService salaSocketService;
     private final HabilidadSalaRepository habilidadSalaRepository;
     private final EnamoradosRepository enamoradosRepository;
+    private final IJugadorService jugadorService;
+    private final RolRepository rolRepository;
 
     // -------------------------------------------------------
     // Obtener el usuario autenticado desde el contexto de Security
@@ -42,17 +48,17 @@ public class PartidaService implements IPartidaService {
 
         String nombre = authentication.getName();
 
-        return usuarioRepository.findByNombre(nombre).orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + nombre));
+        return usuarioRepository.findByNombre(nombre).orElseThrow(() -> new IllegalArgumentException(USUARIO_NO_ENCONTRADO + ": " + nombre));
     }
 
     // -------------------------------------------------------
     // Obtener sala iniciada por código
     // -------------------------------------------------------
     private Sala getSalaIniciada(String codigoSala) {
-        Sala sala = salaRepository.findByCodigoSala(codigoSala).orElseThrow(() -> new IllegalArgumentException("Sala no encontrada"));
+        Sala sala = salaRepository.findByCodigoSala(codigoSala).orElseThrow(() -> new IllegalArgumentException(SALA_NO_ENCONTRADA));
 
         if (sala.getEstadoSala() != Sala.EstadoSala.INICIADA) {
-            throw new IllegalStateException("La partida no está en curso");
+            throw new IllegalStateException(PARTIDA_NO_INICIADA);
         }
 
         return sala;
@@ -67,7 +73,7 @@ public class PartidaService implements IPartidaService {
         Sala sala = getSalaIniciada(codigoSala);
 
         if (!sala.getNarrador().getIdUsuario().equals(solicitante.getIdUsuario())) {
-            throw new IllegalStateException("Solo el narrador puede cambiar la fase");
+            throw new IllegalStateException(SOLO_NARRADOR);
         }
 
         if (sesionVotacionRepository.existsBySala_IdSalaAndAbiertaTrue(sala.getIdSala())) {
@@ -95,11 +101,11 @@ public class PartidaService implements IPartidaService {
         Sala sala = getSalaIniciada(codigoSala);
 
         if (!sala.getNarrador().getIdUsuario().equals(solicitante.getIdUsuario())) {
-            throw new IllegalStateException("Solo el narrador puede abrir votaciones");
+            throw new IllegalStateException(SOLO_NARRADOR);
         }
 
         if (sesionVotacionRepository.existsBySala_IdSalaAndAbiertaTrue(sala.getIdSala())) {
-            throw new IllegalStateException("Ya hay una votación abierta en esta sala");
+            throw new IllegalStateException(VOTACION_YA_ABIERTA);
         }
 
         SesionVotacion sesion = SesionVotacion.builder().sala(sala).tipo(request.getTipo()).ronda(sala.getRondaActual()).build();
@@ -120,7 +126,7 @@ public class PartidaService implements IPartidaService {
         Sala sala = getSalaIniciada(codigoSala);
 
         if (!sala.getNarrador().getIdUsuario().equals(solicitante.getIdUsuario())) {
-            throw new IllegalStateException("Solo el narrador puede cerrar votaciones");
+            throw new IllegalStateException(SOLO_NARRADOR);
         }
 
         SesionVotacion sesion = sesionVotacionRepository.findById(idSesion).orElseThrow(() -> new IllegalArgumentException("Sesión de votación no encontrada"));
@@ -146,10 +152,36 @@ public class PartidaService implements IPartidaService {
             salaSocketService.notificarAlcalde(codigoSala, resultado.getNombreGanador());
         }
 
-        // Linchamiento automático: si es votación de día con ganador claro, confirmar muerte
         if (sesion.getTipo() == SesionVotacion.TipoVotacion.DIA && !resultado.isEmpate() && resultado.getNombreEliminado() != null) {
 
             usuarioRepository.findByNombre(resultado.getNombreEliminado()).ifPresent(eliminado -> confirmarMuerte(codigoSala, eliminado.getIdUsuario()));
+        }
+        if (sesion.getTipo() == SesionVotacion.TipoVotacion.LOBOS
+                && !resultado.isEmpate()
+                && resultado.getNombreEliminado() != null) {
+
+            usuarioRepository.findByNombre(resultado.getNombreEliminado())
+                    .ifPresent(victima -> {
+                        salaUsuarioRepository
+                                .findBySala_IdSalaAndUsuario_IdUsuario(
+                                        sala.getIdSala(), victima.getIdUsuario())
+                                .ifPresent(su -> {
+                                    su.setEstaVivo(false);
+                                    su.setMuerteConfirmada(false);
+                                    salaUsuarioRepository.save(su);
+                                });
+                    });
+        }
+
+        if (sesion.getTipo() == SesionVotacion.TipoVotacion.LOBOS && !resultado.isEmpate() && resultado.getNombreEliminado() != null) {
+
+            usuarioRepository.findByNombre(resultado.getNombreEliminado()).flatMap(victima -> salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), victima.getIdUsuario())).ifPresent(su -> {
+                su.setEstaVivo(false);
+                su.setMuerteConfirmada(false);
+                salaUsuarioRepository.save(su);
+
+                partidaSocketService.notificarMuerte(codigoSala, new MuerteConfirmadaDto(su.getUsuario().getNombre(), su.getRol().getNombre(), su.getRol().getBando().name()));
+            });
         }
 
         partidaSocketService.notificarVotacion(codigoSala, sesion.getIdSesion(), sesion.getTipo().name(), false);
@@ -166,12 +198,12 @@ public class PartidaService implements IPartidaService {
         Usuario votante = getUsuarioAutenticado();
         Sala sala = getSalaIniciada(codigoSala);
 
-        SesionVotacion sesion = sesionVotacionRepository.findBySala_IdSalaAndAbiertaTrue(sala.getIdSala()).orElseThrow(() -> new IllegalStateException("No hay ninguna votación abierta"));
+        SesionVotacion sesion = sesionVotacionRepository.findBySala_IdSalaAndAbiertaTrue(sala.getIdSala()).orElseThrow(() -> new IllegalStateException(VOTACION_NO_ENCONTRADA));
 
-        SalaUsuario salaUsuario = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), votante.getIdUsuario()).orElseThrow(() -> new IllegalStateException("No estás en esta sala"));
+        SalaUsuario salaUsuario = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), votante.getIdUsuario()).orElseThrow(() -> new IllegalStateException(JUGADOR_NO_EN_SALA));
 
         if (!salaUsuario.getEstaVivo()) {
-            throw new IllegalStateException("Los jugadores eliminados no pueden votar");
+            throw new IllegalStateException(JUGADOR_ELIMINADO);
         }
 
         Usuario objetivo = usuarioRepository.findById(request.getIdObjetivo()).orElseThrow(() -> new IllegalArgumentException("Jugador objetivo no encontrado"));
@@ -209,7 +241,7 @@ public class PartidaService implements IPartidaService {
         Sala sala = getSalaIniciada(codigoSala);
 
         if (!sala.getNarrador().getIdUsuario().equals(solicitante.getIdUsuario())) {
-            throw new IllegalStateException("Solo el narrador puede confirmar muertes");
+            throw new IllegalStateException(SOLO_NARRADOR);
         }
 
         SalaUsuario salaUsuario = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), idUsuario).orElseThrow(() -> new IllegalArgumentException("El jugador no está en esta sala"));
@@ -217,12 +249,14 @@ public class PartidaService implements IPartidaService {
         if (!salaUsuario.getEstaVivo()) {
             throw new IllegalStateException("El jugador ya está eliminado");
         }
+        if (salaUsuario.getMuerteConfirmada()) {
+            throw new IllegalStateException("La muerte de este jugador ya fue confirmada");
+        }
 
         salaUsuario.setEstaVivo(false);
         salaUsuario.setMuerteConfirmada(true);
         salaUsuarioRepository.save(salaUsuario);
 
-        // Si muere el alcalde → desasignarlo y notificar
         if (sala.getAlcalde() != null && sala.getAlcalde().getIdUsuario().equals(idUsuario)) {
             sala.setAlcalde(null);
             salaRepository.save(sala);
@@ -233,6 +267,19 @@ public class PartidaService implements IPartidaService {
 
         partidaSocketService.notificarMuerte(codigoSala, muerte);
 
+        salaUsuarioRepository.findBySala_IdSalaAndIdModelo(sala.getIdSala(), idUsuario).ifPresent(nino -> {
+            rolRepository.findByNombre(ROL_LOBO).ifPresent(rolLobo -> {
+                nino.setRol(rolLobo);
+                salaUsuarioRepository.save(nino);
+
+                salaSocketService.enviarRolPrivado(nino.getUsuario().getNombre(), new SalaSocketService.RolAsignadoEvent(WS_EVENTO_ROL_CAMBIADO, rolLobo.getIdRol(), rolLobo.getNombre(), rolLobo.getDescripcion(), rolLobo.getBando().name()));
+
+                List<String> companerosLobos = salaUsuarioRepository.findBySala_IdSala(sala.getIdSala()).stream().filter(su -> su.getEstaVivo() && su.getRol() != null && su.getRol().getBando() == Rol.Bando.lobo && !su.getUsuario().getIdUsuario().equals(nino.getUsuario().getIdUsuario())).map(su -> su.getUsuario().getNombre()).toList();
+
+                salaSocketService.enviarMensajePrivado(nino.getUsuario().getNombre(), "/queue/lobos", new SalaSocketService.CompañerosLobosEvent(WS_EVENTO_COMPANEROS_LOBOS, companerosLobos));
+            });
+        });
+
         comprobarFinPartida(codigoSala, sala);
     }
 
@@ -242,18 +289,18 @@ public class PartidaService implements IPartidaService {
     private void comprobarFinPartida(String codigoSala, Sala sala) {
         List<SalaUsuario> jugadoresVivos = salaUsuarioRepository.findBySala_IdSala(sala.getIdSala()).stream().filter(su -> su.getEstaVivo() && !su.getUsuario().getIdUsuario().equals(sala.getNarrador().getIdUsuario())).toList();
 
-        long lobosVivos = jugadoresVivos.stream().filter(su -> su.getRol() != null && su.getRol().getBando().name().equals("lobo")).count();
+        long lobosVivos = jugadoresVivos.stream().filter(su -> su.getRol() != null && su.getRol().getBando() == Rol.Bando.lobo).count();
 
-        long aldeaViva = jugadoresVivos.stream().filter(su -> su.getRol() != null && su.getRol().getBando().name().equals("aldea")).count();
+        long aldeaViva = jugadoresVivos.stream().filter(su -> su.getRol() != null && su.getRol().getBando() == Rol.Bando.aldea).count();
 
         String bandoGanador = null;
         String mensaje = null;
 
         if (lobosVivos == 0) {
-            bandoGanador = "aldea";
+            bandoGanador = BANDO_ALDEA;
             mensaje = "¡La aldea ha eliminado a todos los hombres lobo!";
         } else if (lobosVivos >= aldeaViva) {
-            bandoGanador = "lobo";
+            bandoGanador = BANDO_LOBO;
             mensaje = "¡Los hombres lobo dominan la aldea!";
         }
 
@@ -274,7 +321,6 @@ public class PartidaService implements IPartidaService {
             return new ResultadoVotacionDto(sesion.getIdSesion(), sesion.getTipo().name(), null, null, true);
         }
 
-        // El voto del alcalde cuenta doble
         Map<String, Long> conteo = votos.stream().collect(Collectors.groupingBy(v -> v.getObjetivo().getNombre(), Collectors.summingLong(v -> {
             boolean esAlcalde = sesion.getSala().getAlcalde() != null && v.getVotante().getIdUsuario().equals(sesion.getSala().getAlcalde().getIdUsuario());
             return esAlcalde ? 2L : 1L;
@@ -284,7 +330,6 @@ public class PartidaService implements IPartidaService {
 
         List<String> masVotados = conteo.entrySet().stream().filter(e -> e.getValue() == maxVotos).map(Map.Entry::getKey).toList();
 
-        // Empate: intentar desempate por voto del alcalde
         if (masVotados.size() > 1) {
             Usuario alcalde = sesion.getSala().getAlcalde();
 
@@ -305,7 +350,6 @@ public class PartidaService implements IPartidaService {
             return new ResultadoVotacionDto(sesion.getIdSesion(), sesion.getTipo().name(), null, null, true);
         }
 
-        // Ganador claro: asignar a nombreEliminado o nombreGanador según el tipo de votación
         String nombreGanador = masVotados.getFirst();
 
         if (sesion.getTipo() == SesionVotacion.TipoVotacion.ALCALDE) {
@@ -319,9 +363,9 @@ public class PartidaService implements IPartidaService {
     // Obtener sesión de votación activa de una sala
     // -------------------------------------------------------
     public SesionVotacion getSesionActiva(String codigoSala) {
-        Sala sala = salaRepository.findByCodigoSala(codigoSala).orElseThrow(() -> new IllegalArgumentException("Sala no encontrada"));
+        Sala sala = salaRepository.findByCodigoSala(codigoSala).orElseThrow(() -> new IllegalArgumentException(SALA_NO_ENCONTRADA));
 
-        return sesionVotacionRepository.findBySala_IdSalaAndAbiertaTrue(sala.getIdSala()).orElseThrow(() -> new IllegalStateException("No hay ninguna votación abierta"));
+        return sesionVotacionRepository.findBySala_IdSalaAndAbiertaTrue(sala.getIdSala()).orElseThrow(() -> new IllegalStateException(VOTACION_NO_ENCONTRADA));
     }
 
     @Transactional
@@ -329,15 +373,13 @@ public class PartidaService implements IPartidaService {
         Usuario solicitante = getUsuarioAutenticado();
         Sala sala = getSalaIniciada(codigoSala);
 
-
-        SalaUsuario salaUsuario = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), solicitante.getIdUsuario()).orElseThrow(() -> new IllegalArgumentException("No estás en esta sala"));
+        SalaUsuario salaUsuario = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), solicitante.getIdUsuario()).orElseThrow(() -> new IllegalArgumentException(JUGADOR_NO_EN_SALA));
 
         if (!salaUsuario.getEstaVivo()) {
             throw new IllegalStateException("Los jugadores eliminados no pueden usar habilidades");
         }
 
-
-        SesionVotacion sesion = sesionVotacionRepository.findBySala_IdSalaAndAbiertaTrue(sala.getIdSala()).orElseThrow(() -> new IllegalStateException("No hay ninguna votación abierta"));
+        SesionVotacion sesion = sesionVotacionRepository.findBySala_IdSalaAndAbiertaTrue(sala.getIdSala()).orElseThrow(() -> new IllegalStateException(VOTACION_NO_ENCONTRADA));
 
         if (sesion.getTipo() != SesionVotacion.TipoVotacion.HABILIDAD) {
             throw new IllegalStateException("La sesión activa no es de tipo HABILIDAD");
@@ -345,27 +387,32 @@ public class PartidaService implements IPartidaService {
 
         String nombreHabilidad = request.getNombreHabilidad();
 
+        if (!salaUsuario.getEstaVivo() && !HAB_DISPARO.equals(nombreHabilidad)) {
+            throw new IllegalStateException("Los jugadores eliminados no pueden usar habilidades");
+        }
 
-        if ("vision".equals(nombreHabilidad)) {
+        if (HAB_VISION.equals(nombreHabilidad)) {
             return usarVision(sala, salaUsuario, request.getObjetivos());
         }
 
+        if (HAB_ESPIAR.equals(nombreHabilidad)) {
+            return usarEspiar(sala, salaUsuario);
+        }
 
         HabilidadSala habilidad = habilidadSalaRepository.findByIdSalaUsuario_IdSalaUsuarioAndNombre(salaUsuario.getIdSalaUsuario(), nombreHabilidad).orElseThrow(() -> new IllegalArgumentException("No tienes la habilidad: " + nombreHabilidad));
 
         if (habilidad.getUsada()) {
-            throw new IllegalStateException("Habilidad ya utilizada");
+            throw new IllegalStateException(HABILIDAD_YA_USADA);
         }
 
-
         HabilidadResultadoDto resultado = switch (nombreHabilidad) {
-            case "pocion_vida" -> usarPocionVida(sala, request.getObjetivos());
-            case "pocion_muerte" -> usarPocionMuerte(codigoSala, sala, request.getObjetivos());
-            case "disparo" -> usarDisparo(codigoSala, sala, salaUsuario, request.getObjetivos());
-            case "flechazo" -> usarFlechazo(sala, request.getObjetivos());
+            case HAB_POCION_VIDA -> usarPocionVida(sala, request.getObjetivos());
+            case HAB_POCION_MUERTE -> usarPocionMuerte(codigoSala, sala, request.getObjetivos());
+            case HAB_DISPARO -> usarDisparo(codigoSala, sala, salaUsuario, request.getObjetivos());
+            case HAB_FLECHAZO -> usarFlechazo(sala, request.getObjetivos());
+            case HAB_MODELO -> usarModelo(sala, salaUsuario, request.getObjetivos());
             default -> throw new IllegalArgumentException("Habilidad desconocida: " + nombreHabilidad);
         };
-
 
         habilidad.setUsada(true);
         habilidadSalaRepository.save(habilidad);
@@ -383,6 +430,9 @@ public class PartidaService implements IPartidaService {
 
         SalaUsuario objetivo = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), objetivos.getFirst()).orElseThrow(() -> new IllegalArgumentException("Jugador no encontrado en la sala"));
 
+        if (objetivo.getMuerteConfirmada()) {
+            throw new IllegalStateException("No puedes revivir a un jugador cuya muerte ya fue confirmada");
+        }
         if (objetivo.getEstaVivo()) {
             throw new IllegalStateException("El jugador ya está vivo");
         }
@@ -391,7 +441,7 @@ public class PartidaService implements IPartidaService {
         objetivo.setMuerteConfirmada(false);
         salaUsuarioRepository.save(objetivo);
 
-        return new HabilidadResultadoDto("pocion_vida", List.of(objetivo.getUsuario().getNombre()), "REVIVIDO", null);
+        return new HabilidadResultadoDto(HAB_POCION_VIDA, List.of(objetivo.getUsuario().getNombre()), RES_REVIVIDO, null);
     }
 
     // -------------------------------------------------------
@@ -417,15 +467,13 @@ public class PartidaService implements IPartidaService {
         partidaSocketService.notificarMuerte(codigoSala, muerte);
         comprobarFinPartida(codigoSala, sala);
 
-        return new HabilidadResultadoDto("pocion_muerte", List.of(objetivo.getUsuario().getNombre()), "ELIMINADO", null);
+        return new HabilidadResultadoDto(HAB_POCION_MUERTE, List.of(objetivo.getUsuario().getNombre()), RES_ELIMINADO, null);
     }
 
     // -------------------------------------------------------
     // Disparo del cazador: elimina a un jugador al morir
     // -------------------------------------------------------
-    private HabilidadResultadoDto usarDisparo(String codigoSala, Sala sala,
-                                              SalaUsuario cazador,
-                                              List<Integer> objetivos) {
+    private HabilidadResultadoDto usarDisparo(String codigoSala, Sala sala, SalaUsuario cazador, List<Integer> objetivos) {
         if (cazador.getEstaVivo()) {
             throw new IllegalStateException("El cazador solo puede disparar cuando ha sido eliminado");
         }
@@ -434,9 +482,7 @@ public class PartidaService implements IPartidaService {
             throw new IllegalArgumentException("El disparo requiere exactamente un objetivo");
         }
 
-        SalaUsuario objetivo = salaUsuarioRepository
-                .findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), objetivos.getFirst())
-                .orElseThrow(() -> new IllegalArgumentException("Jugador no encontrado en la sala"));
+        SalaUsuario objetivo = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), objetivos.getFirst()).orElseThrow(() -> new IllegalArgumentException("Jugador no encontrado en la sala"));
 
         if (!objetivo.getEstaVivo()) {
             throw new IllegalStateException("El objetivo ya está eliminado");
@@ -446,19 +492,12 @@ public class PartidaService implements IPartidaService {
         objetivo.setMuerteConfirmada(true);
         salaUsuarioRepository.save(objetivo);
 
-        MuerteConfirmadaDto muerte = new MuerteConfirmadaDto(
-                objetivo.getUsuario().getNombre(),
-                objetivo.getRol().getNombre(),
-                objetivo.getRol().getBando().name());
+        MuerteConfirmadaDto muerte = new MuerteConfirmadaDto(objetivo.getUsuario().getNombre(), objetivo.getRol().getNombre(), objetivo.getRol().getBando().name());
 
         partidaSocketService.notificarMuerte(codigoSala, muerte);
         comprobarFinPartida(codigoSala, sala);
 
-        return new HabilidadResultadoDto(
-                "disparo",
-                List.of(objetivo.getUsuario().getNombre()),
-                "ELIMINADO",
-                null);
+        return new HabilidadResultadoDto(HAB_DISPARO, List.of(objetivo.getUsuario().getNombre()), RES_ELIMINADO, null);
     }
 
     // -------------------------------------------------------
@@ -481,7 +520,7 @@ public class PartidaService implements IPartidaService {
 
         enamoradosRepository.save(enamorados);
 
-        return new HabilidadResultadoDto("flechazo", List.of(u1.getNombre(), u2.getNombre()), "ENAMORADOS", null);
+        return new HabilidadResultadoDto(HAB_FLECHAZO, List.of(u1.getNombre(), u2.getNombre()), RES_ENAMORADOS, null);
     }
 
     // -------------------------------------------------------
@@ -505,6 +544,88 @@ public class PartidaService implements IPartidaService {
 
         var detalle = Map.of("nombreRol", objetivo.getRol().getNombre(), "bando", objetivo.getRol().getBando().name());
 
-        return new HabilidadResultadoDto("vision", List.of(objetivo.getUsuario().getNombre()), "ROL_REVELADO", detalle);
+        return new HabilidadResultadoDto(HAB_VISION, List.of(objetivo.getUsuario().getNombre()), RES_ROL_REVELADO, detalle);
+    }
+
+    private HabilidadResultadoDto usarEspiar(Sala sala, SalaUsuario nina) {
+        if (nina.getRol() == null || !ROL_NINA.equals(nina.getRol().getNombre())) {
+            throw new IllegalStateException("Solo la Niña puede usar esta habilidad");
+        }
+
+        List<SalaUsuario> jugadoresVivos = salaUsuarioRepository.findBySala_IdSala(sala.getIdSala()).stream().filter(su -> su.getEstaVivo() && !su.getUsuario().getIdUsuario().equals(sala.getNarrador().getIdUsuario()) && !su.getUsuario().getIdUsuario().equals(nina.getUsuario().getIdUsuario())).toList();
+
+        List<String> lobos = jugadoresVivos.stream().filter(su -> su.getRol() != null && su.getRol().getBando() == Rol.Bando.lobo).map(su -> su.getUsuario().getNombre()).collect(Collectors.toList());
+
+        int cantidadRuido = Math.max(1, lobos.size());
+
+        List<String> aldeanos = jugadoresVivos.stream().filter(su -> su.getRol() != null && su.getRol().getBando() == Rol.Bando.aldea).map(su -> su.getUsuario().getNombre()).collect(Collectors.toList());
+
+        Collections.shuffle(aldeanos);
+
+        List<String> resultado = new ArrayList<>(lobos);
+        aldeanos.stream().limit(cantidadRuido).forEach(resultado::add);
+        Collections.shuffle(resultado);
+
+        return new HabilidadResultadoDto(HAB_ESPIAR, resultado, RES_LISTA_SOSPECHOSOS, null);
+    }
+
+    private HabilidadResultadoDto usarModelo(Sala sala, SalaUsuario ninoSalvaje, List<Integer> objetivos) {
+        if (ninoSalvaje.getRol() == null || !ROL_NINO_SALVAJE.equals(ninoSalvaje.getRol().getNombre())) {
+            throw new IllegalStateException("Solo el Niño Salvaje puede usar esta habilidad");
+        }
+
+        if (objetivos == null || objetivos.size() != 1) {
+            throw new IllegalArgumentException("Debes elegir exactamente un modelo");
+        }
+
+        if (ninoSalvaje.getIdModelo() != null) {
+            throw new IllegalStateException("Ya tienes un modelo asignado");
+        }
+
+        if (ninoSalvaje.getUsuario().getIdUsuario().equals(objetivos.getFirst())) {
+            throw new IllegalStateException("No puedes elegirte a ti mismo como modelo");
+        }
+
+        SalaUsuario modelo = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), objetivos.getFirst()).orElseThrow(() -> new IllegalArgumentException("Jugador no encontrado en la sala"));
+
+        if (!modelo.getEstaVivo()) {
+            throw new IllegalStateException("No puedes elegir un jugador eliminado como modelo");
+        }
+
+        ninoSalvaje.setIdModelo(modelo.getUsuario().getIdUsuario());
+        salaUsuarioRepository.save(ninoSalvaje);
+
+        return new HabilidadResultadoDto(HAB_MODELO, List.of(modelo.getUsuario().getNombre()), RES_MODELO_ASIGNADO, null);
+    }
+
+    @Transactional
+    public void cerrarPartida(String codigoSala) {
+        Usuario solicitante = getUsuarioAutenticado();
+        Sala sala = getSalaIniciada(codigoSala);
+
+        if (!sala.getNarrador().getIdUsuario().equals(solicitante.getIdUsuario())) {
+            throw new IllegalStateException(ErrorMessages.SOLO_NARRADOR);
+        }
+
+        sala.setEstadoSala(Sala.EstadoSala.CERRADA);
+        salaRepository.save(sala);
+
+        partidaSocketService.notificarFinPartida(codigoSala, new FinPartidaDto(null, "Partida cerrada por el narrador"));
+    }
+
+    public EstadoPartidaDto getEstadoPartida(String codigoSala) {
+        Sala sala = salaRepository.findByCodigoSala(codigoSala).orElseThrow(() -> new IllegalArgumentException(ErrorMessages.SALA_NO_ENCONTRADA));
+
+        if (sala.getEstadoSala() != Sala.EstadoSala.INICIADA) {
+            throw new IllegalStateException(ErrorMessages.PARTIDA_NO_INICIADA);
+        }
+
+        List<JugadorDto> jugadores = jugadorService.getJugadores(codigoSala);
+
+        SesionActivaDto sesionActiva = sesionVotacionRepository.findBySala_IdSalaAndAbiertaTrue(sala.getIdSala()).map(s -> new SesionActivaDto(s.getIdSesion(), s.getTipo().name(), s.getRonda(), s.getFechaInicio())).orElse(null);
+
+        String nombreAlcalde = sala.getAlcalde() != null ? sala.getAlcalde().getNombre() : null;
+
+        return new EstadoPartidaDto(sala.getEstadoDia().name(), sala.getRondaActual(), jugadores, sesionActiva, nombreAlcalde);
     }
 }

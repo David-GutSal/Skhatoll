@@ -45,7 +45,6 @@
 </template>
 
 <script setup>
-import { defineProps } from 'vue'
 
 defineProps({
   personaje: { type: Object, required: true },

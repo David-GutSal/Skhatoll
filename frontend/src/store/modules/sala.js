@@ -177,18 +177,50 @@ export default {
     },
     SET_MENTOR_NINNO(state, nombreMentor) {
       state.mentorNinno = nombreMentor
-      state.narradorActual = nombreNarrador
+      state.narradorActual = nombreMentor
     },
   },
 
   actions: {
     crearSala({ commit }, codigoSala) {
       sessionStorage.setItem('codigoSala', codigoSala)
+      sessionStorage.setItem('esCreador', 'true')
       commit('SET_SALA', { codigoSala, esCreador: true })
     },
     unirse({ commit }, codigoSala) {
       sessionStorage.setItem('codigoSala', codigoSala)
+      sessionStorage.removeItem('esCreador')
       commit('SET_SALA', { codigoSala, esCreador: false })
+    },
+    setSala({ commit }, { codigoSala, esCreador }) {
+      sessionStorage.setItem('codigoSala', codigoSala)
+      if (esCreador) {
+        sessionStorage.setItem('esCreador', 'true')
+      } else {
+        sessionStorage.removeItem('esCreador')
+      }
+      commit('SET_SALA', { codigoSala, esCreador })
+    },
+    restaurarEstado({ commit }) {
+      const codigo = sessionStorage.getItem('codigoSala')
+      const esCreador = sessionStorage.getItem('esCreador') === 'true'
+      if (codigo) {
+        commit('SET_SALA', { codigoSala: codigo, esCreador })
+      }
+      const miRol = sessionStorage.getItem('miRol')
+      const miRolDescripcion = sessionStorage.getItem('miRolDescripcion')
+      const miBando = sessionStorage.getItem('miBando')
+      if (miRol) {
+        commit('SET_ROL', { nombreRol: miRol, descripcionRol: miRolDescripcion, bando: miBando })
+      }
+    },
+    salir({ commit }) {
+      sessionStorage.removeItem('codigoSala')
+      sessionStorage.removeItem('esCreador')
+      sessionStorage.removeItem('miRol')
+      sessionStorage.removeItem('miRolDescripcion')
+      sessionStorage.removeItem('miBando')
+      commit('CLEAR_SALA')
     },
     resetSala({ commit }) {
       commit('RESET_SALA')
@@ -200,6 +232,9 @@ export default {
       commit('SET_JUGADORES_CON_ROL', jugadores)
     },
     setRol({ commit }, rol) {
+      sessionStorage.setItem('miRol', rol.nombreRol)
+      sessionStorage.setItem('miRolDescripcion', rol.descripcionRol)
+      sessionStorage.setItem('miBando', rol.bando)
       commit('SET_ROL', rol)
     },
     setFase({ commit }, fase) {
@@ -224,27 +259,6 @@ export default {
     setResultado({ commit }, resultado) {
       commit('SET_RESULTADO', resultado)
     },
-    salir({ commit }) {
-      sessionStorage.removeItem('codigoSala')
-    async salir({ commit, state }) {
-      const codigo = state.codigoSala
-      if (codigo) {
-        localStorage.removeItem('codigoSala')
-      }
-      commit('CLEAR_SALA')
-    },
-
-    async cerrarSala({ commit, state }) {
-      const codigo = state.codigoSala
-      if (codigo) {
-        localStorage.removeItem('codigoSala')
-        try {
-          await axiosInstance.delete(`/salas/${codigo}/cerrar`)
-        } catch (e) {}
-      }
-      commit('CLEAR_SALA')
-    },
-
     setNarrador({ commit }, nombreNarrador) {
       commit('SET_NARRADOR', nombreNarrador)
     },
@@ -274,7 +288,7 @@ export default {
     },
     setMentorNinno({ commit }, nombreMentor) {
       commit('SET_MENTOR_NINNO', nombreMentor)
-      commit('SET_NARRADOR', nombreNarrador)
+      commit('SET_NARRADOR', nombreMentor)
     },
   },
 
@@ -297,6 +311,6 @@ export default {
     tipoVotacion: (state) => state.tipoVotacion,
     brujaPocionVidaUsada: (state) => state.brujaPocionVidaUsada,
     brujaPocionMuerteUsada: (state) => state.brujaPocionMuerteUsada,
-    mentorNinno:(state) => state.mentorNinno,
+    mentorNinno: (state) => state.mentorNinno,
   },
 }

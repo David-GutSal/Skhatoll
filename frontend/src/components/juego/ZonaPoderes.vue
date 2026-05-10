@@ -41,9 +41,9 @@
       @vidaUsada="(nombre) => $emit('vidaUsada', nombre)"
     />
 
-    <!-- CAZADOR — sin restricción de fase: puede usarlo de día o de noche al morir -->
+    <!-- CAZADOR — solo puede usarlo cuando está muerto -->
     <PoderCazador
-      v-if="esRol('cazador') && esMiTurno"
+      v-if="esRol('cazador') && cazadorMuerto"
       ref="poderCazador"
       :jugadorSeleccionado="jugadorSeleccionado"
       @disparo="(j) => $emit('disparo', j)"
@@ -69,7 +69,7 @@
 </template>
 
 <script setup>
-import { ref, watch, defineProps, defineEmits } from 'vue'
+import { ref, watch } from 'vue'
 import PoderLobo from './poderes/PoderLobo.vue'
 import PoderVidente from './poderes/PoderVidente.vue'
 import PoderCupido from './poderes/PoderCupido.vue'
@@ -83,6 +83,13 @@ const props = defineProps({
   jugadorSeleccionado: { type: Object, default: null },
   esMiTurno: { type: Boolean, default: false },
   esDia: { type: Boolean, default: true },
+  cazadorMuerto: { type: Boolean, default: false },
+})
+
+console.log('[ZonaPoderes] Props recibidas:', {
+  miRol: props.miRol,
+  esMiTurno: props.esMiTurno,
+  esDia: props.esDia
 })
 
 const emit = defineEmits([
@@ -124,7 +131,15 @@ watch(() => props.esDia, (nuevoValor) => {
 })
 
 const esRol = (rol) => {
-  return (props.miRol || '').toLowerCase() === rol.toLowerCase()
+  if (!props.miRol) {
+    console.log('[esRol] miRol es null o undefined, retornando false')
+    return false
+  }
+  const miRolLower = props.miRol.toLowerCase().trim()
+  const rolLower = rol.toLowerCase().trim()
+  const resultado = miRolLower === rolLower || miRolLower.includes(rolLower) || rolLower.includes(miRolLower)
+  console.log(`[esRol] Comparando '${miRolLower}' con '${rolLower}':`, resultado)
+  return resultado
 }
 
 const finalizarPremonicion = () => {

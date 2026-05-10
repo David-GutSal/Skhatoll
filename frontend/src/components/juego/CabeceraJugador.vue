@@ -49,7 +49,7 @@
 </template>
 
 <script setup>
-import { computed, defineProps } from 'vue'
+import { computed } from 'vue'
 import solImg from '@/assets/imgs/sol.jpg'
 import lunaImg from '@/assets/imgs/luna.jpg'
 

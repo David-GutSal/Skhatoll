@@ -49,6 +49,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
+import axiosInstance from '@/plugins/axios'
 import { FRASES, getImagenRol, getColorBando } from '@/data/roles.js'
 
 const router = useRouter()
@@ -70,12 +71,6 @@ const cargarRol = (nombre) => {
 }
 
 onMounted(() => {
-  const esCreador = store.getters['sala/esCreador']
-  if (esCreador) {
-    router.push({ name: 'esperaNarrador' })
-    return
-  }
-
   intervaloFrases.value = setInterval(() => {
     fraseActual.value = (fraseActual.value + 1) % FRASES.length
   }, 8000)
@@ -85,6 +80,20 @@ onMounted(() => {
     cargarRol(rol)
     setTimeout(() => router.push({ name: 'jugador' }), 5000)
   } else {
+    const codigo = store.getters['sala/codigoSala'] || sessionStorage.getItem('codigoSala')
+    if (codigo) {
+      axiosInstance.get(`/salas/${codigo}/mi-rol`).then((res) => {
+        if (res.data && res.data.nombreRol) {
+          store.dispatch('sala/setRol', {
+            nombreRol: res.data.nombreRol,
+            descripcionRol: res.data.descripcionRol || '',
+            bando: res.data.bando || '',
+          })
+          cargarRol(res.data.nombreRol)
+          setTimeout(() => router.push({ name: 'jugador' }), 5000)
+        }
+      }).catch(() => {})
+    }
     const unwatch = watch(
       () => store.getters['sala/miRol'],
       (nuevoRol) => {

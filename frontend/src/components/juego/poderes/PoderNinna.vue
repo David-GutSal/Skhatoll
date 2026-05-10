@@ -61,7 +61,7 @@
 </template>
 
 <script setup>
-import { ref, computed, defineEmits } from 'vue'
+import { ref, computed } from 'vue'
 import { useStore } from 'vuex'
 
 const emit = defineEmits(['finalizarTurno'])
@@ -80,7 +80,7 @@ const asomarseVentana = async () => {
   cargando.value = true
 
   const vivosAjenos = jugadores.value.filter(
-    (j) => j.estaVivo && j.nombre !== store.getters['auth/nombre'],
+    (j) => j.estaVivo && !j.esNarrador && j.nombre !== store.getters['auth/nombre'],
   )
   const cantidad = Math.min(vivosAjenos.length, Math.floor(Math.random() * 3) + 2)
   const mezclados = [...vivosAjenos].sort(() => Math.random() - 0.5)

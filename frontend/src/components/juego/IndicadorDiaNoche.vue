@@ -20,7 +20,6 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue'
 
 defineProps({
   esDia: { type: Boolean, default: true },

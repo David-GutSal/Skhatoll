@@ -36,9 +36,11 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 import { FRASES } from '@/data/roles.js'
 
 const router = useRouter()
+const store = useStore()
 
 const fraseActual = ref(0)
 const intervaloFrases = ref(null)
@@ -52,10 +54,14 @@ const consejos = ref([
 ])
 
 onMounted(() => {
+  console.log('[EsperaNarrador] mounted')
   intervaloFrases.value = setInterval(() => {
     fraseActual.value = (fraseActual.value + 1) % FRASES.length
   }, 8000)
-  setTimeout(() => router.push({ name: 'narrador' }), 5000)
+
+  setTimeout(() => {
+    router.push({ name: 'narrador' })
+  }, 5000)
 })
 
 onUnmounted(() => {

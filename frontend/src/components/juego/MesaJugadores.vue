@@ -18,7 +18,7 @@
 </template>
 
 <script setup>
-import { computed, defineProps } from 'vue'
+import { computed } from 'vue'
 import CartaRol from '@/components/juego/roles/CartaRol.vue'
 import mesaImg from '@/assets/imgs/mesa.jpg'
 import mesanocheImg from '@/assets/imgs/mesanoche.jpg'

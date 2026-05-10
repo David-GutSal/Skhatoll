@@ -122,7 +122,7 @@
 </template>
 
 <script setup>
-import { computed, defineProps, defineEmits } from 'vue'
+import { computed } from 'vue'
 import { useStore } from 'vuex'
 import { getImagenRol, getColorBando } from '@/data/roles.js'
 
@@ -146,8 +146,14 @@ const tipoVotacion = computed(() => store.getters['sala/tipoVotacion'])
 
 const imagen = computed(() => getImagenRol(props.nombreRol))
 const colorBando = computed(() => getColorBando(props.bando))
-const nombreRolJugador = computed(() => props.jugador?.rol || props.jugador?.nombreRol || null)
-const rolJugador = computed(() => props.jugador?.bando || null)
+const nombreRolJugador = computed(() => {
+  if (props.jugador?.esNarrador) return 'Narrador'
+  return props.jugador?.rol || props.jugador?.nombreRol || null
+})
+const rolJugador = computed(() => {
+  if (props.jugador?.esNarrador) return 'narrador'
+  return props.jugador?.bando || null
+})
 const esVotacionLobos = computed(() => tipoVotacion.value === 'LOBOS')
 </script>
 

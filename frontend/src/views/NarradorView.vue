@@ -109,7 +109,7 @@ const tipoVotacionLocal = ref(null)
 
 const nombre = computed(() => store.getters['auth/nombre'])
 const codigoSala = computed(() => store.getters['sala/codigoSala'])
-const jugadoresConRol = computed(() => store.getters['sala/jugadoresConRol'])
+const jugadoresConRol = computed(() => store.getters['sala/jugadoresConRol'] || [])
 const enamorados = computed(() => store.getters['sala/enamorados'])
 const cupidoUsado = computed(() => store.getters['sala/cupidoUsado'])
 const semiMuertos = computed(() => store.getters['sala/semiMuertos'])
@@ -142,9 +142,11 @@ const cargarDatos = async () => {
   }
 
   try {
+    console.log('Cargando datos para sala:', codigoSala.value)
     const res = await axiosInstance.get(`/salas/${codigoSala.value}/roles`)
     store.dispatch('sala/setJugadoresConRol', res.data)
   } catch (error) {
+    console.error('Error al cargar jugadores:', error.response?.data || error.message)
     store.dispatch('toast/mostrar', { mensaje: 'Error al cargar jugadores', tipo: 'error' })
   }
 
@@ -569,6 +571,7 @@ const activarTurnoJugador = async (jugador) => {
           tipo: 'TURNO_JUGADOR',
           nombreJugador: jugador.nombre,
           rolActivo: jugador.nombreRol,
+          fase: esDia.value ? 'DIA' : 'NOCHE',
         }),
       })
 

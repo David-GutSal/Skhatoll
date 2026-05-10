@@ -50,7 +50,6 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue'
 import lobbyImg from '@/assets/imgs/bienvenida.jpg'
 
 const props = defineProps({

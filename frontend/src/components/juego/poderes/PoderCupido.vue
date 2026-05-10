@@ -68,7 +68,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed, defineProps, defineEmits } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useStore } from 'vuex'
 import axiosInstance from '@/plugins/axios'
 

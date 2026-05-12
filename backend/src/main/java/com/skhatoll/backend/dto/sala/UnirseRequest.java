@@ -1,9 +1,9 @@
 package com.skhatoll.backend.dto.sala;
 
-import lombok.Data;
+import jakarta.validation.constraints.NotBlank;
 
-@Data
-public class UnirseRequest {
-    private String codigoSala;
-}
+public record UnirseRequest(
+    @NotBlank(message = "El codigo de sala es obligatorio")
+    String codigoSala
+) {}
 

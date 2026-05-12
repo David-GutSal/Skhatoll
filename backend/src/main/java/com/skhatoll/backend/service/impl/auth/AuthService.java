@@ -28,14 +28,14 @@ public class AuthService implements IAuthService {
 
     public AuthResponse registro(RegistroRequest request) {
 
-        if (usuarioRepository.existsByNombre(request.getNombre())) {
+        if (usuarioRepository.existsByNombre(request.nombre())) {
             throw new IllegalArgumentException("El nombre de usuario ya está en uso");
         }
 
         Usuario usuario = Usuario.builder()
-                .nombre(request.getNombre())
+                .nombre(request.nombre())
                 .codigoUuid(UUID.randomUUID().toString())
-                .password(passwordEncoder.encode(request.getPassword()))
+                .password(passwordEncoder.encode(request.password()))
                 .build();
 
         usuarioRepository.save(usuario);
@@ -48,10 +48,10 @@ public class AuthService implements IAuthService {
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getNombre(),
-                        request.getPassword()));
+                        request.nombre(),
+                        request.password()));
 
-        Usuario usuario = usuarioRepository.findByNombre(request.getNombre())
+        Usuario usuario = usuarioRepository.findByNombre(request.nombre())
                 .orElseThrow(() -> new IllegalArgumentException(USUARIO_NO_ENCONTRADO));
 
         String token = jwtUtil.generarToken(usuario.getNombre());

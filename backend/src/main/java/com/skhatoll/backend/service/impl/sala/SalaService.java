@@ -78,7 +78,7 @@ public class SalaService implements ISalaService {
     public void unirse(UnirseRequest request) {
         Usuario usuario = getUsuarioAutenticado();
 
-        Sala sala = salaRepository.findByCodigoSala(request.getCodigoSala())
+        Sala sala = salaRepository.findByCodigoSala(request.codigoSala())
                 .orElseThrow(() -> new IllegalArgumentException(SALA_NO_ENCONTRADA));
 
         if (sala.getEstadoSala() != Sala.EstadoSala.CREADA) {
@@ -104,8 +104,8 @@ public class SalaService implements ISalaService {
         salaUsuarioRepository.save(salaUsuario);
 
         // Notificar a todos en el lobby que hay un nuevo jugador
-        List<JugadorDto> jugadoresActualizados = jugadorService.getJugadores(request.getCodigoSala());
-        salaSocketService.notificarNuevoJugador(request.getCodigoSala(), jugadoresActualizados);
+        List<JugadorDto> jugadoresActualizados = jugadorService.getJugadores(request.codigoSala());
+        salaSocketService.notificarNuevoJugador(request.codigoSala(), jugadoresActualizados);
     }
 
     // -------------------------------------------------------

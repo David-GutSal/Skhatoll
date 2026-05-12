@@ -18,7 +18,9 @@ import static com.skhatoll.backend.util.constants.ErrorMessages.*;
 import static com.skhatoll.backend.util.constants.GameConstants.*;
 
 import com.skhatoll.backend.dto.partida.FinPartidaDto;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class HabilidadService implements IHabilidadService {
@@ -51,13 +53,24 @@ public class HabilidadService implements IHabilidadService {
     @Override
     @Transactional
     public HabilidadResultadoDto usarHabilidad(String codigoSala, HabilidadRequest request) {
+        log.info("Usuario {} intentando usar habilidad {} en sala {}",
+                getUsuarioAutenticado().getNombre(), request.nombreHabilidad(), codigoSala);
+
         Usuario solicitante = getUsuarioAutenticado();
         Sala sala = getSalaIniciada(codigoSala);
 
         SalaUsuario salaUsuario = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), solicitante.getIdUsuario())
                 .orElseThrow(() -> new IllegalArgumentException(JUGADOR_NO_EN_SALA));
 
+        String nombreHabilidad = request.nombreHabilidad();
+
+        if (HAB_DISPARO.equals(nombreHabilidad)) {
+            log.debug("Ejecutando habilidad DISPARO para {}", solicitante.getNombre());
+            return usarDisparo(codigoSala, sala, salaUsuario, request.objetivos());
+        }
+
         if (!salaUsuario.getEstaVivo()) {
+            log.warn("Jugador {} intentado usar habilidad {} pero está eliminado", solicitante.getNombre(), nombreHabilidad);
             throw new IllegalStateException("Los jugadores eliminados no pueden usar habilidades");
         }
 
@@ -65,16 +78,17 @@ public class HabilidadService implements IHabilidadService {
                 .orElseThrow(() -> new IllegalStateException(VOTACION_NO_ENCONTRADA));
 
         if (sesion.getTipo() != SesionVotacion.TipoVotacion.HABILIDAD) {
+            log.warn("Sesión de votación no es de tipo HABILIDAD para habilidad {}", nombreHabilidad);
             throw new IllegalStateException("La sesión activa no es de tipo HABILIDAD");
         }
 
-        String nombreHabilidad = request.getNombreHabilidad();
-
         if (HAB_VISION.equals(nombreHabilidad)) {
-            return usarVision(sala, salaUsuario, request.getObjetivos());
+            log.debug("Ejecutando habilidad VISION para {}", solicitante.getNombre());
+            return usarVision(sala, salaUsuario, request.objetivos());
         }
 
         if (HAB_ESPIAR.equals(nombreHabilidad)) {
+            log.debug("Ejecutando habilidad ESPIAR para {}", solicitante.getNombre());
             return usarEspiar(sala, salaUsuario);
         }
 
@@ -82,21 +96,34 @@ public class HabilidadService implements IHabilidadService {
                 .orElseThrow(() -> new IllegalArgumentException("No tienes la habilidad: " + nombreHabilidad));
 
         if (habilidad.getUsada()) {
+            log.warn("Habilidad {} ya fue usada por {}", nombreHabilidad, solicitante.getNombre());
             throw new IllegalStateException(HABILIDAD_YA_USADA);
         }
 
         HabilidadResultadoDto resultado = switch (nombreHabilidad) {
-            case HAB_POCION_VIDA -> usarPocionVida(sala, request.getObjetivos());
-            case HAB_POCION_MUERTE -> usarPocionMuerte(codigoSala, sala, request.getObjetivos());
-            case HAB_DISPARO -> usarDisparo(codigoSala, sala, salaUsuario, request.getObjetivos());
-            case HAB_FLECHAZO -> usarFlechazo(sala, request.getObjetivos());
-            case HAB_MODELO -> usarModelo(sala, salaUsuario, request.getObjetivos());
+            case HAB_POCION_VIDA -> {
+                log.debug("Ejecutando habilidad POCION_VIDA para {}", solicitante.getNombre());
+                yield usarPocionVida(sala, request.objetivos());
+            }
+            case HAB_POCION_MUERTE -> {
+                log.debug("Ejecutando habilidad POCION_MUERTE para {}", solicitante.getNombre());
+                yield usarPocionMuerte(codigoSala, sala, request.objetivos());
+            }
+            case HAB_FLECHAZO -> {
+                log.debug("Ejecutando habilidad FLECHAZO para {}", solicitante.getNombre());
+                yield usarFlechazo(sala, salaUsuario, request.objetivos());
+            }
+            case HAB_MODELO -> {
+                log.debug("Ejecutando habilidad MODELO para {}", solicitante.getNombre());
+                yield usarModelo(sala, salaUsuario, request.objetivos());
+            }
             default -> throw new IllegalArgumentException("Habilidad desconocida: " + nombreHabilidad);
         };
 
         habilidad.setUsada(true);
         habilidadSalaRepository.save(habilidad);
 
+        log.info("Habilidad {} usada exitosamente por {} en sala {}", nombreHabilidad, solicitante.getNombre(), codigoSala);
         return resultado;
     }
 
@@ -203,9 +230,14 @@ public class HabilidadService implements IHabilidadService {
         return new HabilidadResultadoDto(HAB_DISPARO, List.of(objetivo.getUsuario().getNombre()), RES_ELIMINADO, null);
     }
 
-    private HabilidadResultadoDto usarFlechazo(Sala sala, List<Integer> objetivos) {
+    private HabilidadResultadoDto usarFlechazo(Sala sala, SalaUsuario cupido, List<Integer> objetivos) {
         if (objetivos == null || objetivos.size() != 2) {
             throw new IllegalArgumentException("El flechazo requiere exactamente dos objetivos");
+        }
+
+        if (objetivos.get(0).equals(cupido.getUsuario().getIdUsuario()) ||
+            objetivos.get(1).equals(cupido.getUsuario().getIdUsuario())) {
+            throw new IllegalStateException("Cupido no puede unirse a sí mismo");
         }
 
         Usuario u1 = usuarioRepository.findById(objetivos.get(0)).orElseThrow(() -> new IllegalArgumentException("Jugador 1 no encontrado"));

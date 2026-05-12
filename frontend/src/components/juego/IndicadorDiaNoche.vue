@@ -2,17 +2,19 @@
   <div class="indicador-wrapper" :class="esDia ? 'dia' : 'noche'">
     <div
       class="btn-fase"
-      :class="{ activo: esDia }"
-      @click="$emit('cambiarFase', 'dia')"
-      title="Cambiar a día"
+      :class="{ activo: esDia, deshabilitado: votacionActiva }"
+      :aria-disabled="votacionActiva"
+      @click="votacionActiva ? null : $emit('cambiarFase', 'dia')"
+      :title="votacionActiva ? 'Cierra la votación antes de cambiar a día' : 'Cambiar a día'"
     >
       <i class="fas fa-sun"></i>
     </div>
     <div
       class="btn-fase"
-      :class="{ activo: !esDia }"
-      @click="$emit('cambiarFase', 'noche')"
-      title="Cambiar a noche"
+      :class="{ activo: !esDia, deshabilitado: votacionActiva }"
+      :aria-disabled="votacionActiva"
+      @click="votacionActiva ? null : $emit('cambiarFase', 'noche')"
+      :title="votacionActiva ? 'Cierra la votación antes de cambiar a noche' : 'Cambiar a noche'"
     >
       <i class="fas fa-moon"></i>
     </div>
@@ -23,6 +25,7 @@
 
 defineProps({
   esDia: { type: Boolean, default: true },
+  votacionActiva: { type: Boolean, default: false },
 })
 
 defineEmits(['cambiarFase'])
@@ -80,5 +83,11 @@ defineEmits(['cambiarFase'])
 .indicador-wrapper.noche .btn-fase:last-child.activo {
   background: #5500a5;
   color: #0087bd;
+}
+
+.btn-fase.deshabilitado {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 </style>

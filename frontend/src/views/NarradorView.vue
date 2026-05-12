@@ -15,7 +15,7 @@
             </span>
           </div>
         </div>
-        <IndicadorDiaNoche :esDia="esDia" @cambiarFase="cambiarFase" />
+        <IndicadorDiaNoche :esDia="esDia" :votacionActiva="votacionActiva" @cambiarFase="cambiarFase" />
         <div class="carta-fase" :class="esDia ? 'carta-dia' : 'carta-noche'">
           <p class="carta-fase-titulo">{{ esDia ? 'EL DÍA' : 'LA NOCHE' }}</p>
           <img :src="esDia ? solImg : lunaImg" class="carta-fase-img" />

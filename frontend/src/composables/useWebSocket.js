@@ -14,12 +14,16 @@ export function useWebSocket() {
     const token = store.getters['auth/token']
 
     if (!token || !codigoSala) {
-      console.warn('[useWebSocket] Missing token or room code')
+      if (import.meta.env.DEV) {
+        console.warn('[useWebSocket] Missing token or room code')
+      }
       return Promise.reject(new Error('Missing token or room code'))
     }
 
     if (stompClient.value?.connected) {
-      console.log('[useWebSocket] Already connected')
+      if (import.meta.env.DEV) {
+        console.log('[useWebSocket] Already connected')
+      }
       return Promise.resolve(stompClient.value)
     }
 
@@ -30,7 +34,9 @@ export function useWebSocket() {
       })
 
       client.onConnect = (frame) => {
-        console.log('[useWebSocket] Connected, room:', codigoSala)
+        if (import.meta.env.DEV) {
+          console.log('[useWebSocket] Connected, room:', codigoSala)
+        }
         isConnected.value = true
         connectionError.value = null
         stompClient.value = client
@@ -38,13 +44,17 @@ export function useWebSocket() {
       }
 
       client.onStompError = (frame) => {
-        console.error('[useWebSocket] STOMP error:', frame)
+        if (import.meta.env.DEV) {
+          console.error('[useWebSocket] STOMP error:', frame)
+        }
         connectionError.value = frame
         reject(frame)
       }
 
       client.onDisconnect = () => {
-        console.log('[useWebSocket] Disconnected')
+        if (import.meta.env.DEV) {
+          console.log('[useWebSocket] Disconnected')
+        }
         isConnected.value = false
       }
 
@@ -62,7 +72,9 @@ export function useWebSocket() {
 
   const subscribe = (destination, callback) => {
     if (!stompClient.value?.connected) {
-      console.warn('[useWebSocket] Not connected to subscribe:', destination)
+      if (import.meta.env.DEV) {
+        console.warn('[useWebSocket] Not connected to subscribe:', destination)
+      }
       return null
     }
     return stompClient.value.subscribe(destination, (msg) => {
@@ -73,7 +85,9 @@ export function useWebSocket() {
 
   const publish = (destination, payload) => {
     if (!stompClient.value?.connected) {
-      console.warn('[useWebSocket] Not connected to publish:', destination)
+      if (import.meta.env.DEV) {
+        console.warn('[useWebSocket] Not connected to publish:', destination)
+      }
       return
     }
     stompClient.value.publish({

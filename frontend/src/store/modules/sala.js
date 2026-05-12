@@ -50,44 +50,44 @@ export default {
       state.fase = fase
     },
     MARCAR_MUERTO(state, nombreJugador) {
-      const j1 = state.jugadores.find((j) => j.nombre === nombreJugador)
-      if (j1) {
-        j1.estaVivo = false
-        j1.muerteConfirmada = true
-      }
-      const j2 = state.jugadoresConRol.find((j) => j.nombre === nombreJugador)
-      if (j2) {
-        j2.estaVivo = false
-        j2.muerteConfirmada = true
-      }
+      state.jugadores = state.jugadores.map((j) =>
+        j.nombre === nombreJugador
+          ? { ...j, estaVivo: false, muerteConfirmada: true }
+          : j
+      )
+      state.jugadoresConRol = state.jugadoresConRol.map((j) =>
+        j.nombre === nombreJugador
+          ? { ...j, estaVivo: false, muerteConfirmada: true }
+          : j
+      )
     },
     MARCAR_SEMIMUERTO(state, nombreJugador) {
       if (!state.semiMuertos.includes(nombreJugador)) {
-        state.semiMuertos.push(nombreJugador)
+        state.semiMuertos = [...state.semiMuertos, nombreJugador]
       }
-      const j1 = state.jugadores.find((j) => j.nombre === nombreJugador)
-      if (j1) {
-        j1.estaVivo = false
-        j1.muerteConfirmada = false
-      }
-      const j2 = state.jugadoresConRol.find((j) => j.nombre === nombreJugador)
-      if (j2) {
-        j2.estaVivo = false
-        j2.muerteConfirmada = false
-      }
+      state.jugadores = state.jugadores.map((j) =>
+        j.nombre === nombreJugador
+          ? { ...j, estaVivo: false, muerteConfirmada: false }
+          : j
+      )
+      state.jugadoresConRol = state.jugadoresConRol.map((j) =>
+        j.nombre === nombreJugador
+          ? { ...j, estaVivo: false, muerteConfirmada: false }
+          : j
+      )
     },
     QUITAR_SEMIMUERTO(state, nombreJugador) {
       state.semiMuertos = state.semiMuertos.filter((n) => n !== nombreJugador)
-      const j1 = state.jugadores.find((j) => j.nombre === nombreJugador)
-      if (j1) {
-        j1.estaVivo = true
-        j1.muerteConfirmada = false
-      }
-      const j2 = state.jugadoresConRol.find((j) => j.nombre === nombreJugador)
-      if (j2) {
-        j2.estaVivo = true
-        j2.muerteConfirmada = false
-      }
+      state.jugadores = state.jugadores.map((j) =>
+        j.nombre === nombreJugador
+          ? { ...j, estaVivo: true, muerteConfirmada: false }
+          : j
+      )
+      state.jugadoresConRol = state.jugadoresConRol.map((j) =>
+        j.nombre === nombreJugador
+          ? { ...j, estaVivo: true, muerteConfirmada: false }
+          : j
+      )
     },
     ACTUALIZAR_VOTOS(state, votos) {
       const actualizar = (lista) => {

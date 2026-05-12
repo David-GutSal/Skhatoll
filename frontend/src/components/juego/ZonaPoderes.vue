@@ -86,12 +86,6 @@ const props = defineProps({
   cazadorMuerto: { type: Boolean, default: false },
 })
 
-console.log('[ZonaPoderes] Props recibidas:', {
-  miRol: props.miRol,
-  esMiTurno: props.esMiTurno,
-  esDia: props.esDia
-})
-
 const emit = defineEmits([
   'devorar',
   'premonicion',
@@ -132,14 +126,11 @@ watch(() => props.esDia, (nuevoValor) => {
 
 const esRol = (rol) => {
   if (!props.miRol) {
-    console.log('[esRol] miRol es null o undefined, retornando false')
     return false
   }
   const miRolLower = props.miRol.toLowerCase().trim()
   const rolLower = rol.toLowerCase().trim()
-  const resultado = miRolLower === rolLower || miRolLower.includes(rolLower) || rolLower.includes(miRolLower)
-  console.log(`[esRol] Comparando '${miRolLower}' con '${rolLower}':`, resultado)
-  return resultado
+  return miRolLower === rolLower || miRolLower.includes(rolLower) || rolLower.includes(miRolLower)
 }
 
 const finalizarPremonicion = () => {

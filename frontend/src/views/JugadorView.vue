@@ -9,16 +9,18 @@
         :alcaldeNombre="alcaldeNombre"
       />
 
-      <div
+      <div 
         v-if="mensajeEvento"
         class="cuadro-evento"
         :class="esDia ? 'evento-dia' : 'evento-noche'"
+        role="alert"
+        aria-live="polite"
       >
-        <i v-if="tipoVotacionLocal === 'ALCALDE'" class="fa-solid fa-medal"></i>
-        <i v-else-if="tipoVotacionLocal === 'DIA'" class="fa-solid fa-gavel"></i>
-        <i v-else-if="tipoVotacionLocal === 'LOBOS'" class="fa-solid fa-skull"></i>
-        <i v-else class="fa-solid fa-bell"></i>
-        {{ mensajeEvento }}
+        <i v-if="tipoVotacionLocal === 'ALCALDE'" class="fa-solid fa-medal" aria-hidden="true"></i>
+        <i v-else-if="tipoVotacionLocal === 'DIA'" class="fa-solid fa-gavel" aria-hidden="true"></i>
+        <i v-else-if="tipoVotacionLocal === 'LOBOS'" class="fa-solid fa-skull" aria-hidden="true"></i>
+        <i v-else class="fa-solid fa-bell" aria-hidden="true"></i>
+        <span>{{ mensajeEvento }}</span>
       </div>
 
       <PanelVotacionesJugador
@@ -33,10 +35,14 @@
       <div v-if="!esDia && esMiTurno" class="cuadro-turno">
         <div class="cuadro-turno-texto">
           <i class="fa-solid fa-moon"></i>
-          ¡Es tu turno! Selecciona un jugador y activa tu poder
+          <span>Es tu turno! Selecciona un jugador y activa tu poder</span>
         </div>
-        <button class="btn-ir-poderes" @click="scrollAPoderes">
-          <i class="fa-solid fa-arrow-down"></i>
+        <button 
+          class="btn-ir-poderes" 
+          @click="scrollAPoderes"
+          aria-label="Desplazarse a la seccion de poderes"
+        >
+          <i class="fa-solid fa-arrow-down" aria-hidden="true"></i>
           Ver mis poderes
         </button>
       </div>
@@ -73,8 +79,12 @@
     </div>
 
     <div class="boton-arriba-wrapper">
-      <button class="boton-arriba" @click="irArriba">
-        <i class="fa-solid fa-arrow-up"></i> Volver Arriba
+      <button 
+        class="boton-arriba" 
+        @click="irArriba"
+        aria-label="Volver al inicio de la pagina"
+      >
+        <i class="fa-solid fa-arrow-up" aria-hidden="true"></i> Volver Arriba
       </button>
     </div>
 
@@ -83,6 +93,13 @@
 </template>
 
 <script setup>
+/**
+ * @typedef {Object} Jugador
+ * @property {number} idUsuario
+ * @property {string} nombre
+ * @property {boolean} estaVivo
+ */
+
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
@@ -99,21 +116,36 @@ const router = useRouter()
 const store = useStore()
 const zonaPoderes = ref(null)
 
+/** @type {import('vue').Ref<boolean>} */
 const esDia = ref(true)
+/** @type {import('vue').Ref<boolean>} */
 const votacionActiva = ref(false)
+/** @type {import('vue').Ref<string|null>} */
 const tipoVotacionLocal = ref(null)
+/** @type {import('vue').Ref<boolean>} */
 const esMiTurno = ref(false)
+/** @type {import('vue').Ref<Client|null>} */
 const stompClient = ref(null)
+/** @type {import('vue').Ref<string|null>} */
 const mensajeEvento = ref(null)
+/** @type {import('vue').Ref<string|null>} */
 const alcaldeNombre = ref(null)
+/** @type {import('vue').Ref<Jugador|null>} */
 const jugadorEnvenenado = ref(null)
+/** @type {import('vue').Ref<boolean>} */
 const soyElCazadorMuerto = ref(false)
+/** @type {import('vue').Ref<Jugador|null>} */
 const jugadorSeleccionado = ref(null)
 
+/** @type {import('vue').ComputedRef<string>} */
 const nombre = computed(() => store.getters['auth/nombre'])
+/** @type {import('vue').ComputedRef<string>} */
 const codigoSala = computed(() => store.getters['sala/codigoSala'])
+/** @type {import('vue').ComputedRef<Jugador[]>} */
 const jugadores = computed(() => store.getters['sala/jugadores'])
+/** @type {import('vue').ComputedRef<string|null>} */
 const miRol = computed(() => store.getters['sala/miRol'])
+/** @type {import('vue').ComputedRef<{jugador1: string, jugador2: string}|null>} */
 const enamorados = computed(() => store.getters['sala/enamorados'])
 
 const nombreNarrador = computed(() => {
@@ -132,14 +164,31 @@ const jugadoresVisibles = computed(() => {
   return jugadores.value
 })
 
+/**
+ * Scroll to powers section with reduced motion preference
+ */
 const scrollAPoderes = () => {
-  zonaPoderes.value?.$el?.scrollIntoView({ behavior: 'smooth' })
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  zonaPoderes.value?.$el?.scrollIntoView({ 
+    behavior: prefersReducedMotion ? 'auto' : 'smooth' 
+  })
 }
 
+/**
+ * Scroll to top of page with reduced motion preference
+ */
 const irArriba = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  window.scrollTo({ 
+    top: 0, 
+    behavior: prefersReducedMotion ? 'auto' : 'smooth' 
+  })
 }
 
+/**
+ * Select a player for voting or abilities
+ * @param {Jugador} j - Player to select
+ */
 const seleccionarJugador = (j) => {
   if (j.nombre === nombre.value) return
   
@@ -163,7 +212,7 @@ const votarAlcalde = async () => {
       idObjetivo: jugadorSeleccionado.value.idUsuario,
     })
   } catch (error) {
-    store.dispatch('toast/mostrar', { mensaje: 'Error al votar', tipo: 'error' })
+    store.dispatch('toast/mostrar', { mensaje: error.response?.data?.mensaje || 'Error al votar', tipo: 'error' })
   }
 }
 
@@ -174,7 +223,7 @@ const votarCulpable = async () => {
       idObjetivo: jugadorSeleccionado.value.idUsuario,
     })
   } catch (error) {
-    store.dispatch('toast/mostrar', { mensaje: 'Error al votar', tipo: 'error' })
+    store.dispatch('toast/mostrar', { mensaje: error.response?.data?.mensaje || 'Error al votar', tipo: 'error' })
   }
 }
 
@@ -185,7 +234,7 @@ const devorarJugador = async () => {
       idObjetivo: jugadorSeleccionado.value.idUsuario,
     })
   } catch (error) {
-    store.dispatch('toast/mostrar', { mensaje: 'Error al devorar', tipo: 'error' })
+    store.dispatch('toast/mostrar', { mensaje: error.response?.data?.mensaje || 'Error al devorar', tipo: 'error' })
   }
 }
 

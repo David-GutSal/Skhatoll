@@ -1,9 +1,11 @@
 package com.skhatoll.backend.dto.auth;
 
-import lombok.Data;
+import jakarta.validation.constraints.NotBlank;
 
-@Data
-public class LoginRequest {
-    private String nombre;
-    private String password;
-}
+public record LoginRequest(
+    @NotBlank(message = "El nombre es obligatorio")
+    String nombre,
+    
+    @NotBlank(message = "La contrasena es obligatoria")
+    String password
+) {}

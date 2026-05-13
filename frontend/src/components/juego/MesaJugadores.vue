@@ -17,40 +17,26 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from 'vue'
 import CartaRol from '@/components/juego/roles/CartaRol.vue'
 import mesaImg from '@/assets/imgs/mesa.jpg'
 import mesanocheImg from '@/assets/imgs/mesanoche.jpg'
 
-export default {
-  name: 'MesaJugadores',
-  components: { CartaRol },
+const props = defineProps({
+  jugadores: { type: Array, default: () => [] },
+  esDia: { type: Boolean, default: true },
+  modoNarrador: { type: Boolean, default: false },
+  jugadorSeleccionado: Object,
+  modoEventos: { type: Boolean, default: false },
+  jugadorEnvenenado: { type: Object, default: null },
+})
 
-  props: {
-    jugadores: { type: Array, default: () => [] },
-    esDia: { type: Boolean, default: true },
-    modoNarrador: { type: Boolean, default: false },
-    jugadorSeleccionado: Object,
-    modoEventos: { type: Boolean, default: false },
-    jugadorEnvenenado: { type: Object, default: null },
-  },
+defineEmits(['seleccionarJugador'])
 
-  emits: ['seleccionarJugador'],
+const jugadoresFiltrados = computed(() => props.jugadores.filter((j) => !j.esNarrador))
 
-  data() {
-    return { mesaImg, mesanocheImg }
-  },
-
-  computed: {
-    jugadoresFiltrados() {
-      return this.jugadores.filter((j) => !j.esNarrador)
-    },
-
-    bgMesa() {
-      return this.esDia ? this.mesaImg : this.mesanocheImg
-    },
-  },
-}
+const bgMesa = computed(() => props.esDia ? mesaImg : mesanocheImg)
 </script>
 
 <style scoped>

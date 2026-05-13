@@ -48,33 +48,28 @@
   </div>
 </template>
 
-<script>
-import { mapGetters } from 'vuex'
+<script setup>
+import { ref, computed } from 'vue'
+import { useStore } from 'vuex'
 import CartaRol from '@/components/juego/roles/CartaRol.vue'
 
-export default {
-  name: 'BotonMiRol',
-  components: { CartaRol },
+const store = useStore()
 
-  data() {
-    return {
-      mostrar: false,
-      mostrarEnamorado: false,
-    }
-  },
+const mostrar = ref(false)
+const mostrarEnamorado = ref(false)
 
-  computed: {
-    ...mapGetters('sala', ['miRol', 'miRolDescripcion', 'miBando', 'enamorados', 'nombre']),
+const miRol = computed(() => store.getters['sala/miRol'])
+const miRolDescripcion = computed(() => store.getters['sala/miRolDescripcion'])
+const miBando = computed(() => store.getters['sala/miBando'])
+const enamorados = computed(() => store.getters['sala/enamorados'])
+const nombre = computed(() => store.getters['sala/nombre'])
 
-    nombreEnamorado() {
-      if (!this.enamorados) return null
-      // Devuelve el nombre del otro enamorado
-      const miNombre = this.$store.getters['auth/nombre']
-      if (this.enamorados.jugador1 === miNombre) return this.enamorados.jugador2
-      return this.enamorados.jugador1
-    },
-  },
-}
+const nombreEnamorado = computed(() => {
+  if (!enamorados.value) return null
+  const miNombre = store.getters['auth/nombre']
+  if (enamorados.value.jugador1 === miNombre) return enamorados.value.jugador2
+  return enamorados.value.jugador1
+})
 </script>
 
 <style scoped>
@@ -93,8 +88,8 @@ export default {
   color: white;
   border: none;
   padding: 16px 36px;
-  border-radius: 10px;
-  font-family: 'Cinzel', Arial, sans-serif;
+  border-radius: var(--border-radius-md);
+  font-family: var(--font-cinzel);
   font-size: 1.2rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -102,7 +97,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: background 0.2s ease, transform 0.15s ease;
+  transition: background var(--transition-fast), transform 0.15s ease;
 }
 
 .boton-mirol:hover {
@@ -118,15 +113,15 @@ export default {
   color: #ff69b4;
   border: 3px solid #ff69b4;
   padding: 16px 24px;
-  border-radius: 10px;
-  font-family: 'Cinzel', Arial, sans-serif;
+  border-radius: var(--border-radius-md);
+  font-family: var(--font-cinzel);
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background var(--transition-fast), color var(--transition-fast);
 }
 
 .boton-enamorado:hover {
@@ -165,7 +160,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s ease;
+  transition: background var(--transition-fast);
 }
 
 .panel-cerrar:hover {
@@ -174,7 +169,7 @@ export default {
 }
 
 .panel-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.1rem;
   font-weight: 700;
   color: #ff69b4;
@@ -190,7 +185,7 @@ export default {
 }
 
 .panel-texto {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   color: #ccc;
   font-size: 0.9rem;
   line-height: 1.6;
@@ -229,7 +224,7 @@ export default {
   align-items: center;
   justify-content: center;
   z-index: 1;
-  transition: background 0.2s ease;
+  transition: background var(--transition-fast);
 }
 
 .modal-cerrar:hover {

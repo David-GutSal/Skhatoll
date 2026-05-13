@@ -12,4 +12,5 @@ public class JugadorRolDto {
     private Boolean estaVivo;
     private String nombreRol;
     private String bando;
+    private Boolean esNarrador;
 }

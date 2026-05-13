@@ -41,9 +41,9 @@
       @vidaUsada="(nombre) => $emit('vidaUsada', nombre)"
     />
 
-    <!-- CAZADOR — sin restricción de fase: puede usarlo de día o de noche al morir -->
+    <!-- CAZADOR — solo puede usarlo cuando está muerto -->
     <PoderCazador
-      v-if="esRol('cazador') && esMiTurno"
+      v-if="esRol('cazador') && cazadorMuerto"
       ref="poderCazador"
       :jugadorSeleccionado="jugadorSeleccionado"
       @disparo="(j) => $emit('disparo', j)"
@@ -68,7 +68,8 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch } from 'vue'
 import PoderLobo from './poderes/PoderLobo.vue'
 import PoderVidente from './poderes/PoderVidente.vue'
 import PoderCupido from './poderes/PoderCupido.vue'
@@ -77,65 +78,64 @@ import PoderCazador from './poderes/PoderCazador.vue'
 import PoderNinno from './poderes/PoderNinno.vue'
 import PoderNinna from './poderes/PoderNinna.vue'
 
-export default {
-  name: 'ZonaPoderes',
-  components: {
-    PoderLobo,
-    PoderVidente,
-    PoderCupido,
-    PoderBruja,
-    PoderCazador,
-    PoderNinno,
-    PoderNinna,
-  },
+const props = defineProps({
+  miRol: { type: String, default: null },
+  jugadorSeleccionado: { type: Object, default: null },
+  esMiTurno: { type: Boolean, default: false },
+  esDia: { type: Boolean, default: true },
+  cazadorMuerto: { type: Boolean, default: false },
+})
 
-  props: {
-    miRol: { type: String, default: null },
-    jugadorSeleccionado: { type: Object, default: null },
-    esMiTurno: { type: Boolean, default: false },
-    esDia: { type: Boolean, default: true },
-  },
+const emit = defineEmits([
+  'devorar',
+  'premonicion',
+  'flechazo',
+  'finalizarTurno',
+  'envenenar',
+  'vidaUsada',
+  'disparo',
+  'mentorElegido',
+])
 
-  emits: [
-    'devorar',
-    'premonicion',
-    'flechazo',
-    'finalizarTurno',
-    'envenenar',
-    'vidaUsada',
-    'disparo',
-    'mentorElegido',
-  ],
+const poderVidente = ref(null)
+const poderLobo = ref(null)
+const poderCupido = ref(null)
+const poderBruja = ref(null)
+const poderCazador = ref(null)
+const poderNinno = ref(null)
+const poderNinna = ref(null)
 
-  watch: {
-    esMiTurno(nuevo) {
-      if (!nuevo) {
-        this.$refs.poderVidente?.resetear()
-        this.$refs.poderLobo?.resetear()
-        this.$refs.poderCupido?.resetear()
-        this.$refs.poderBruja?.resetear()
-        this.$refs.poderCazador?.resetear()
-        this.$refs.poderNinno?.resetear()
-        this.$refs.poderNinna?.resetear()
-      }
-    },
-    esDia(nuevoValor) {
-      if (!nuevoValor) {
-        this.$refs.poderVidente?.resetear()
-        this.$refs.poderNinna?.resetearNoche()
-      }
-    },
-  },
+watch(() => props.esMiTurno, (nuevo) => {
+  if (!nuevo) {
+    poderVidente.value?.resetear()
+    poderLobo.value?.resetear()
+    poderCupido.value?.resetear()
+    poderBruja.value?.resetear()
+    poderCazador.value?.resetear()
+    poderNinno.value?.resetear()
+    poderNinna.value?.resetear()
+  }
+})
 
-  methods: {
-    esRol(rol) {
-      return (this.miRol || '').toLowerCase() === rol.toLowerCase()
-    },
-    finalizarPremonicion() {
-      this.$refs.poderVidente?.resetear()
-      this.$emit('finalizarTurno')
-    },
-  },
+watch(() => props.esDia, (nuevoValor) => {
+  if (!nuevoValor) {
+    poderVidente.value?.resetear()
+    poderNinna.value?.resetearNoche()
+  }
+})
+
+const esRol = (rol) => {
+  if (!props.miRol) {
+    return false
+  }
+  const miRolLower = props.miRol.toLowerCase().trim()
+  const rolLower = rol.toLowerCase().trim()
+  return miRolLower === rolLower || miRolLower.includes(rolLower) || rolLower.includes(miRolLower)
+}
+
+const finalizarPremonicion = () => {
+  poderVidente.value?.resetear()
+  emit('finalizarTurno')
 }
 </script>
 
@@ -160,10 +160,10 @@ export default {
   gap: 8px;
   padding: 10px 20px;
   border-radius: 10px;
-  border: 2px solid #e4ba03;
+  border: 2px solid var(--color-dorado);
   background: transparent;
-  color: #e4ba03;
-  font-family: 'Raleway', Arial, sans-serif;
+  color: var(--color-dorado);
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.9rem;
   cursor: pointer;
@@ -173,7 +173,7 @@ export default {
 }
 
 .btn-finalizar:hover {
-  background: #e4ba03;
+  background: var(--color-dorado);
   color: #000;
 }
 </style>

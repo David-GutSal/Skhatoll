@@ -4,6 +4,7 @@ import router from './router/index'
 import store from './store/index'
 import axiosInstance from './plugins/axios'
 import './assets/styles/main.css'
+import './assets/styles/_shared.scss'
 
 const app = createApp(App)
 // 🟢 RECUPERAR AUTH AL RECARGAR

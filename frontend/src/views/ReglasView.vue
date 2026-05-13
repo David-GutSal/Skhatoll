@@ -153,7 +153,8 @@
   </main>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import ListaReglas from '@/components/juego/ListaReglas.vue'
 import imgBloodclock from '@/assets/imgs/juego-bloodclock.jpg'
 import imgSamurai from '@/assets/imgs/juego-samurai.jpg'
@@ -164,94 +165,83 @@ import imgLuna from '@/assets/imgs/juego-lunanueva.png'
 import imgBang from '@/assets/imgs/juego-bang.jpg'
 import slideImg from '@/assets/imgs/slide.jpeg'
 
-export default {
-  name: 'ReglasView',
-  components: { ListaReglas },
+const indiceTarjeta = ref(0)
+const indiceJuego = ref(0)
+const fichasPorPantalla = ref(3)
 
-  data() {
-    return {
-      indiceTarjeta: 0,
-      indiceJuego: 0,
-      fichasPorPantalla: 3,
-      slideImg,
+const tablaJugadores = ref([
+  [8,2,1,5],[9,2,1,6],[10,2,1,7],[11,2,1,8],
+  [12,3,1,8],[13,3,1,9],[14,3,1,10],[15,3,1,11],
+  [16,3,1,12],[17,3,1,13],[18,4,1,13],
+])
 
-      tablaJugadores: [
-        [8,2,1,5],[9,2,1,6],[10,2,1,7],[11,2,1,8],
-        [12,3,1,8],[13,3,1,9],[14,3,1,10],[15,3,1,11],
-        [16,3,1,12],[17,3,1,13],[18,4,1,13],
-      ],
+const tarjetas = ref([
+  { color: '#3a3a3a', colorTitulo: '#cc0000', colorTexto: '#cc0000', titulo: 'PREPARACIÓN Y CONSEJOS', textos: [] },
+  { color: '#3a3a3a', colorTitulo: '#cc0000', colorTexto: '#111', titulo: 'PREPARACIÓN', textos: ['Los jugadores eligen un narrador que no juega pero guiará la partida. Este narrador repartirá las cartas e inicieará la partida.'] },
+  { color: '#cc0000', colorTitulo: '#000', colorTexto: '#000', titulo: 'Consejos al narrador', textos: ['Tu papel es fundamental: de tu talento depende el ambiente del juego. Guiados por ti, los jugadores se van a diverti'] },
+  { color: '#cc0000', colorTitulo: '#000', colorTexto: '#000', titulo: '', textos: ['Las frases de llamada nocturna de los personajes solo son ejemplos. Cuando domines bien la técnica, déjate llevar por tu propia inspiración.', 'Con jugadores experimentados, aunque no seáis muchos, no dude en utilizar los personajes con poderes especiales, porque añade interés a las partidas.'] },
+  { color: '#cc0000', colorTitulo: '#000', colorTexto: '#000', titulo: '', textos: ['Con jugadores novatos, introduce poco a poco las otras cartas de personajes. Las partidas son relativamente cortas, jugad varias seguidas y variad los personajes.', 'Cuando hables, ten cuidado de no dar pistas de la identidad de los personajes.', 'Por la noche, cuando te dirijas a los personajes, no dirijas la voz hacia ellos; el resto de jugadores podría deducir su posición en la mesa.'] },
+  { color: '#cc0000', colorTitulo: '#000', colorTexto: '#000', titulo: '', textos: ['Si los hombres lobo no consigue ponerse de acuerdo o no se decides, mala suerte para ellos, porque esa noche no habrá víctima.', 'Cuando la Vidente espía, haz como que le das la vuelta a las cartas de todos los jugadores.', 'Puedes esperar varios turnos antes de hacer elegir por votación al Alguacil.'] },
+  { color: '#cc0000', colorTitulo: '#000', colorTexto: '#000', titulo: 'Consejos para jugadores', textos: ['Los Hombres Lobo: una estrategia eficaz para librarse de una acusación es votar contra tu propio compañero.', 'La Vidente: cuidado, si has descubierto un Hombre Lobo, a lo mejor vale la pena descubrir tu identidad para acusar a un jugador, pero no demasiado pronto.'] },
+  { color: '#cc0000', colorTitulo: '#000', colorTexto: '#000', titulo: '', textos: ['La Niña Pequeña: es un personaje muy poderoso, pero muy angustioso de jugar. No dudes en espiar: da miedo pero hay que aprovecharlo rápidamente antes de ser eliminado.', 'El Cazador: siempre es bueno, en caso de acusación, hacerse pasar por el Cazador.', 'Cupido: si te designas a ti mismo como enamorado, no escojas un compañero sentimental bocazas.'] },
+  { color: '#cc0000', colorTitulo: '#000', colorTexto: '#000', titulo: '', textos: ['El Alguacil: no dudes en presentarte al cargo de Alguacil, haz campaña. Pero si eres Hombre Lobo, no busques el puesto demasiado abiertamente.', 'La Bruja: tu personaje va cobrando importancia a medida que se acerca el final de la partida. No desperdicies tus hechizos.'] },
+])
 
-      tarjetas: [
-        { color: '#3a3a3a', colorTitulo: '#cc0000', colorTexto: '#cc0000', titulo: 'PREPARACIÓN Y CONSEJOS', textos: [] },
-        { color: '#3a3a3a', colorTitulo: '#cc0000', colorTexto: '#111', titulo: 'PREPARACIÓN', textos: ['Los jugadores eligen un narrador que no juega pero guiará la partida. Este narrador repartirá las cartas e iniciará la partida.'] },
-        { color: '#cc0000', colorTitulo: '#000', colorTexto: '#000', titulo: 'Consejos al narrador', textos: ['Tu papel es fundamental: de tu talento depende el ambiente del juego. Guiados por ti, los jugadores se van a divertir. No dudes en crear una atmósfera de angustia. Crea suspense cuando reveles las víctimas de los Hombres Lobo. Y aviva los debates si decaen.'] },
-        { color: '#cc0000', colorTitulo: '#000', colorTexto: '#000', titulo: '', textos: ['Las frases de llamada nocturna de los personajes solo son ejemplos. Cuando domines bien la técnica, déjate llevar por tu propia inspiración.', 'Con jugadores experimentados, aunque no seáis muchos, no dudes en utilizar los personajes con poderes especiales, porque añade interés a las partidas.'] },
-        { color: '#cc0000', colorTitulo: '#000', colorTexto: '#000', titulo: '', textos: ['Con jugadores novatos, introduce poco a poco las otras cartas de personajes. Las partidas son relativamente cortas, jugad varias seguidas y variad los personajes.', 'Cuando hables, ten cuidado de no dar pistas de la identidad de los personajes.', 'Por la noche, cuando te dirijas a los personajes, no dirijas la voz hacia ellos; el resto de jugadores podría deducir su posición en la mesa.'] },
-        { color: '#cc0000', colorTitulo: '#000', colorTexto: '#000', titulo: '', textos: ['Si los hombres lobo no consiguen ponerse de acuerdo o no se deciden, mala suerte para ellos, porque esa noche no habrá víctima.', 'Cuando la Vidente espía, haz como que le das la vuelta a las cartas de todos los jugadores.', 'Puedes esperar varios turnos antes de hacer elegir por votación al Alguacil.'] },
-        { color: '#cc0000', colorTitulo: '#000', colorTexto: '#000', titulo: 'Consejos para jugadores', textos: ['Los Hombres Lobo: una estrategia eficaz para librarse de una acusación es votar contra tu propio compañero.', 'La Vidente: cuidado, si has descubierto un Hombre Lobo, a lo mejor vale la pena descubrir tu identidad para acusar a un jugador, pero no demasiado pronto.'] },
-        { color: '#cc0000', colorTitulo: '#000', colorTexto: '#000', titulo: '', textos: ['La Niña Pequeña: es un personaje muy poderoso, pero muy angustioso de jugar. No dudes en espiar: da miedo pero hay que aprovecharlo rápidamente antes de ser eliminado.', 'El Cazador: siempre es bueno, en caso de acusación, hacerse pasar por el Cazador.', 'Cupido: si te designas a ti mismo como enamorado, no escojas un compañero sentimental bocazas.'] },
-        { color: '#cc0000', colorTitulo: '#000', colorTexto: '#000', titulo: '', textos: ['El Alguacil: no dudes en presentarte al cargo de Alguacil, haz campaña. Pero si eres Hombre Lobo, no busques el puesto demasiado abiertamente.', 'La Bruja: tu personaje va cobrando importancia a medida que se acerca el final de la partida. No desperdicies tus hechizos.'] },
-      ],
+const juegos = ref([
+  { titulo: 'Blood on the Clocktower', enlace: 'https://bloodontheclocktower.com/', imagen: imgBloodclock, texto: 'Un juego de deducción social para 5-20 jugadores ambientado en un pueblo victoriano. Ofrece roles únicos y la posibilidad de participar incluso después de morir.' },
+  { titulo: 'Samurai Sword', enlace: 'https://www.youtube.com/watch?v=udCXta6aW0E', imagen: imgSamurai, texto: 'Un juego de cartas para 3-7 jugadores ambientado en el Japón feudal donde samurái, shōgun, ninjas y rōnin luchan por el poder con roles ocultos y alianzas cambiantes.' },
+  { titulo: 'La Asamblea del Mal', enlace: 'https://www.youtube.com/watch?v=aTOuLHM4LiU', imagen: imgAsamblea, texto: 'Un juego de roles ocultos para 5-10 jugadores donde los villanos intentan infiltrarse en el consejo de héroes. Combina deducción con habilidades especiales.' },
+  { titulo: 'Los Hombres Lobo de Castronegro: La Aldea', enlace: 'https://es.scribd.com/document/444169570/La-Aldea-de-Castronegro', imagen: imgAldea, texto: 'Expansión oficial con nuevos personajes y escenarios de juego que amplían las posibilidades estratégicas de cada partida.' },
+  { titulo: 'One Night Ultimate Werewolf', enlace: 'https://beziergames.com/collections/one-night-ultimate-werewolf', imagen: imgUltimate, texto: 'Una versión rápida e intensa donde toda la partida ocurre en una sola noche. Ideal para grupos de 3-10 jugadores que quieren disfrutar de múltiples partidas.' },
+  { titulo: 'Los Hombres Lobo de Castronegro: Luna Nueva', enlace: 'https://es.scribd.com/document/389540969/Hombres-Lobo-de-Castronegro-Luna-Nueva-Reglamento-Cartas', imagen: imgLuna, texto: 'Expansión del juego que incorpora nuevos personajes con poderes únicos, añadiendo capas estratégicas y sorpresas a cada partida.' },
+  { titulo: 'BANG!', enlace: 'https://www.youtube.com/watch?v=1gRPOZKz5Y4', imagen: imgBang, texto: 'Un clásico juego de cartas del Oeste para 2-7 jugadores con roles ocultos. El Sheriff, los Forajidos, el Renegado y los Ayudantes luchan en duelos llenos de acción.' },
+])
 
-      juegos: [
-        { titulo: 'Blood on the Clocktower', enlace: 'https://bloodontheclocktower.com/', imagen: imgBloodclock, texto: 'Un juego de deducción social para 5-20 jugadores ambientado en un pueblo victoriano. Ofrece roles únicos y la posibilidad de participar incluso después de morir.' },
-        { titulo: 'Samurai Sword', enlace: 'https://www.youtube.com/watch?v=udCXta6aW0E', imagen: imgSamurai, texto: 'Un juego de cartas para 3-7 jugadores ambientado en el Japón feudal donde samurái, shōgun, ninjas y rōnin luchan por el poder con roles ocultos y alianzas cambiantes.' },
-        { titulo: 'La Asamblea del Mal', enlace: 'https://www.youtube.com/watch?v=aTOuLHM4LiU', imagen: imgAsamblea, texto: 'Un juego de roles ocultos para 5-10 jugadores donde los villanos intentan infiltrarse en el consejo de héroes. Combina deducción con habilidades especiales.' },
-        { titulo: 'Los Hombres Lobo de Castronegro: La Aldea', enlace: 'https://es.scribd.com/document/444169570/La-Aldea-de-Castronegro', imagen: imgAldea, texto: 'Expansión oficial con nuevos personajes y escenarios de juego que amplían las posibilidades estratégicas de cada partida.' },
-        { titulo: 'One Night Ultimate Werewolf', enlace: 'https://beziergames.com/collections/one-night-ultimate-werewolf', imagen: imgUltimate, texto: 'Una versión rápida e intensa donde toda la partida ocurre en una sola noche. Ideal para grupos de 3-10 jugadores que quieren disfrutar de múltiples partidas.' },
-        { titulo: 'Los Hombres Lobo de Castronegro: Luna Nueva', enlace: 'https://es.scribd.com/document/389540969/Hombres-Lobo-de-Castronegro-Luna-Nueva-Reglamento-Cartas', imagen: imgLuna, texto: 'Expansión del juego que incorpora nuevos personajes con poderes únicos, añadiendo capas estratégicas y sorpresas a cada partida.' },
-        { titulo: 'BANG!', enlace: 'https://www.youtube.com/watch?v=1gRPOZKz5Y4', imagen: imgBang, texto: 'Un clásico juego de cartas del Oeste para 2-7 jugadores con roles ocultos. El Sheriff, los Forajidos, el Renegado y los Ayudantes luchan en duelos llenos de acción.' },
-      ],
-    }
-  },
+const tarjetaActual = computed(() => tarjetas.value[indiceTarjeta.value])
 
-  computed: {
-    tarjetaActual() {
-      return this.tarjetas[this.indiceTarjeta]
-    },
-    juegosVisibles() {
-      const total = this.juegos.length
-      const result = []
-      for (let i = 0; i < this.fichasPorPantalla; i++) {
-        result.push(this.juegos[(this.indiceJuego + i) % total])
-      }
-      return result
-    },
-  },
+const juegosVisibles = computed(() => {
+  const total = juegos.value.length
+  const result = []
+  for (let i = 0; i < fichasPorPantalla.value; i++) {
+    result.push(juegos.value[(indiceJuego.value + i) % total])
+  }
+  return result
+})
 
-  mounted() {
-    this.actualizarFichasPorPantalla()
-    window.addEventListener('resize', this.actualizarFichasPorPantalla)
-  },
-
-  beforeUnmount() {
-    window.removeEventListener('resize', this.actualizarFichasPorPantalla)
-  },
-
-  methods: {
-    anteriorTarjeta() {
-      this.indiceTarjeta = (this.indiceTarjeta - 1 + this.tarjetas.length) % this.tarjetas.length
-    },
-    siguienteTarjeta() {
-      this.indiceTarjeta = (this.indiceTarjeta + 1) % this.tarjetas.length
-    },
-    anteriorJuego() {
-      this.indiceJuego = (this.indiceJuego - 1 + this.juegos.length) % this.juegos.length
-    },
-    siguienteJuego() {
-      this.indiceJuego = (this.indiceJuego + 1) % this.juegos.length
-    },
-    actualizarFichasPorPantalla() {
-      if (window.innerWidth < 600) {
-        this.fichasPorPantalla = 1
-      } else if (window.innerWidth < 992) {
-        this.fichasPorPantalla = 2
-      } else {
-        this.fichasPorPantalla = 3
-      }
-    },
-  },
+const anteriorTarjeta = () => {
+  indiceTarjeta.value = (indiceTarjeta.value - 1 + tarjetas.value.length) % tarjetas.value.length
 }
+
+const siguienteTarjeta = () => {
+  indiceTarjeta.value = (indiceTarjeta.value + 1) % tarjetas.value.length
+}
+
+const anteriorJuego = () => {
+  indiceJuego.value = (indiceJuego.value - 1 + juegos.value.length) % juegos.value.length
+}
+
+const siguienteJuego = () => {
+  indiceJuego.value = (indiceJuego.value + 1) % juegos.value.length
+}
+
+const actualizarFichasPorPantalla = () => {
+  if (window.innerWidth < 600) {
+    fichasPorPantalla.value = 1
+  } else if (window.innerWidth < 992) {
+    fichasPorPantalla.value = 2
+  } else {
+    fichasPorPantalla.value = 3
+  }
+}
+
+onMounted(() => {
+  actualizarFichasPorPantalla()
+  window.addEventListener('resize', actualizarFichasPorPantalla)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', actualizarFichasPorPantalla)
+})
 </script>
 
 <style scoped>
@@ -275,7 +265,7 @@ export default {
 }
 
 .intro-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 2.5rem;
   font-weight: 700;
   color: white;
@@ -283,7 +273,7 @@ export default {
 }
 
 .intro-texto {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.2rem;
   color: white;
   line-height: 1.6;
@@ -334,22 +324,22 @@ export default {
   margin: 0 auto 18px;
   aspect-ratio: 1 / 1;
   object-fit: cover;
-  border: 4px solid #cc0000;
+  border: 4px solid var(--color-rojo);
   border-radius: 15px;
   display: block;
 }
 
 .ficha-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.9rem;
   font-weight: bold;
-  color: #cc0000;
+  color: var(--color-rojo);
   text-align: center;
   margin-bottom: 15px;
 }
 
 .ficha-texto {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1rem;
   color: white;
   text-align: left;
@@ -364,15 +354,15 @@ export default {
 }
 
 .ficha-lista li {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 0.9rem;
   color: white;
   line-height: 1.6;
   margin-bottom: 4px;
 }
 
-.ficha-lista li::marker { color: #e4ba03; }
-.icono-ficha { color: #cc0000; }
+.ficha-lista li::marker { color: var(--color-dorado); }
+.icono-ficha { color: var(--color-rojo); }
 
 /* PARTE 3: Tabla + Consejos en fila, debajo de 1420px */
 .tabla-consejos-wrapper {
@@ -414,16 +404,16 @@ export default {
 }
 
 .tabla-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 2rem;
   font-weight: 700;
-  color: #cc0000;
+  color: var(--color-rojo);
   text-align: center;
   margin-bottom: 16px;
 }
 
 .tabla-texto {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.2rem;
   color: white;
   margin-bottom: 15px;
@@ -431,9 +421,9 @@ export default {
 }
 
 .tabla-wrapper {
-  background: #3a3a3a;
+background: var(--color-gris-medio);
   border-radius: 15px;
-  border: 6px solid #cc0000;
+  border: 6px solid var(--color-rojo);
   overflow: hidden;
   margin-top: 20px;
   width: 100%;
@@ -446,11 +436,11 @@ export default {
 }
 
 .fila-cabecera th {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.7rem;
   color: white;
   font-weight: bold;
-  background: #e4ba03;
+  background: var(--color-dorado);
   padding: 16px 6px;
   text-align: center;
   word-break: break-word;
@@ -458,7 +448,7 @@ export default {
 }
 
 .tabla-juego td {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.9rem;
   font-weight: 700;
   color: white;
@@ -467,7 +457,7 @@ export default {
 }
 
 .fila-gris { background: #3a3a3a; }
-.fila-roja { background: #cc0000; }
+.fila-roja { background: var(--color-rojo); }
 
 @media (max-width: 1120px) {
   .fila-cabecera th { font-size: 1.1rem; padding: 12px 4px; }
@@ -483,7 +473,7 @@ export default {
 .tarjeta-consejo {
   flex: 1;
   border-radius: 15px;
-  border: 5px solid #e4ba03;
+  border: 5px solid var(--color-dorado);
   min-height: 300px;
   display: flex;
   flex-direction: column;
@@ -513,7 +503,7 @@ export default {
 }
 
 .portada-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 2rem;
   font-weight: bold;
   margin: 0;
@@ -534,7 +524,7 @@ export default {
 }
 
 .consejo-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.8rem;
   font-weight: bold;
   margin: 0;
@@ -545,7 +535,7 @@ export default {
 }
 
 .consejo-parrafo {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.2rem;
   font-weight: 600;
   line-height: 1.6;
@@ -571,7 +561,7 @@ export default {
 .btn-nav {
   background: none;
   border: none;
-  color: #e4ba03;
+  color: var(--color-dorado);
   font-size: 2.2rem;
   cursor: pointer;
   transition: transform 0.25s ease;
@@ -580,7 +570,7 @@ export default {
 .btn-nav:hover { transform: scale(1.2); }
 
 .consejos-contador {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   color: white;
   font-size: 1.4rem;
 }
@@ -600,10 +590,10 @@ export default {
 }
 
 .juegos-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 2rem;
   font-weight: bold;
-  color: #e4ba03;
+  color: var(--color-dorado);
   margin: 0;
 }
 
@@ -616,7 +606,7 @@ export default {
 .btn-carrusel {
   background: none;
   border: none;
-  color: #e4ba03;
+  color: var(--color-dorado);
   font-size: 2rem;
   cursor: pointer;
   flex-shrink: 0;
@@ -653,10 +643,10 @@ export default {
 }
 
 .juego-titulo-link {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1rem;
   font-weight: bold;
-  color: #e4ba03;
+  color: var(--color-dorado);
   text-decoration: none;
   display: block;
   margin-bottom: 6px;
@@ -664,10 +654,10 @@ export default {
   cursor: pointer;
 }
 
-.juego-titulo-link:hover {color: #cc0000; }
+.juego-titulo-link:hover {color: var(--color-rojo); }
 
 .juego-texto {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 0.8rem;
   color: white;
   margin: 0;

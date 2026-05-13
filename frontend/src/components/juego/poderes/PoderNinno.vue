@@ -28,79 +28,62 @@
   </div>
 </template>
 
-<script>
-import { mapGetters } from 'vuex'
+<script setup>
+import { ref, computed } from 'vue'
+import { useStore } from 'vuex'
 import axiosInstance from '@/plugins/axios'
 
-export default {
-  name: 'PoderNinno',
+const props = defineProps({
+  jugadorSeleccionado: { type: Object, default: null },
+})
 
-  props: {
-    jugadorSeleccionado: { type: Object, default: null },
-  },
+const emit = defineEmits(['mentorElegido', 'finalizarTurno'])
 
-  emits: ['mentorElegido', 'finalizarTurno'],
+const store = useStore()
 
-  data() {
-    return {
-      mentorElegido: false,
-      notificacion: null,
-    }
-  },
+const mentorElegido = ref(false)
+const notificacion = ref(null)
 
-  computed: {
-    ...mapGetters('sala', ['codigoSala', 'mentorNinno']),
-    ...mapGetters('auth', ['nombre']),
+const codigoSala = computed(() => store.getters['sala/codigoSala'])
+const mentorNinno = computed(() => store.getters['sala/mentorNinno'])
+const nombre = computed(() => store.getters['auth/nombre'])
 
-    puedeElegir() {
-      if (this.mentorElegido) return false
-      if (!this.jugadorSeleccionado) return false
-      if (this.jugadorSeleccionado.nombre === this.nombre) return false
-      if (!this.jugadorSeleccionado.estaVivo) return false
-      return true
-    },
-  },
+const puedeElegir = computed(() => {
+  if (mentorElegido.value) return false
+  if (!props.jugadorSeleccionado) return false
+  if (props.jugadorSeleccionado.nombre === nombre.value) return false
+  if (!props.jugadorSeleccionado.estaVivo) return false
+  return true
+})
 
-  methods: {
-    async elegirMentor() {
-      if (!this.puedeElegir) return
+const elegirMentor = async () => {
+  if (!puedeElegir.value) return
 
-      try {
-        // TODO: reemplazar con endpoint correcto cuando el backend lo implemente
-        // await axiosInstance.post(`/partida/${this.codigoSala}/habilidad`, {
-        //   nombreHabilidad: 'modelo',
-        //   objetivos: [this.jugadorSeleccionado.idUsuario],
-        // })
+  try {
+    store.dispatch('sala/setMentorNinno', props.jugadorSeleccionado.nombre)
+    mentorElegido.value = true
 
-        this.$store.dispatch('sala/setMentorNinno', this.jugadorSeleccionado.nombre)
-        this.mentorElegido = true
+    emit('mentorElegido', {
+      nombreNinno: nombre.value,
+      nombreMentor: props.jugadorSeleccionado.nombre,
+      idMentor: props.jugadorSeleccionado.idUsuario,
+    })
 
-        // Notificación al narrador y al propio niño
-        this.$emit('mentorElegido', {
-          nombreNinno: this.nombre,
-          nombreMentor: this.jugadorSeleccionado.nombre,
-          idMentor: this.jugadorSeleccionado.idUsuario,
-        })
+    notificacion.value = `Ahora tu mentor es: ${props.jugadorSeleccionado.nombre}`
+    setTimeout(() => {
+      notificacion.value = null
+    }, 5000)
 
-        this.notificacion = `Ahora tu mentor es: ${this.jugadorSeleccionado.nombre}`
-        setTimeout(() => {
-          this.notificacion = null
-        }, 5000)
+    setTimeout(() => {
+      emit('finalizarTurno')
+    }, 1500)
+  } catch {
+    store.dispatch('toast/mostrar', { mensaje: 'Error al elegir mentor', tipo: 'error' })
+  }
+}
 
-        // Finalizar turno automáticamente tras elegir mentor
-        setTimeout(() => {
-          this.$emit('finalizarTurno')
-        }, 1500)
-      } catch {
-        this.$store.dispatch('toast/mostrar', { mensaje: 'Error al elegir mentor', tipo: 'error' })
-      }
-    },
-
-    resetear() {
-      // No reseteamos mentorElegido — el poder solo se usa una vez por partida
-      this.notificacion = null
-    },
-  },
+const resetear = () => {
+  notificacion.value = null
 }
 </script>
 
@@ -130,7 +113,7 @@ export default {
 }
 
 .titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.8rem;
   font-weight: 700;
   color: white;
@@ -138,7 +121,7 @@ export default {
 }
 
 .subtitulo {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.2rem;
   font-weight: 700;
   color: #5dade2;
@@ -152,10 +135,10 @@ export default {
   padding: 14px 20px;
   border-radius: 10px;
   width: 100%;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 1rem;
-  transition: all 0.2s ease;
+  transition: var(--transition-fast);
 }
 
 .mentor-vacio {
@@ -191,7 +174,7 @@ export default {
   border: 3px solid #5dade2;
   background: #5dade2;
   color: white;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.95rem;
   cursor: pointer;
@@ -231,21 +214,12 @@ export default {
   background: rgba(93, 173, 226, 0.1);
   border: 2px solid #5dade2;
   color: #5dade2;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.9rem;
   width: 100%;
-  animation: aparecer 0.4s ease;
+  animation: fade-in-up 0.4s ease;
 }
 
-@keyframes aparecer {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+
 </style>

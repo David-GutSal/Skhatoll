@@ -3,6 +3,7 @@ package com.skhatoll.backend.controller;
 import com.skhatoll.backend.dto.partida.*;
 import com.skhatoll.backend.entities.SesionVotacion;
 import com.skhatoll.backend.service.interfaces.partida.IPartidaService;
+import com.skhatoll.backend.service.interfaces.partida.IHabilidadService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,23 +16,14 @@ import org.springframework.web.bind.annotation.*;
 public class PartidaController {
 
     private final IPartidaService partidaService;
+    private final IHabilidadService habilidadService;
 
-    // -------------------------------------------------------
-    // PUT /partida/{codigo}/fase
-    // Alterna entre DÍA y NOCHE
-    // -------------------------------------------------------
     @PutMapping("/{codigo}/fase")
     public ResponseEntity<String> cambiarFase(@PathVariable String codigo) {
-
         partidaService.cambiarFase(codigo);
         return ResponseEntity.ok("Fase cambiada correctamente");
-
     }
 
-    // -------------------------------------------------------
-    // POST /partida/{codigo}/votacion/abrir
-    // Body: { "tipo": "DIA" | "LOBOS" | "HABILIDAD" }
-    // -------------------------------------------------------
     @PostMapping("/{codigo}/votacion/abrir")
     public ResponseEntity<Integer> abrirVotacion(@PathVariable String codigo,
                                                  @Valid @RequestBody AbrirVotacionRequest request) {
@@ -39,9 +31,6 @@ public class PartidaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(sesion.getIdSesion());
     }
 
-    // -------------------------------------------------------
-    // PUT /partida/{codigo}/votacion/{idSesion}/cerrar
-    // -------------------------------------------------------
     @PutMapping("/{codigo}/votacion/{idSesion}/cerrar")
     public ResponseEntity<ResultadoVotacionDto> cerrarVotacion(@PathVariable String codigo,
                                             @PathVariable Integer idSesion) {
@@ -49,10 +38,6 @@ public class PartidaController {
         return ResponseEntity.ok(resultado);
     }
 
-    // -------------------------------------------------------
-    // POST /partida/{codigo}/votar
-    // Body: { "idObjetivo": 1 }
-    // -------------------------------------------------------
     @PostMapping("/{codigo}/votar")
     public ResponseEntity<String> votar(@PathVariable String codigo,
                                    @Valid @RequestBody VotarRequest request) {
@@ -60,9 +45,6 @@ public class PartidaController {
         return ResponseEntity.ok("Voto registrado");
     }
 
-    // -------------------------------------------------------
-    // PUT /partida/{codigo}/jugador/{idUsuario}/confirmar-muerte
-    // -------------------------------------------------------
     @PutMapping("/{codigo}/jugador/{idUsuario}/confirmar-muerte")
     public ResponseEntity<String> confirmarMuerte(@PathVariable String codigo,
                                              @PathVariable Integer idUsuario) {
@@ -70,10 +52,6 @@ public class PartidaController {
         return ResponseEntity.ok("Muerte confirmada");
     }
 
-    // -------------------------------------------------------
-    // GET /partida/{codigo}/sesion-activa
-    // Devuelve: { idSesion, tipo, ronda, abierta, fechaInicio }
-    // -------------------------------------------------------
     @GetMapping("/{codigo}/sesion-activa")
     public ResponseEntity<SesionVotacion> getSesionActiva(@PathVariable String codigo) {
         SesionVotacion sesion = partidaService.getSesionActiva(codigo);
@@ -83,7 +61,7 @@ public class PartidaController {
     @PostMapping("/{codigo}/habilidad")
     public ResponseEntity<HabilidadResultadoDto> usarHabilidad(@PathVariable String codigo,
                                            @Valid @RequestBody HabilidadRequest request) {
-        HabilidadResultadoDto resultado = partidaService.usarHabilidad(codigo, request);
+        HabilidadResultadoDto resultado = habilidadService.usarHabilidad(codigo, request);
         return ResponseEntity.ok(resultado);
     }
 

@@ -49,31 +49,19 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import lobbyImg from '@/assets/imgs/bienvenida.jpg'
 
-export default {
-  name: 'ListaJugadores',
+const props = defineProps({
+  jugadores: Array,
+  modoCreador: Boolean,
+  nombreNarrador: String,
+  soyNarrador: Boolean,
+})
 
-  props: {
-    jugadores: Array,
-    modoCreador: Boolean,
-    nombreNarrador: String,
-    soyNarrador: Boolean,
-  },
+defineEmits(['asignar-narrador'])
 
-  emits: ['asignar-narrador'],
-
-  data() {
-    return { lobbyImg }
-  },
-
-  methods: {
-    esNarrador(jugador) {
-      return jugador.nombre === this.nombreNarrador
-    },
-  },
-}
+const esNarrador = (jugador) => jugador.nombre === props.nombreNarrador
 </script>
 
 <style scoped>
@@ -95,7 +83,7 @@ export default {
 }
 
 .titulo-lista {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.5rem;
   font-weight: 700;
   color: white;
@@ -106,7 +94,7 @@ export default {
 }
 
 .subtitulo-lista {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-style: italic;
   color: white;
   font-size: 1rem;
@@ -166,7 +154,7 @@ export default {
 
 .jugador-nombre {
   flex: 1;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.05rem;
   font-weight: 700;
 }
@@ -175,7 +163,7 @@ export default {
 .lista-jugador .jugador-nombre { color: #8b0000; }
 
 .jugador-nombre.es-narrador {
-  color: #cc0000;
+color: var(--color-rojo);
 }
 
 .lista-jugador .jugador-nombre.es-narrador {
@@ -192,7 +180,7 @@ export default {
 }
 
 .mensaje-pie {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-style: italic;
   font-size: 1.2rem;
   margin: 4px 0 0 0;
@@ -207,6 +195,6 @@ export default {
   margin-top: 2px;
 }
 
-.mensaje-creador { color: #cc0000; }
+.mensaje-creador { color: var(--color-rojo); }
 .mensaje-jugador { color: white; }
 </style>

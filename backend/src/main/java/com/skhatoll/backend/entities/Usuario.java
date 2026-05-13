@@ -27,4 +27,13 @@ public class Usuario {
 
     @Column(name = "password", nullable = false)
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rol")
+    private RolUsuario rol;
+
+    public enum RolUsuario {
+        NARRADOR,
+        JUGADOR
+    }
 }

@@ -19,33 +19,29 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { useStore } from 'vuex'
+import { useRouter } from 'vue-router'
 import axiosInstance from '@/plugins/axios'
-import { mapActions } from 'vuex'
 
-export default {
-  name: 'SalaView',
+const store = useStore()
+const router = useRouter()
 
-  created() {
-    this.$store.dispatch('sala/resetSala')
-  },
+store.dispatch('sala/resetSala')
 
-  methods: {
-    ...mapActions('sala', ['crearSala']),
-    async handleCrearSala() {
-      try {
-        const res = await axiosInstance.post('/salas/crear')
-        this.crearSala(res.data.codigoSala)
-        this.$router.push({ name: 'lobby' })
-      } catch (error) {
-        this.$store.dispatch('toast/mostrar', { mensaje: 'Error al crear la sala', tipo: 'error' })
-      }
-    },
-    irUnirse() {
-      this.$store.dispatch('sala/unirse', null)
-      this.$router.push({ name: 'lobby' })
-    },
-  },
+const handleCrearSala = async () => {
+  try {
+    const res = await axiosInstance.post('/salas/crear')
+    store.dispatch('sala/crearSala', res.data.codigoSala)
+    router.push({ name: 'lobby' })
+  } catch (error) {
+    store.dispatch('toast/mostrar', { mensaje: 'Error al crear la sala', tipo: 'error' })
+  }
+}
+
+const irUnirse = () => {
+  store.dispatch('sala/unirse', null)
+  router.push({ name: 'lobby' })
 }
 </script>
 
@@ -110,7 +106,7 @@ export default {
   border: 5px solid #000;
   padding: 18px 32px;
   font-size: 1.1rem;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-weight: 700;
   letter-spacing: 0.05em;
   border-radius: 10px;
@@ -129,7 +125,7 @@ export default {
 
 .subtitulo {
   color: #ffffff;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.5rem;
   font-style: italic;
   letter-spacing: 0.05em;

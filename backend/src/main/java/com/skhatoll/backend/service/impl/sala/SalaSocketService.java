@@ -9,6 +9,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 import static com.skhatoll.backend.util.constants.GameConstants.*;
 
@@ -37,6 +38,13 @@ public class SalaSocketService {
                 String.format(WS_SALA_INICIO, codigoSala),
                 new PartidaIniciadaEvent(WS_EVENTO_PARTIDA_INICIADA));
     }
+//añadido 2 MAP?
+    public void notificarSalaCerrada(String codigoSala) {
+        messagingTemplate.convertAndSend(
+                "/topic/sala/" + codigoSala + "/cerrada",
+                Map.<Object, Object>of("tipo", "SALA_CERRADA")
+        );
+    }
 
     // -------------------------------------------------------
     // Envía el rol asignado de forma privada a cada jugador
@@ -59,6 +67,20 @@ public class SalaSocketService {
         private String tipo;
         private List<JugadorDto> jugadores;
     }
+//Añadido 3
+    @Data
+    @AllArgsConstructor
+    public static class NarradorAsignadoEvent {
+        private String tipo;
+        private List<JugadorDto> jugadores;
+    }
+
+    public void notificarNarradorAsignado(String codigoSala, List<JugadorDto> jugadores) {
+        messagingTemplate.convertAndSend(
+                "/topic/sala/" + codigoSala,
+                new NarradorAsignadoEvent("NARRADOR_ASIGNADO", jugadores));
+    }
+
 
     @Data
     @AllArgsConstructor

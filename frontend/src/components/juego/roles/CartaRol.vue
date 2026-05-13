@@ -121,52 +121,40 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from 'vue'
+import { useStore } from 'vuex'
 import { getImagenRol, getColorBando } from '@/data/roles.js'
-import { mapGetters } from 'vuex'
 
-export default {
-  name: 'CartaRol',
+const props = defineProps({
+  modoVista: { type: String, default: 'jugador' },
+  nombreRol: { type: String, default: null },
+  descripcion: { type: String, default: '' },
+  bando: { type: String, default: null },
+  jugador: { type: Object, default: () => ({}) },
+  jugadorSeleccionado: { type: Object, default: null },
+  modoEventos: { type: Boolean, default: false },
+  esEnamorado: { type: Boolean, default: false },
+  esEnvenenado: { type: Boolean, default: false },
+})
 
-  props: {
-    modoVista: { type: String, default: 'jugador' },
-    nombreRol: { type: String, default: null },
-    descripcion: { type: String, default: '' },
-    bando: { type: String, default: null },
-    jugador: { type: Object, default: () => ({}) },
-    jugadorSeleccionado: { type: Object, default: null },
-    modoEventos: { type: Boolean, default: false },
-    esEnamorado: { type: Boolean, default: false },
-    esEnvenenado: { type: Boolean, default: false },
-  },
+const emit = defineEmits(['seleccionar'])
 
-  emits: ['seleccionar'],
+const store = useStore()
 
-  computed: {
-    ...mapGetters('sala', ['tipoVotacion']),
+const tipoVotacion = computed(() => store.getters['sala/tipoVotacion'])
 
-    imagen() {
-      return getImagenRol(this.nombreRol)
-    },
-    colorBando() {
-      return getColorBando(this.bando)
-    },
-    nombreRolJugador() {
-      return this.jugador?.rol || this.jugador?.nombreRol || null
-    },
-    rolJugador() {
-      return this.jugador?.bando || null
-    },
-    esVotacionLobos() {
-      return this.tipoVotacion === 'LOBOS'
-    },
-  },
-
-  methods: {
-    getImagenRol,
-    getColorBando,
-  },
-}
+const imagen = computed(() => getImagenRol(props.nombreRol))
+const colorBando = computed(() => getColorBando(props.bando))
+const nombreRolJugador = computed(() => {
+  if (props.jugador?.esNarrador) return 'Narrador'
+  return props.jugador?.rol || props.jugador?.nombreRol || null
+})
+const rolJugador = computed(() => {
+  if (props.jugador?.esNarrador) return 'narrador'
+  return props.jugador?.bando || null
+})
+const esVotacionLobos = computed(() => tipoVotacion.value === 'LOBOS')
 </script>
 
 <style scoped>
@@ -180,7 +168,7 @@ export default {
   overflow: hidden;
   max-width: 340px;
   width: 100%;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
 }
 
 .carta-imagen-wrapper {
@@ -201,7 +189,7 @@ export default {
   left: 0;
   right: 0;
   padding: 6px 12px;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -215,7 +203,7 @@ export default {
 }
 
 .carta-nombre {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.5rem;
   font-weight: 700;
   color: white;
@@ -225,7 +213,7 @@ export default {
 }
 
 .carta-descripcion {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   color: #ccc;
   font-size: 1rem;
   line-height: 1.6;
@@ -246,7 +234,7 @@ export default {
   transition:
     transform 0.15s ease,
     border-color 0.2s ease;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   position: relative;
 }
 
@@ -333,7 +321,7 @@ export default {
     0 0 10px white,
     0 0 20px rgba(255, 255, 255, 0.8),
     0 0 30px rgba(255, 255, 255, 0.4);
-  transition: all 0.2s ease;
+  transition: var(--transition-fast);
   animation: flashVoto 0.4s ease;
 }
 
@@ -350,7 +338,7 @@ export default {
 }
 
 .carta-mesa.alcalde {
-  border: 4px solid #e4ba03 !important;
+  border: 4px solid var(--color-dorado) !important;
   box-shadow:
     0 0 8px rgba(228, 186, 3, 0.5),
     0 0 18px rgba(228, 186, 3, 0.25);
@@ -381,7 +369,7 @@ export default {
 }
 
 .carta-mesa-nombre {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1rem;
   font-weight: bold;
   color: white;
@@ -418,18 +406,18 @@ export default {
 
 .alcalde-inline {
   margin-left: 6px;
-  color: #e4ba03;
+  color: var(--color-dorado);
   font-size: 1rem;
 }
 
 .alcalde-inline i {
-  color: #e4ba03;
+  color: var(--color-dorado);
 }
 
 .badge-votos {
   background: rgba(0, 0, 0, 0.7);
-  color: #e4ba03;
-  border: 2px solid #e4ba03;
+  color: var(--color-dorado);
+  border: 2px solid var(--color-dorado);
   padding: 2px 6px;
   border-radius: 6px;
   font-size: 1.5rem;
@@ -439,7 +427,7 @@ export default {
 .badge-votos-lobo {
   background: rgba(139, 0, 0, 0.8);
   color: #ff4444;
-  border: 2px solid #cc0000;
+  border: 2px solid var(--color-rojo);
   padding: 2px 6px;
   border-radius: 6px;
   font-size: 1.5rem;

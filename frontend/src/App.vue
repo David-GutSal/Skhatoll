@@ -21,41 +21,32 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
 import TopBar from '@/components/layout/TopBar.vue'
 import Header from '@/components/layout/Header.vue'
 import Navbar from '@/components/layout/Navbar.vue'
 import Footer from '@/components/layout/Footer.vue'
 import ToastNotificacion from '@/components/layout/ToastNotificacion.vue'
-export default {
-  name: 'App',
-  components: { TopBar, Header, Navbar, Footer, ToastNotificacion },
 
-  data() {
-    return {
-      hayScroll: false,
-    }
-  },
+const hayScroll = ref(false)
 
-  mounted() {
-    window.addEventListener('scroll', this.detectarScroll)
-  },
-
-  unmounted() {
-    window.removeEventListener('scroll', this.detectarScroll)
-  },
-
-  methods: {
-    detectarScroll() {
-      this.hayScroll = window.scrollY > 0
-    },
-  },
+const detectarScroll = () => {
+  hayScroll.value = window.scrollY > 0
 }
+
+onMounted(() => {
+  window.addEventListener('scroll', detectarScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', detectarScroll)
+})
 </script>
 
 <style>
 body {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   margin: 0;
 }
 
@@ -65,7 +56,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
 }
 
 #app {
@@ -87,7 +78,7 @@ h6 {
 }
 
 .sticky-navbar.scrolled {
-  outline: 2px solid #e4ba03;
+  outline: 2px solid var(--color-dorado);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.95);
 }
 

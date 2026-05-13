@@ -27,86 +27,76 @@
   </Transition>
 </template>
 
-<script>
-import { mapGetters } from 'vuex'
+<script setup>
+import { ref, computed, watch, onUnmounted } from 'vue'
+import { useStore } from 'vuex'
 
-export default {
-  name: 'ToastNotificacion',
+const store = useStore()
 
-  data() {
-    return {
-      _timer: null,
-      _tiempoRestante: null,
-      _tiempoInicio: null,
-    }
-  },
+const _timer = ref(null)
+const _tiempoRestante = ref(null)
+const _tiempoInicio = ref(null)
 
-  computed: {
-    ...mapGetters('toast', ['mensaje', 'tipo', 'visible', 'colaPendiente']),
+const mensaje = computed(() => store.getters['toast/mensaje'])
+const tipo = computed(() => store.getters['toast/tipo'])
+const visible = computed(() => store.getters['toast/visible'])
+const colaPendiente = computed(() => store.getters['toast/colaPendiente'])
 
-    icono() {
-      const iconos = {
-        exito: 'fa-solid fa-circle-check',
-        error: 'fa-solid fa-circle-xmark',
-        aviso: 'fa-solid fa-triangle-exclamation',
-        info: 'fa-solid fa-circle-info',
-        dia: 'fa-solid fa-sun',
-        noche: 'fa-solid fa-moon',
-        licantropia: 'fa-solid fa-paw',
-        brujeria: 'fa-solid fa-hat-wizard',
-        videncia: 'fa-solid fa-eye',
-        amorio: 'fa-solid fa-heart',
-      }
-      return iconos[this.tipo] || iconos.info
-    },
+const icono = computed(() => {
+  const iconos = {
+    exito: 'fa-solid fa-circle-check',
+    error: 'fa-solid fa-circle-xmark',
+    aviso: 'fa-solid fa-triangle-exclamation',
+    info: 'fa-solid fa-circle-info',
+    dia: 'fa-solid fa-sun',
+    noche: 'fa-solid fa-moon',
+    licantropia: 'fa-solid fa-paw',
+    brujeria: 'fa-solid fa-hat-wizard',
+    videncia: 'fa-solid fa-eye',
+    amorio: 'fa-solid fa-heart',
+  }
+  return iconos[tipo.value] || iconos.info
+})
 
-    duracion() {
-      return this.tipo === 'error' ? 6000 : 4000
-    },
-  },
+const duracion = computed(() => tipo.value === 'error' ? 6000 : 4000)
 
-  watch: {
-    visible(val) {
-      if (val) {
-        this.iniciarTimer()
-      }
-    },
-  },
-
-  beforeUnmount() {
-    clearTimeout(this._timer)
-  },
-
-  methods: {
-    iniciarTimer(tiempoRestante = null) {
-      clearTimeout(this._timer)
-      const tiempo = tiempoRestante ?? this.duracion
-      this._tiempoRestante = tiempo
-      this._tiempoInicio = Date.now()
-      this._timer = setTimeout(() => {
-        this.$store.dispatch('toast/ocultar')
-      }, tiempo)
-    },
-
-    pausarTimer() {
-      if (!this._tiempoInicio) return
-      clearTimeout(this._timer)
-      const transcurrido = Date.now() - this._tiempoInicio
-      this._tiempoRestante = Math.max(0, this._tiempoRestante - transcurrido)
-    },
-
-    reanudarTimer() {
-      if (this._tiempoRestante > 0) {
-        this.iniciarTimer(this._tiempoRestante)
-      }
-    },
-
-    ocultar() {
-      clearTimeout(this._timer)
-      this.$store.dispatch('toast/ocultar')
-    },
-  },
+const iniciarTimer = (tiempoRestante = null) => {
+  clearTimeout(_timer.value)
+  const tiempo = tiempoRestante ?? duracion.value
+  _tiempoRestante.value = tiempo
+  _tiempoInicio.value = Date.now()
+  _timer.value = setTimeout(() => {
+    store.dispatch('toast/ocultar')
+  }, tiempo)
 }
+
+const pausarTimer = () => {
+  if (!_tiempoInicio.value) return
+  clearTimeout(_timer.value)
+  const transcurrido = Date.now() - _tiempoInicio.value
+  _tiempoRestante.value = Math.max(0, _tiempoRestante.value - transcurrido)
+}
+
+const reanudarTimer = () => {
+  if (_tiempoRestante.value > 0) {
+    iniciarTimer(_tiempoRestante.value)
+  }
+}
+
+const ocultar = () => {
+  clearTimeout(_timer.value)
+  store.dispatch('toast/ocultar')
+}
+
+watch(visible, (val) => {
+  if (val) {
+    iniciarTimer()
+  }
+})
+
+onUnmounted(() => {
+  clearTimeout(_timer.value)
+})
 </script>
 
 <style scoped>
@@ -124,7 +114,7 @@ export default {
   border-radius: 15px;
   background: rgba(10, 10, 10, 0.96);
   border-left: 5px solid;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.2rem;
   font-weight: 700;
   color: white;
@@ -149,7 +139,7 @@ export default {
 
 .toast-error,
 .toast-licantropia {
-  border-color: #cc0000;
+  border-color: var(--color-rojo);
 }
 .toast-error .toast-icono,
 .toast-licantropia .toast-icono {
@@ -157,17 +147,17 @@ export default {
 }
 .toast-error .toast-barra,
 .toast-licantropia .toast-barra {
-  background: #cc0000;
+  background: var(--color-rojo);
 }
 
 .toast-aviso {
-  border-color: #e4ba03;
+  border-color: var(--color-dorado);
 }
 .toast-aviso .toast-icono {
-  color: #e4ba03;
+  color: var(--color-dorado);
 }
 .toast-aviso .toast-barra {
-  background: #e4ba03;
+  background: var(--color-dorado);
 }
 
 .toast-info {
@@ -289,7 +279,7 @@ export default {
 }
 
 .fa-sun {
-  color: #e4ba03;
+  color: var(--color-dorado);
 }
 
 @keyframes entrar {

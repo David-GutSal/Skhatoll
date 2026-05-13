@@ -7,10 +7,7 @@
   </nav>
 </template>
 
-<script>
-export default {
-  name:"Navbar"
-}
+<script setup>
 </script>
 
 <style scoped>
@@ -29,7 +26,7 @@ export default {
 .navbar a{
   color: white;
   text-decoration: none;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-weight: 600;
   font-size: 1.4rem;
   letter-spacing: 0.08em;
@@ -44,7 +41,7 @@ export default {
   left: 0;
   width: 0%;
   height: 2px;
-  background: #cc0000;
+  background: var(--color-rojo);
   transition: width 0.3s ease;
 }
 
@@ -53,19 +50,19 @@ export default {
 }
 
 .navbar a:hover {
-  color: #cc0000;
+  color: var(--color-rojo);
   border-bottom-color: transparent;
 }
 
 .navbar a:active {
-  color: #cc0000;
-  border-bottom-color: #cc0000;
+  color: var(--color-rojo);
+  border-bottom-color: var(--color-rojo);
 }
  
 .navbar a.router-link-exact-active {
-  color: #cc0000;
+  color: var(--color-rojo);
   font-weight: 800;
-  border-bottom-color: #cc0000;
+  border-bottom-color: var(--color-rojo);
 }
 
 .navbar a.router-link-exact-active::after {

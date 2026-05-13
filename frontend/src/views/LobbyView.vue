@@ -112,223 +112,227 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 import axiosInstance from '@/plugins/axios'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
-import { mapGetters, mapActions } from 'vuex'
 import ListaJugadores from '@/components/lobby/ListaJugadores.vue'
 import bienvenidaImg from '@/assets/imgs/bienvenida.jpg'
 
-export default {
-  name: 'LobbyView',
-  components: { ListaJugadores },
+const router = useRouter()
+const store = useStore()
 
-  data() {
-    return {
-      inputCodigo: '',
-      mensajeUnion: false,
-      stompClient: null,
-      copiado: false,
-      bienvenidaImg,
-    }
-  },
+const inputCodigo = ref('')
+const mensajeUnion = ref(false)
+const stompClient = ref(null)
+const copiado = ref(false)
+const codigoSala = computed(() => {
+  const storeCodigo = store.getters['sala/codigoSala']
+  if (storeCodigo) return storeCodigo
+  const sessionCodigo = sessionStorage.getItem('codigoSala')
+  if (sessionCodigo) return sessionCodigo
+  return null
+})
+const esCreador = computed(() => store.getters['sala/esCreador'])
+const jugadores = computed(() => store.getters['sala/jugadores'])
+const nombre = computed(() => store.getters['auth/nombre'])
 
-  computed: {
-    ...mapGetters('sala', ['codigoSala', 'esCreador', 'jugadores']),
-    ...mapGetters('auth', ['nombre']),
+const nombreNarrador = computed(() => {
+  const narrador = jugadores.value?.find((j) => j.esNarrador)
+  return narrador ? narrador.nombre : null
+})
 
-    nombreNarrador() {
-      const narrador = this.jugadores?.find((j) => j.esNarrador)
-      return narrador ? narrador.nombre : null
-    },
+const soyNarrador = computed(() => nombreNarrador.value === nombre.value)
 
-    soyNarrador() {
-      return this.nombreNarrador === this.nombre
-    },
-  },
-  watch: {
-    codigoSala(nuevo) {
-      if (nuevo) {
-        this.cargarJugadores()
-        this.conectarWebSocket()
-      }
-    },
-  },
-
-  created() {
-    if (this.codigoSala) {
-      this.cargarJugadores()
-      this.conectarWebSocket()
-    }
-  },
-
-  beforeUnmount() {
-    if (this.stompClient) {
-      this.stompClient.deactivate()
-      this.stompClient = null
-    }
-  },
-
-  methods: {
-    ...mapActions('sala', ['unirse', 'setJugadores', 'salir']),
-
-    async copiarCodigo() {
-      await navigator.clipboard.writeText(this.codigoSala)
-      this.copiado = true
-      setTimeout(() => (this.copiado = false), 2000)
-      this.$store.dispatch('toast/mostrar', {
-        mensaje: '¡Código copiado al portapapeles!',
-        tipo: 'info',
-      })
-    },
-
-    async cargarJugadores() {
-      try {
-        const res = await axiosInstance.get(`/salas/${this.codigoSala}/jugadores`)
-        this.setJugadores(res.data)
-      } catch (error) {
-        this.$store.dispatch('toast/mostrar', {
-          mensaje: 'Error al cargar jugadores',
-          tipo: 'error',
-        })
-      }
-    },
-
-    async iniciarPartida() {
-      try {
-        await axiosInstance.post(`/salas/${this.codigoSala}/iniciar`)
-        this.$store.dispatch('toast/mostrar', {
-          mensaje: '¡La partida va a comenzar!',
-          tipo: 'exito',
-        })
-      } catch (error) {
-        this.$store.dispatch('toast/mostrar', {
-          mensaje: error.response?.data || 'Error al iniciar',
-          tipo: 'error',
-        })
-      }
-    },
-
-    async asignarNarrador(idUsuario) {
-      try {
-        await axiosInstance.put(`/salas/${this.codigoSala}/narrador`, { idUsuario })
-      } catch (error) {
-        this.$store.dispatch('toast/mostrar', {
-          mensaje: 'Error al asignar narrador',
-          tipo: 'error',
-        })
-      }
-    },
-
-    async handleUnirse() {
-      try {
-        await axiosInstance.post('/salas/unirse', { codigoSala: this.inputCodigo })
-        this.unirse(this.inputCodigo)
-        this.mensajeUnion = true
-        await this.cargarJugadores()
-        this.conectarWebSocket()
-      } catch (error) {
-        this.$store.dispatch('toast/mostrar', {
-          mensaje:
-            error.response?.status === 409
-              ? 'Ya estás en esta sala o está llena'
-              : 'Sala no encontrada',
-          tipo: 'error',
-        })
-      }
-    },
-
-    async copiarParaDiscord() {
-      await navigator.clipboard.writeText(
-        `¡Únete a mi partida de Hombres Lobo! Código: ${this.codigoSala}`,
-      )
-      this.$store.dispatch('toast/mostrar', {
-        mensaje: '¡Código copiado! Pégalo en Discord',
-        tipo: 'exito',
-      })
-    },
-
-    async salirSala() {
-      try {
-        if (this.stompClient) {
-          this.stompClient.deactivate()
-          this.stompClient = null
-        }
-
-        await axiosInstance.post(`/salas/${this.codigoSala}/salir`)
-        this.salir()
-        this.$router.push({ name: 'sala' })
-      } catch (error) {
-        this.$store.dispatch('toast/mostrar', {
-          mensaje: 'Error al salir de la sala',
-          tipo: 'error',
-        })
-      }
-    },
-
-    conectarWebSocket() {
-      const token = this.$store.getters['auth/token']
-      const cliente = new Client({
-        webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
-        connectHeaders: { Authorization: `Bearer ${token}` },
-      })
-      cliente.onConnect = () => {
-        let rolRecibido = false
-        let inicioRecibido = false
-
-        const intentarNavegar = () => {
-          if (rolRecibido && inicioRecibido) {
-            this.$router.push({ name: 'cargaRol' })
-          }
-        }
-
-        cliente.subscribe(`/topic/sala/${this.codigoSala}/inicio`, () => {
-          setTimeout(() => {
-            const esCreador = this.$store.getters['sala/esCreador']
-            if (esCreador) {
-              this.$router.push({ name: 'esperaNarrador' })
-            } else {
-              this.$router.push({ name: 'cargaRol' })
-            }
-          }, 500)
-        })
-
-        cliente.subscribe(`/user/queue/rol`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          if (payload.tipo === 'ROL_ASIGNADO') {
-            this.$store.dispatch('sala/setRol', {
-              nombreRol: payload.nombreRol,
-              descripcionRol: payload.descripcionRol,
-              bando: payload.bando,
-            })
-            rolRecibido = true
-            intentarNavegar()
-          }
-        })
-
-        cliente.subscribe(`/topic/sala/${this.codigoSala}`, (msg) => {
-          const payload = JSON.parse(msg.body)
-          if (payload.tipo === 'JUGADOR_UNIDO') {
-            this.setJugadores(payload.jugadores)
-            const ultimo = payload.jugadores[payload.jugadores.length - 1]
-            if (ultimo && ultimo.nombre !== this.nombre) {
-              this.$store.dispatch('toast/mostrar', {
-                mensaje: `${ultimo.nombre} se ha unido a la partida`,
-                tipo: 'info',
-              })
-            }
-          }
-          if (payload.tipo === 'JUGADOR_SALIO') {
-            this.setJugadores(payload.jugadores)
-          }
-        })
-      }
-      cliente.activate()
-      this.stompClient = cliente
-    },
-  },
+  const handleUnirse = async () => {
+  if (!inputCodigo.value) return
+  try {
+    await axiosInstance.post('/salas/unirse', { codigoSala: inputCodigo.value })
+    store.dispatch('sala/setSala', { codigoSala: inputCodigo.value, esCreador: false })
+    store.dispatch('toast/mostrar', { mensaje: 'Te has unido a la sala', tipo: 'success' })
+    mensajeUnion.value = true
+  } catch (error) {
+    store.dispatch('toast/mostrar', { mensaje: 'Error al unirse a la sala', tipo: 'error' })
+  }
 }
+
+const asignarNarrador = async (idUsuario) => {
+  const codigo = codigoSala.value || sessionStorage.getItem('codigoSala')
+  if (!codigo) return
+  try {
+    await axiosInstance.put(`/salas/${codigo}/narrador`, { idUsuario })
+    cargarJugadores()
+  } catch (error) {
+    store.dispatch('toast/mostrar', { mensaje: 'Error al asignar narrador', tipo: 'error' })
+  }
+}
+
+const iniciarPartida = async () => {
+  const codigo = codigoSala.value || sessionStorage.getItem('codigoSala')
+  if (!codigo) return
+  try {
+    await axiosInstance.post(`/salas/${codigo}/iniciar`)
+    store.dispatch('toast/mostrar', { mensaje: 'Partida iniciándose...', tipo: 'info' })
+  } catch (error) {
+    store.dispatch('toast/mostrar', { mensaje: 'Error al iniciar partida', tipo: 'error' })
+  }
+}
+
+const cargarJugadores = async () => {
+  const codigo = codigoSala.value || sessionStorage.getItem('codigoSala')
+  if (!codigo) return
+  try {
+    const res = await axiosInstance.get(`/salas/${codigo}/jugadores`)
+    console.log('[cargarJugadores] response:', JSON.stringify(res.data))
+    store.dispatch('sala/setJugadores', res.data)
+  } catch (error) {
+    console.error('Error al cargar jugadores:', error)
+  }
+}
+
+const conectarWebSocket = () => {
+  const token = store.getters['auth/token']
+  const codigo = codigoSala.value || sessionStorage.getItem('codigoSala')
+  
+  if (!codigo) {
+    return
+  }
+  
+  if (stompClient.value) {
+    return
+  }
+  
+  const cliente = new Client({
+    webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+    connectHeaders: { Authorization: `Bearer ${token}` },
+  })
+
+  cliente.onConnect = (frame) => {
+    const codigoActual = sessionStorage.getItem('codigoSala') || codigoSala.value
+    console.log('WebSocket conectado, codigo:', codigoActual)
+
+    if (codigoActual) {
+      cargarJugadores()
+    }
+
+    cliente.subscribe(`/topic/sala/${codigoActual}/inicio`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      console.log('[LOBBY /inicio] payload:', JSON.stringify(payload))
+      
+      cargarJugadores()
+      
+      store.dispatch('toast/mostrar', { mensaje: 'Partida iniciándose...', tipo: 'info' })
+      
+      setTimeout(() => {
+        const nombreActual = store.getters['auth/nombre']
+        const listaJugadores = store.getters['sala/jugadores'] || []
+        console.log('[LOBBY /inicio] nombre:', nombreActual)
+        console.log('[LOBBY /inicio] jugadores:', JSON.stringify(listaJugadores))
+        const esNarrador = listaJugadores.some(j => j.esNarrador && j.nombre === nombreActual)
+        console.log('[LOBBY /inicio] esNarrador?:', esNarrador)
+        
+        if (esNarrador) {
+          console.log('[LOBBY /inicio] navigate -> esperaNarrador')
+          router.push({ name: 'esperaNarrador' })
+        } else {
+          console.log('[LOBBY /inicio] navigate -> cargaRol')
+          store.dispatch('sala/setRol', {
+            nombreRol: payload.nombreRol,
+            descripcionRol: payload.descripcionRol,
+            bando: payload.bando,
+          })
+          router.push({ name: 'cargaRol' })
+        }
+      }, 500)
+    })
+
+    cliente.subscribe(`/user/queue/rol`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      if (payload.tipo === 'ROL_ASIGNADO' || payload.tipo === 'ROL_CAMBIADO') {
+        const nombreActual = store.getters['auth/nombre']
+        const listaJugadores = store.getters['sala/jugadores'] || []
+        const esNarrador = listaJugadores.some(j => j.esNarrador && j.nombre === nombreActual)
+        if (esNarrador) {
+          router.push({ name: 'narrador' })
+          return
+        }
+        store.dispatch('sala/setRol', {
+          nombreRol: payload.nombreRol,
+          descripcionRol: payload.descripcionRol,
+          bando: payload.bando,
+        })
+        router.push({ name: 'cargaRol' })
+      }
+    })
+
+    cliente.subscribe(`/topic/sala/${codigoActual}`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      if (payload.tipo === 'JUGADOR_UNIDO') {
+        store.dispatch('sala/setJugadores', payload.jugadores)
+      }
+      if (payload.tipo === 'JUGADOR_SALIO') {
+        store.dispatch('sala/setJugadores', payload.jugadores)
+      }
+      if (payload.tipo === 'NARRADOR_ASIGNADO') {
+        store.dispatch('sala/setJugadores', payload.jugadores)
+      }
+    })
+  }
+
+  cliente.onStompError = (frame) => {
+    console.error('STOMP error:', frame)
+  }
+
+  cliente.activate()
+  stompClient.value = cliente
+}
+
+
+watch(codigoSala, (nuevo) => {
+  if (nuevo && stompClient.value) {
+    stompClient.value.deactivate()
+    stompClient.value = null
+  }
+  if (nuevo && !stompClient.value) {
+    conectarWebSocket()
+  }
+})
+
+const copiarCodigo = () => {
+  navigator.clipboard.writeText(codigoSala.value)
+  copiado.value = true
+  setTimeout(() => {
+    copiado.value = false
+  }, 2000)
+}
+
+const salirSala = async () => {
+  if (stompClient.value) {
+    stompClient.value.deactivate()
+    stompClient.value = null
+  }
+  const codigo = codigoSala.value || sessionStorage.getItem('codigoSala')
+  if (codigo) {
+    try {
+      await axiosInstance.delete(`/salas/${codigo}/salir`)
+    } catch (error) {
+      store.dispatch('toast/mostrar', { mensaje: 'Error al salir', tipo: 'error' })
+    }
+  }
+  store.dispatch('sala/salir')
+  router.push('/')
+}
+
+onMounted(async () => {
+  await store.dispatch('sala/restaurarEstado')
+  if (codigoSala.value && !stompClient.value) {
+    cargarJugadores()
+    conectarWebSocket()
+  }
+})
 </script>
 
 <style scoped>
@@ -341,7 +345,7 @@ export default {
 }
 
 .titulo-lobby {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-weight: 700;
   font-size: 2.5rem;
   color: white;
@@ -384,7 +388,7 @@ export default {
 }
 
 .titulo-caja {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 2.5rem;
   font-weight: 700;
   color: white;
@@ -399,7 +403,7 @@ export default {
   width: 100%;
   border-radius: 50px;
   overflow: hidden;
-  border: 5px solid #e4ba03;
+  border: 5px solid var(--color-dorado);
   background: white;
 }
 
@@ -425,7 +429,7 @@ export default {
   color: white;
   font-size: 1.4rem;
   border-radius: 0 50px 50px 0;
-  transition: background 0.2s ease;
+  transition: background var(--transition-fast);
   flex-shrink: 0;
 }
 
@@ -434,7 +438,7 @@ export default {
 }
 
 .subtitulo-caja {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-style: italic;
   color: #ccc;
   font-size: 1.2rem;
@@ -448,7 +452,7 @@ export default {
   border: none;
   padding: 14px 36px;
   border-radius: 10px;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.1rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -463,8 +467,8 @@ export default {
 }
 
 .boton-iniciar:hover {
-  background: #e4ba03;
-  color: #000;
+  background: var(--color-dorado);
+  color: var(--color-black);
 }
 
 .boton-iniciar:active {
@@ -482,7 +486,7 @@ export default {
 }
 
 .texto-redes {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   color: white;
   font-weight: 700;
   font-size: 1.1rem;
@@ -504,7 +508,7 @@ export default {
   height: 60px;
   border-radius: 50%;
   background: white;
-  transition: background 0.2s ease;
+  transition: background var(--transition-fast);
   flex-shrink: 0;
   text-decoration: none;
 }
@@ -567,7 +571,7 @@ export default {
   border: none;
   padding: 13px 28px;
   border-radius: 10px;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
@@ -590,7 +594,7 @@ export default {
   border: none;
   padding: 13px 28px;
   border-radius: 10px;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
@@ -601,7 +605,7 @@ export default {
 }
 
 .boton-salir-jugador:hover {
-  background: #000;
+  background: var(--color-black);
 }
 .boton-salir-jugador:active {
   transform: scale(0.95);
@@ -611,8 +615,8 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #cc0000;
-  font-family: 'Cinzel', Arial, sans-serif;
+  color: var(--color-rojo);
+  font-family: var(--font-cinzel);
   font-weight: 700;
   font-size: 0.95rem;
   padding: 10px 14px;
@@ -622,7 +626,7 @@ export default {
 }
 
 .mensaje-union {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-style: italic;
   color: white;
   font-size: 0.95rem;

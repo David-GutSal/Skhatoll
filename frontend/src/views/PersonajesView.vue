@@ -88,48 +88,45 @@
   </main>
 </template>
 
-<script>
+<script setup>
+import { ref, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import ListaPersonajes from '@/components/juego/ListaPersonajes.vue'
 
-export default {
-  name: 'PersonajesView',
-  components: { ListaPersonajes },
+const router = useRouter()
+const listaPersonajes = ref(null)
 
-  methods: {
-    irABando(bando) {
+const irABando = (bando) => {
+  if (listaPersonajes.value) {
+    listaPersonajes.value.abrirBando(bando)
+  }
 
-      if (this.$refs.listaPersonajes) {
-        this.$refs.listaPersonajes.abrirBando(bando);
+  nextTick(() => {
+    setTimeout(() => {
+      const el = document.getElementById('lista-' + bando)
+      if (el) {
+        el.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start',
+          inline: 'nearest'
+        })
       }
-
-      this.$nextTick(() => {
-        setTimeout(() => {
-          const el = document.getElementById('lista-' + bando);
-          if (el) {
-            el.scrollIntoView({ 
-              behavior: 'smooth', 
-              block: 'start',
-              inline: 'nearest'
-            });
-          }
-        }, 100);
-      });
-    },
-  },
+    }, 100)
+  })
 }
 </script>
 
 <style scoped>
 
 .intro-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 2.5rem;
   font-weight: bolder;
   color: white;
 }
 
 .narrador-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 2rem;
   font-weight: 700;
   color: #4a90d9;
@@ -142,7 +139,7 @@ export default {
 }
 
 .intro-texto {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.2rem;
   color: white;
   line-height: 1.6;
@@ -150,12 +147,12 @@ export default {
 
 .bandos-lista {
   list-style: square;
-  color: #e4ba03;
+  color: var(--color-dorado);
   font-size: 1.5rem;
 }
 
 .bando-nombre {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.2rem;
   font-weight: 700;
 }
@@ -166,15 +163,15 @@ export default {
 }
 
 .bando-link:hover {
-  color: #e4ba03 !important;
+  color: var(--color-dorado) !important;
 }
 
 .bando-bien-texto { color: #2d9e2d; }
-.bando-mal-texto { color: #cc0000; }
+.bando-mal-texto { color: var(--color-rojo); }
 .bando-neutral-texto { color: #868686; }
 
 .intro-img {
-  border: 5px solid #e4ba03;
+  border: 5px solid var(--color-dorado);
   border-radius: 15px;
   object-fit: cover;
 }

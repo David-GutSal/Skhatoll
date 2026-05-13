@@ -2,31 +2,33 @@
   <div class="indicador-wrapper" :class="esDia ? 'dia' : 'noche'">
     <div
       class="btn-fase"
-      :class="{ activo: esDia }"
-      @click="$emit('cambiarFase', 'dia')"
-      title="Cambiar a día"
+      :class="{ activo: esDia, deshabilitado: votacionActiva }"
+      :aria-disabled="votacionActiva"
+      @click="votacionActiva ? null : $emit('cambiarFase', 'dia')"
+      :title="votacionActiva ? 'Cierra la votación antes de cambiar a día' : 'Cambiar a día'"
     >
       <i class="fas fa-sun"></i>
     </div>
     <div
       class="btn-fase"
-      :class="{ activo: !esDia }"
-      @click="$emit('cambiarFase', 'noche')"
-      title="Cambiar a noche"
+      :class="{ activo: !esDia, deshabilitado: votacionActiva }"
+      :aria-disabled="votacionActiva"
+      @click="votacionActiva ? null : $emit('cambiarFase', 'noche')"
+      :title="votacionActiva ? 'Cierra la votación antes de cambiar a noche' : 'Cambiar a noche'"
     >
       <i class="fas fa-moon"></i>
     </div>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'IndicadorDiaNoche',
-  props: {
-    esDia: { type: Boolean, default: true },
-  },
-  emits: ['cambiarFase'],
-}
+<script setup>
+
+defineProps({
+  esDia: { type: Boolean, default: true },
+  votacionActiva: { type: Boolean, default: false },
+})
+
+defineEmits(['cambiarFase'])
 </script>
 
 <style scoped>
@@ -37,7 +39,7 @@ export default {
   gap: 10px;
   padding: 12px 18px;
   border-radius: 50px;
-  border: 5px solid #e4ba03;
+  border: 5px solid var(--color-dorado);
   background: white;
   transition: background 0.3s ease, border-color 0.3s ease;
 }
@@ -63,23 +65,29 @@ export default {
 
 .btn-fase:hover {
   transform: scale(0.9);
-  color: #cc0000;
+  color: var(--color-rojo);
   background: #000;
 }
 
 .btn-fase:active {
   transform: scale(1.1);
-  color: #e4ba03;
+  color: var(--color-dorado);
   background: #000;
 }
 
 .indicador-wrapper.dia .btn-fase:first-child.activo {
   background: #0087bd;
-  color: #e4ba03;
+  color: var(--color-dorado);
 }
 
 .indicador-wrapper.noche .btn-fase:last-child.activo {
   background: #5500a5;
   color: #0087bd;
+}
+
+.btn-fase.deshabilitado {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 </style>

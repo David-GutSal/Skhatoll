@@ -1,10 +1,3 @@
 package com.skhatoll.backend.exception;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
-@Data
-@AllArgsConstructor
-public class ErrorResponse {
-    private String mensaje;
-}
+public record ErrorResponse(String mensaje) {}

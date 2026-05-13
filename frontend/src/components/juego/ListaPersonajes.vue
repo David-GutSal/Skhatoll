@@ -85,14 +85,14 @@ export default {
 }
 
 .listas-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   color: white;
   font-weight: bolder;
   margin-top: 25px;
 }
 
 .lista-header {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
 }
 
 .lista-nombre {

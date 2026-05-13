@@ -19,4 +19,6 @@ public interface SalaUsuarioRepository extends JpaRepository<SalaUsuario, Intege
     int countBySala_IdSala(Integer idSala);
 
     Optional<SalaUsuario> findBySala_IdSalaAndIdModelo(Integer idSala, Integer idModelo);
+
+    List<SalaUsuario> findBySala_IdSalaAndEstaVivoFalse(Integer idSala);
 }

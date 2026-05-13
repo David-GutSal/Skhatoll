@@ -1,0 +1,288 @@
+@use 'sass:math';
+
+// ===========================================
+// VARIABLES - COLORES SCSS
+// ===========================================
+$color-black: #000;
+$color-white: #fff;
+$color-rojo: #cc0000;
+$color-dorado: #e4ba03;
+$color-gris-oscuro: #1f1f1f;
+$color-gris-medio: #3a3a3a;
+$color-gris-claro: #555;
+$color-texto-oscuro: #111;
+$color-gris-texto: #aaa;
+
+$color-oscuro: $color-black;
+$color-blanco: $color-white;
+$color-negro: $color-black;
+
+// ===========================================
+// VARIABLES - FUENTES
+// ===========================================
+$font-cinzel: 'Cinzel', Arial, sans-serif;
+$font-raleway: 'Raleway', Arial, sans-serif;
+$font-arial: Arial, sans-serif;
+
+// ===========================================
+// VARIABLES - BORDES
+// ===========================================
+$border-radius-sm: 6px;
+$border-radius-md: 10px;
+$border-radius-lg: 16px;
+$border-radius-xl: 50px;
+
+// ===========================================
+// VARIABLES - TRANSICIONES
+// ===========================================
+$transition-fast: 0.2s ease;
+$transition-normal: 0.3s ease;
+$transition-slow: 0.4s ease;
+$transition-slower: 0.6s ease;
+
+// ===========================================
+// EXPORTAR A CSS CUSTOM PROPERTIES
+// ===========================================
+:root {
+  --color-black: #{$color-black};
+  --color-white: #{$color-white};
+  --color-rojo: #{$color-rojo};
+  --color-dorado: #{$color-dorado};
+  --color-gris-oscuro: #{$color-gris-oscuro};
+  --color-gris-medio: #{$color-gris-medio};
+  --color-gris-claro: #{$color-gris-claro};
+  --color-texto-oscuro: #{$color-texto-oscuro};
+  --color-gris-texto: #{$color-gris-texto};
+  
+  --font-cinzel: #{$font-cinzel};
+  --font-raleway: #{$font-raleway};
+  --font-arial: #{$font-arial};
+  
+  --border-radius-sm: #{$border-radius-sm};
+  --border-radius-md: #{$border-radius-md};
+  --border-radius-lg: #{$border-radius-lg};
+  
+  --transition-fast: #{$transition-fast};
+  --transition-normal: #{$transition-normal};
+  --transition-slow: #{$transition-slow};
+}
+
+// ===========================================
+// KEYFRAMES COMUNES
+// ===========================================
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ===========================================
+// SPINNER
+// ===========================================
+.spinner {
+  border: 4px solid rgba(255, 255, 255, 0.15);
+  border-top-color: var(--color-dorado);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+.spinner--sm {
+  width: 28px;
+  height: 28px;
+  border-width: 3px;
+  border-top-color: var(--color-rojo);
+  flex-shrink: 0;
+}
+
+// ===========================================
+// UTILIDADES DE COLOR - BACKGROUNDS
+// ===========================================
+.bg-negro { background: var(--color-black); }
+.bg-blanco { background: var(--color-white); }
+.bg-rojo { background: var(--color-rojo); }
+.bg-dorado { background: var(--color-dorado); }
+.bg-gris-oscuro { background: var(--color-gris-oscuro); }
+.bg-gris-medio { background: var(--color-gris-medio); }
+.bg-transparente-negro { background: rgba(0, 0, 0, 0.85); }
+.bg-transparente-negro-70 { background: rgba(0, 0, 0, 0.7); }
+.bg-transparente-negro-60 { background: rgba(0, 0, 0, 0.6); }
+
+// ===========================================
+// UTILIDADES DE COLOR - TEXTO
+// ===========================================
+.texto-negro { color: var(--color-black); }
+.texto-blanco { color: var(--color-white); }
+.texto-rojo { color: var(--color-rojo); }
+.texto-dorado { color: var(--color-dorado); }
+.texto-gris { color: var(--color-gris-texto); }
+
+// ===========================================
+// UTILIDADES DE BORDE
+// ===========================================
+.borde-rojo { border: 2px solid var(--color-rojo); }
+.borde-dorado { border: 2px solid var(--color-dorado); }
+.borde-gris { border: 2px solid var(--color-gris-medio); }
+
+// ===========================================
+// BORDES CON GROSOR
+// ===========================================
+.border-rojo-2 { border: 2px solid var(--color-rojo); }
+.border-rojo-3 { border: 3px solid var(--color-rojo); }
+.border-rojo-5 { border: 5px solid var(--color-rojo); }
+.border-rojo-8 { border: 8px solid var(--color-rojo); }
+.border-rojo-10 { border: 10px solid var(--color-rojo); }
+
+.border-dorado-2 { border: 2px solid var(--color-dorado); }
+.border-dorado-3 { border: 3px solid var(--color-dorado); }
+.border-dorado-5 { border: 5px solid var(--color-dorado); }
+.border-dorado-6 { border: 6px solid var(--color-dorado); }
+.border-dorado-8 { border: 8px solid var(--color-dorado); }
+
+// ===========================================
+// BORDES SIN GROSOR (heredado)
+// ===========================================
+.border-rojo { border: 2px solid var(--color-rojo); }
+.border-dorado { border: 2px solid var(--color-dorado); }
+
+// ===========================================
+// BOTONES COMUNES
+// ===========================================
+.btn-primary {
+  background: var(--color-dorado);
+  color: var(--color-black);
+  border: none;
+  padding: 10px 20px;
+  font-family: var(--font-cinzel);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+
+  &:hover {
+    transform: scale(1.02);
+  }
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color-dorado);
+  border: 2px solid var(--color-dorado);
+  padding: 8px 18px;
+  font-family: var(--font-cinzel);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+
+  &:hover {
+    background: var(--color-dorado);
+    color: var(--color-black);
+  }
+}
+
+// ===========================================
+// TARJETAS COMUNES
+// ===========================================
+.tarjeta {
+  background: var(--color-gris-oscuro);
+  border-radius: var(--border-radius-md);
+  padding: 16px;
+}
+
+.tarjeta-negra {
+  background: var(--color-black);
+  border-radius: var(--border-radius-sm);
+  padding: 16px;
+}
+
+// ===========================================
+// TRANSICIONES COMUNES
+// ===========================================
+.transition-fast {
+  transition: all var(--transition-fast);
+}
+
+.transition-normal {
+  transition: all var(--transition-normal);
+}
+
+// ===========================================
+// ANIMACIONES COMUNES
+// ===========================================
+.fade-in {
+  animation: fade-in-up 0.4s ease forwards;
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+// ===========================================
+// FRASES WRAPPER
+// ===========================================
+.frases-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 600px;
+  width: 100%;
+}
+
+.logo-frase {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.frase-caja {
+  flex: 1;
+  background: var(--color-black);
+  padding: 10px 16px;
+  border-radius: var(--border-radius-sm);
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.frase {
+  font-family: var(--font-raleway);
+  font-style: italic;
+  color: var(--color-white);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  text-align: center;
+  margin: 0;
+}
+
+// ===========================================
+// RESPONSIVE
+// ===========================================
+@media (max-width: 600px) {
+  .frases-wrapper {
+    gap: 10px;
+  }
+
+  .logo-frase {
+    height: 26px;
+  }
+
+  .frase {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .logo-frase {
+    display: none;
+  }
+}

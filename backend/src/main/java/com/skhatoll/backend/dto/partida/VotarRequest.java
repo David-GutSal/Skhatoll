@@ -1,8 +1,8 @@
 package com.skhatoll.backend.dto.partida;
 
-import lombok.Data;
+import jakarta.validation.constraints.NotNull;
 
-@Data
-public class VotarRequest {
-    private Integer idObjetivo;
-}
+public record VotarRequest(
+    @NotNull(message = "El objetivo es obligatorio")
+    Integer idObjetivo
+) {}

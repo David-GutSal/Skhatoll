@@ -48,28 +48,20 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from 'vue'
 import solImg from '@/assets/imgs/sol.jpg'
 import lunaImg from '@/assets/imgs/luna.jpg'
 
-export default {
-  name: 'CabeceraJugador',
-  props: {
-    nombreJugador: { type: String, default: '' },
-    esDia: { type: Boolean, default: true },
-    esNarrador: { type: Boolean, default: false },
-    nombreNarrador: { type: String, default: '' },
-    alcaldeNombre: { type: String, default: '' },
-  },
-  data() {
-    return { solImg, lunaImg }
-  },
-  computed: {
-  textoAlcalde() {
-    return this.alcaldeNombre || 'Elecciones pendientes'
-  }
-}
-}
+const props = defineProps({
+  nombreJugador: { type: String, default: '' },
+  esDia: { type: Boolean, default: true },
+  esNarrador: { type: Boolean, default: false },
+  nombreNarrador: { type: String, default: '' },
+  alcaldeNombre: { type: String, default: '' },
+})
+
+const textoAlcalde = computed(() => props.alcaldeNombre || 'Elecciones pendientes')
 </script>
 
 <style scoped>
@@ -97,10 +89,10 @@ export default {
   padding: 12px 20px;
   border-radius: 12px;
   width: 400px;
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-size: 1.3rem;
   font-weight: 700;
-  color: #cc0000;
+  color: var(--color-rojo);
 }
 
 .nombre-dia {
@@ -118,7 +110,7 @@ export default {
   gap: 12px;
   padding: 12px 20px;
   border-radius: 10px;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 1.05rem;
   font-weight: 700;
   width: 400px;
@@ -128,13 +120,13 @@ export default {
 
 .narrador-dia {
   background: rgba(0, 0, 0, 0.82);
-  border-color: #e4ba03;
+  border-color: var(--color-dorado);
   color: #ffdd57;
 }
 
 .narrador-noche {
   background: rgba(0, 0, 0, 0.85);
-  border-color: #cc0000;
+  border-color: var(--color-rojo);
   color: #ff7777;
 }
 
@@ -159,16 +151,16 @@ export default {
 
 .carta-dia {
   background: white;
-  border: 8px solid #e4ba03;
+  border: 8px solid var(--color-dorado);
 }
 
 .carta-noche {
   background: #000;
-  border: 8px solid #cc0000;
+  border: 8px solid var(--color-rojo);
 }
 
 .carta-fase-titulo {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-weight: 700;
   font-size: clamp(1.2rem, 3vw, 2.5rem);
   margin: 0;
@@ -176,10 +168,10 @@ export default {
 }
 
 .carta-dia .carta-fase-titulo {
-  color: #e4ba03;
+  color: var(--color-dorado);
 }
 .carta-noche .carta-fase-titulo {
-  color: #cc0000;
+  color: var(--color-rojo);
 }
 
 .carta-fase-img {
@@ -190,14 +182,14 @@ export default {
 }
 
 .carta-dia .carta-fase-img {
-  border: 5px solid #e4ba03;
+  border: 5px solid var(--color-dorado);
 }
 .carta-noche .carta-fase-img {
-  border: 5px solid #cc0000;
+  border: 5px solid var(--color-rojo);
 }
 
 .carta-fase-texto {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: clamp(0.85rem, 1.2vw, 1.2rem);
   text-align: center;
@@ -207,10 +199,10 @@ export default {
 }
 
 .carta-dia .carta-fase-texto {
-  color: #e4ba03;
+  color: var(--color-dorado);
 }
 .carta-noche .carta-fase-texto {
-  color: #cc0000;
+  color: var(--color-rojo);
 }
 
 @media (max-width: 750px) {
@@ -237,10 +229,10 @@ export default {
   width: 400px;
   padding: 14px 20px;
   border-radius: 10px;
-  background: #e4ba03;
+  background: var(--color-dorado);
   border: 3px white solid;
   color: #000;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: bold;
 }
 

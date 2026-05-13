@@ -25,6 +25,10 @@ public class Sala {
     @JoinColumn(name = "id_narrador", nullable = false)
     private Usuario narrador;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_creador", nullable = false)
+    private Usuario creador;
+
     @Column(name = "codigo_sala", nullable = false, unique = true)
     private String codigoSala;
 

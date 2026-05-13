@@ -250,7 +250,7 @@ export default {
 }
 
 .titulo-pregunta {
-  font-family: 'Cinzel', Arial, sans-serif;
+  font-family: var(--font-cinzel);
   font-weight: 700;
   font-size: 1.3rem;
   color: #000;
@@ -317,7 +317,7 @@ export default {
   gap: 6px;
   padding: 6px 12px;
   border-radius: 20px;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 0.85rem;
   font-weight: 700;
   width: 100%;
@@ -357,7 +357,7 @@ export default {
   padding: 10px 14px;
   border-radius: 10px;
   border: 2px solid;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.85rem;
   cursor: pointer;
@@ -396,7 +396,7 @@ export default {
 
 /* ── Pociones restantes ── */
 .pociones-restantes {
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 1rem;
   text-align: center;
@@ -407,7 +407,7 @@ export default {
   color: #5fd45f;
 }
 .texto-rojo {
-  color: #cc0000;
+  color: var(--color-rojo);
 }
 
 /* ── Descripciones ── */
@@ -426,7 +426,7 @@ export default {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-size: 0.88rem;
   color: #ccc;
   margin: 0;
@@ -452,10 +452,10 @@ export default {
   gap: 8px;
   padding: 12px 24px;
   border-radius: 10px;
-  border: 3px solid #cc0000;
-  background: #cc0000;
+  border: 3px solid var(--color-rojo);
+  background: var(--color-rojo);
   color: white;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.95rem;
   cursor: pointer;

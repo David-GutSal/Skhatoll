@@ -39,6 +39,8 @@ export function procesarEvento(payload) {
       break
 
     default:
-      console.warn('Evento desconocido:', payload.tipo)
+      if (import.meta.env.DEV) {
+        console.warn('Evento desconocido:', payload.tipo)
+      }
   }
 }

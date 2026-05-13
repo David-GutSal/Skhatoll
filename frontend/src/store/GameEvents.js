@@ -51,7 +51,9 @@ export const GameEvents = {
         this.reiniciarVotos()
         break
       default:
-        console.warn('Evento desconocido:', tipo)
+        if (import.meta.env.DEV) {
+          console.warn('Evento desconocido:', tipo)
+        }
     }
   },
 }

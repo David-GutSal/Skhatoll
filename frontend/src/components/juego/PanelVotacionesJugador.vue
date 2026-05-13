@@ -36,17 +36,16 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'PanelVotacionesJugador',
-  props: {
-    esDia: { type: Boolean, default: true },
-    votacionActiva: { type: Boolean, default: false },
-    tipoVotacion: { type: String, default: null },
-    jugadorSeleccionado: { type: Object, default: null },
-  },
-  emits: ['votarAlcalde', 'votarCulpable'],
-}
+<script setup>
+
+defineProps({
+  esDia: { type: Boolean, default: true },
+  votacionActiva: { type: Boolean, default: false },
+  tipoVotacion: { type: String, default: null },
+  jugadorSeleccionado: { type: Object, default: null },
+})
+
+defineEmits(['votarAlcalde', 'votarCulpable'])
 </script>
 
 <style scoped>
@@ -70,10 +69,10 @@ export default {
   gap: 8px;
   padding: 12px 20px;
   border-radius: 10px;
-  border: 3px solid #e4ba03;
+  border: 3px solid var(--color-dorado);
   background: white;
-  color: #e4ba03;
-  font-family: 'Raleway', Arial, sans-serif;
+  color: var(--color-dorado);
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.9rem;
   cursor: pointer;
@@ -83,7 +82,7 @@ export default {
 }
 
 .btn-voto:hover:not(:disabled) {
-  background: #e4ba03;
+  background: var(--color-dorado);
   color: #000;
   transform: scale(0.96);
 }
@@ -106,16 +105,16 @@ export default {
   gap: 8px;
   padding: 10px 18px;
   border-radius: 10px;
-  font-family: 'Raleway', Arial, sans-serif;
+  font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 0.9rem;
   background: rgba(0, 0, 0, 0.4);
 }
 
-.cuadro-dia { border: 2px solid #e4ba03; color: white; }
-.cuadro-dia i { color: #e4ba03; }
-.cuadro-noche { border: 2px solid #cc0000; color: #cc0000; }
-.cuadro-noche i { color: #cc0000; }
+.cuadro-dia { border: 2px solid var(--color-dorado); color: white; }
+.cuadro-dia i { color: var(--color-dorado); }
+.cuadro-noche { border: 2px solid var(--color-rojo); color: var(--color-rojo); }
+.cuadro-noche i { color: var(--color-rojo); }
 
 @media (max-width: 768px) {
   .panel-votaciones-wrapper {

@@ -1,14 +1,9 @@
 package com.skhatoll.backend.dto.partida;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
-@Data
-@AllArgsConstructor
-public class ResultadoVotacionDto {
-    private Integer idSesion;
-    private String tipo;
-    private String nombreEliminado;
-    private String nombreGanador;
-    private boolean empate;
-}
+public record ResultadoVotacionDto(
+    Integer idSesion,
+    String tipo,
+    String nombreEliminado,
+    String nombreGanador,
+    boolean empate
+) {}

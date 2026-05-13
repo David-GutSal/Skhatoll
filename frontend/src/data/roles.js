@@ -16,6 +16,7 @@ export const IMAGENES_ROL = {
   NIÑA:           ninnaImg,
   'NIÑO SALVAJE': ninnoImg,
   CUPIDO:         cupidoImg,
+  NARRADOR:       brujaImg,
 }
 
 export const COLORES_BANDO = {

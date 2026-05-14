@@ -128,6 +128,10 @@ const irUnirse = () => {
     border-color 0.4s ease-out;
 }
 
+.boton-sala:active{
+  transform: scale(0.9);
+}
+
 .subtitulo {
   color: #ffffff;
   font-family: var(--font-raleway);

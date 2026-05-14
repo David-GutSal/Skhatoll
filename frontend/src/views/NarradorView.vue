@@ -296,7 +296,7 @@ const conectarWebSocket = () => {
             break
           case 'LOBOS':
             store.dispatch('toast/mostrar', {
-              mensaje: 'Los lobos salen de cazer��a...',
+              mensaje: 'Los lobos salen de cazería...',
               tipo: 'licantropia',
             })
             break

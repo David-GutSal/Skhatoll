@@ -333,7 +333,7 @@ export default {
   cursor: pointer;
   transition:
     background 0.4s ease-out,
-    transform 0.4s ease-out;
+    transform 0.8s ease-out;
   box-sizing: border-box;
   margin-top: 2px;
 }
@@ -360,7 +360,7 @@ export default {
 
 .btn-login:active,
 .btn-registro:active {
-  transform: scale(0.9);
+ transform: scale(0.9);
 }
 
 .auth-bienvenido {

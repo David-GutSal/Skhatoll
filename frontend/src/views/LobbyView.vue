@@ -309,6 +309,23 @@ const copiarCodigo = () => {
   }, 2000)
 }
 
+const copiarParaDiscord = () => {
+  const texto = `¡Únete a mi partida de Hombres Lobo! Código: ${codigoSala.value}`;
+  
+  navigator.clipboard.writeText(texto).then(() => {
+    copiado.value = true;
+    store.dispatch('toast/mostrar', { 
+      mensaje: 'Mensaje para Discord copiado al portapapeles', 
+      tipo: 'exito' 
+    });
+    
+    setTimeout(() => {
+      copiado.value = false;
+    }, 2000);
+  });
+};
+
+
 const salirSala = async () => {
   if (stompClient.value) {
     stompClient.value.deactivate()

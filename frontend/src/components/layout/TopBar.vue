@@ -143,7 +143,10 @@ export default {
           password: this.loginPassword,
         })
         this.login({ token: res.data.token, nombre: res.data.nombre, uuid: res.data.codigoUuid })
-        this.$store.dispatch('toast/mostrar', { mensaje: '¡Éxito al iniciar sesión!', tipo: 'exito' })
+        this.$store.dispatch('toast/mostrar', {
+          mensaje: '¡Éxito al iniciar sesión!',
+          tipo: 'exito',
+        })
         this.cerrarModales()
         this.loginNombre = ''
         this.loginPassword = ''
@@ -328,7 +331,9 @@ export default {
   font-weight: 700;
   letter-spacing: 0.05em;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition:
+    background 0.4s ease-out,
+    transform 0.4s ease-out;
   box-sizing: border-box;
   margin-top: 2px;
 }
@@ -340,6 +345,7 @@ export default {
 
 .btn-login:hover {
   background: #000000;
+  transition: background 0.4s ease-out;
 }
 
 .btn-registro {
@@ -349,6 +355,12 @@ export default {
 
 .btn-registro:hover {
   background: #990000;
+  transition: background 0.4s ease-out;
+}
+
+.btn-login:active,
+.btn-registro:active {
+  transform: scale(0.9);
 }
 
 .auth-bienvenido {

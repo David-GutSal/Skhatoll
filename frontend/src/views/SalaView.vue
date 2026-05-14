@@ -113,14 +113,19 @@ const irUnirse = () => {
   cursor: pointer;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
   transition:
-    background 0.6s ease,
-    transform 0.35s ease;
+    background 0.8s ease-out,
+    transform 0.45s ease-out,
+    border-color 0.6s ease-out;
 }
 
 .boton-sala:hover {
   background: #1f1f1f;
   transform: scale(1.1);
   border: 5px solid #8b0000;
+  transition:
+    background 0.4s ease-out,
+    transform 0.3s ease-out,
+    border-color 0.4s ease-out;
 }
 
 .subtitulo {

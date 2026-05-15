@@ -61,7 +61,10 @@ const props = defineProps({
 
 defineEmits(['asignar-narrador'])
 
-const esNarrador = (jugador) => jugador.nombre === props.nombreNarrador
+const esNarrador = (jugador) => {
+  const narradorActual = props.jugadores?.find((j) => j.esNarrador)
+  return narradorActual && narradorActual.nombre === jugador.nombre
+}
 </script>
 
 <style scoped>

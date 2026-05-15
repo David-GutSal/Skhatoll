@@ -93,7 +93,7 @@ public class SalaService implements ISalaService {
         boolean yaEsta = salaUsuarioRepository.existsBySala_IdSalaAndUsuario_IdUsuario(
                 sala.getIdSala(), usuario.getIdUsuario());
         if (yaEsta) {
-            throw new IllegalStateException("Ya estás en esta sala");
+            return;
         }
 
         SalaUsuario salaUsuario = SalaUsuario.builder()

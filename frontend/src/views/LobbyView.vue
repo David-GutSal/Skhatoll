@@ -4,7 +4,7 @@
 
     <div class="grid-lobby">
       <div class="lado-izquierdo">
-        <template v-if="esCreador">
+        <template v-if="esCreador || modoCreador">
           <div class="caja-panel">
             <div class="overlay">
               <h2 class="titulo-caja">Código Sala</h2>
@@ -103,7 +103,7 @@
       </div>
       <ListaJugadores
         :jugadores="jugadores"
-        :modoCreador="esCreador"
+        :modoCreador="modoCreador"
         :nombreNarrador="nombreNarrador"
         :soyNarrador="soyNarrador"
         @asignar-narrador="asignarNarrador"
@@ -147,7 +147,14 @@ const nombreNarrador = computed(() => {
 
 const soyNarrador = computed(() => nombreNarrador.value === nombre.value)
 
-  const handleUnirse = async () => {
+const modoCreador = computed(() => {
+  if (!jugadores.value?.length) return false
+  const narradorJugador = jugadores.value.find((j) => j.esNarrador)
+  if (!narradorJugador) return false
+  return nombre.value === narradorJugador.nombre
+})
+
+const handleUnirse = async () => {
   if (!inputCodigo.value) return
   try {
     await axiosInstance.post('/salas/unirse', { codigoSala: inputCodigo.value })
@@ -155,7 +162,13 @@ const soyNarrador = computed(() => nombreNarrador.value === nombre.value)
     store.dispatch('toast/mostrar', { mensaje: 'Te has unido a la sala', tipo: 'success' })
     mensajeUnion.value = true
   } catch (error) {
-    store.dispatch('toast/mostrar', { mensaje: 'Error al unirse a la sala', tipo: 'error' })
+    if (error.response?.status === 409) {
+      store.dispatch('sala/setSala', { codigoSala: inputCodigo.value, esCreador: false })
+      store.dispatch('toast/mostrar', { mensaje: 'Ya estás en esta sala', tipo: 'info' })
+      mensajeUnion.value = true
+    } else {
+      store.dispatch('toast/mostrar', { mensaje: 'Error al unirse a la sala', tipo: 'error' })
+    }
   }
 }
 

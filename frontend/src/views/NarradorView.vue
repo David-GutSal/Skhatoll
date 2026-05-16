@@ -242,8 +242,11 @@ const conectarWebSocket = () => {
 
     cliente.subscribe(`/topic/partida/${codigoSala.value}/muerte`, (msg) => {
       const payload = JSON.parse(msg.body)
-      store.dispatch('sala/marcarMuerto', payload.nombreJugador)
-      store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
+      if (payload.muerteConfirmada) {
+        store.dispatch('sala/marcarMuerto', payload.nombreJugador)
+      } else {
+        store.dispatch('sala/marcarSemimuerto', payload.nombreJugador)
+      }
     })
 
     cliente.subscribe(`/topic/partida/${codigoSala.value}/alcalde`, (msg) => {
@@ -308,6 +311,8 @@ const conectarWebSocket = () => {
         votacionActiva.value = false
         tipoVotacionLocal.value = null
         store.dispatch('sala/setTipoVotacion', null)
+        store.dispatch('sala/reiniciarVotos')
+        jugadorSeleccionado.value = null
         return
       }
 

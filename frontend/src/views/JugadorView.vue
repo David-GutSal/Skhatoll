@@ -190,7 +190,9 @@ const irArriba = () => {
  * @param {Jugador} j - Player to select
  */
 const seleccionarJugador = (j) => {
-  if (j.nombre === nombre.value) return
+  const esVotacion = votacionActiva.value && tipoVotacionLocal.value !== 'HABILIDAD'
+  
+  if (esVotacion && j.nombre === nombre.value) return
   
   if (enamorados.value) {
     const miNombre = nombre.value
@@ -402,8 +404,11 @@ const conectarWebSocket = () => {
 
     cliente.subscribe(`/topic/partida/${codigoSala.value}/muerte`, (msg) => {
       const payload = JSON.parse(msg.body)
-      store.dispatch('sala/marcarMuerto', payload.nombreJugador)
-      store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
+      if (payload.muerteConfirmada) {
+        store.dispatch('sala/marcarMuerto', payload.nombreJugador)
+      } else {
+        store.dispatch('sala/marcarSemimuerto', payload.nombreJugador)
+      }
 
       if (
         miRol.value &&
@@ -421,7 +426,7 @@ const conectarWebSocket = () => {
         }, 8000)
       }
 
-      if (payload.nombreJugador === nombre.value) {
+      if (payload.nombreJugador === nombre.value && payload.muerteConfirmada) {
         if ((miRol.value || '').toLowerCase() === 'cazador') {
           soyElCazadorMuerto.value = true
           mensajeEvento.value =
@@ -481,6 +486,12 @@ const conectarWebSocket = () => {
 
       if (payload.tipo === 'VOTACION_ABIERTA' || payload.tipo === 'VOTACION_CERRADA') {
         votacionActiva.value = payload.abierta
+
+        if (!payload.abierta) {
+          store.dispatch('sala/reiniciarVotos')
+          store.dispatch('sala/setTipoVotacion', null)
+          return
+        }
 
         if (payload.abierta) {
           tipoVotacionLocal.value = payload.tipoVotacion

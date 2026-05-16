@@ -15,4 +15,12 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  server: {
+    mimeTypes: {
+      '.css': 'text/css',
+    },
+  },
+  css: {
+    devSourcemap: true,
+  },
 })

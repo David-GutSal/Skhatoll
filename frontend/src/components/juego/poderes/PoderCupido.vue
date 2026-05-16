@@ -136,6 +136,8 @@ const resetear = () => {
   enamorado2.value = null
   poderUsado.value = false
 }
+
+defineExpose({ resetear })
 </script>
 
 <style scoped>

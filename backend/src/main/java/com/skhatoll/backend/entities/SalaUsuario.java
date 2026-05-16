@@ -40,5 +40,5 @@ public class SalaUsuario {
     private Boolean muerteConfirmada = false;
 
     @Column(name = "id_modelo")
-    private Integer IdModelo;
+    private Integer idModelo;
 }

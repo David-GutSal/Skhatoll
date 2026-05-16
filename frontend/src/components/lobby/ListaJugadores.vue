@@ -1,13 +1,11 @@
 <template>
   <div class="lista-jugadores">
     <div class="overlay">
-
       <h2 class="titulo-lista">Jugadores en Sala</h2>
       <p class="subtitulo-lista">Nuevos visitantes llegan a la aldea de Castronegro...</p>
 
       <ul class="lista" :class="modoCreador ? 'lista-creador' : 'lista-jugador'">
         <li v-for="jugador in jugadores" :key="jugador.idUsuario" class="jugador-item">
-
           <i v-if="esNarrador(jugador)" class="fa-solid fa-book-open-reader icono-narrador"></i>
           <i v-else class="fa-solid fa-person icono-jugador"></i>
 
@@ -23,7 +21,6 @@
             :checked="esNarrador(jugador)"
             @change="$emit('asignar-narrador', jugador.idUsuario)"
           />
-
         </li>
       </ul>
 
@@ -40,11 +37,8 @@
         <span v-else-if="nombreNarrador">
           Al parecer <strong>{{ nombreNarrador }}</strong> es el narrador
         </span>
-        <span v-else>
-          Esperando a que el creador elija un narrador...
-        </span>
+        <span v-else> Esperando a que el creador elija un narrador... </span>
       </p>
-
     </div>
   </div>
 </template>
@@ -107,7 +101,27 @@ const esNarrador = (jugador) => jugador.nombre === props.nombreNarrador
   padding: 0;
   margin: 0;
   border-radius: 10px;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 320px;
+  scrollbar-width: thin;
+  scrollbar-color: #8b0000 transparent;
+}
+
+.lista::-webkit-scrollbar {
+  width: 6px;
+  padding: 2px;
+}
+
+.lista::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.lista::-webkit-scrollbar-thumb {
+  background: #8b0000;
+  border-radius: 10px;
+   border: 4px solid transparent; 
+  background-clip: padding-box;
 }
 
 .lista-creador {
@@ -125,11 +139,13 @@ const esNarrador = (jugador) => jugador.nombre === props.nombreNarrador
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  border-bottom: 1px solid rgba(0,0,0,0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .lista-creador .jugador-item {
-  border-bottom-color: rgba(255,255,255,0.08);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
 .jugador-item:last-child {
@@ -137,33 +153,63 @@ const esNarrador = (jugador) => jugador.nombre === props.nombreNarrador
 }
 
 .icono-jugador {
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   flex-shrink: 0;
 }
 
-.lista-creador .icono-jugador { color: #8b0000; }
-.lista-jugador .icono-jugador { color: #8b0000; }
+.lista-creador .icono-jugador {
+  color: #8b0000;
+}
+.lista-jugador .icono-jugador {
+  color: #8b0000;
+}
 
 .icono-narrador {
   font-size: 1.3rem;
   flex-shrink: 0;
 }
 
-.lista-creador .icono-narrador { color: white; }
-.lista-jugador .icono-narrador { color: #8b0000; }
+.lista-creador .icono-narrador {
+  color: white;
+}
+.lista-jugador .icono-narrador {
+  color: #8b0000;
+}
 
 .jugador-nombre {
   flex: 1;
   font-family: var(--font-raleway);
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
+  white-space: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 7px;
+  min-width: 0;
 }
 
-.lista-creador .jugador-nombre { color: white; }
-.lista-jugador .jugador-nombre { color: #8b0000; }
+.jugador-nombre::-webkit-scrollbar {
+  height: 4px;
+}
+
+.jugador-nombre::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.jugador-nombre::-webkit-scrollbar-thumb {
+  background: #8b0000;
+  border-radius: 10px;
+}
+
+.lista-creador .jugador-nombre {
+  color: white;
+}
+.lista-jugador .jugador-nombre {
+  color: #8b0000;
+}
 
 .jugador-nombre.es-narrador {
-color: var(--color-rojo);
+  color: var(--color-rojo);
 }
 
 .lista-jugador .jugador-nombre.es-narrador {
@@ -195,6 +241,10 @@ color: var(--color-rojo);
   margin-top: 2px;
 }
 
-.mensaje-creador { color: var(--color-rojo); }
-.mensaje-jugador { color: white; }
+.mensaje-creador {
+  color: var(--color-rojo);
+}
+.mensaje-jugador {
+  color: white;
+}
 </style>

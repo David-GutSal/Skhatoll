@@ -55,6 +55,9 @@ public class PartidaController {
     @GetMapping("/{codigo}/sesion-activa")
     public ResponseEntity<SesionVotacion> getSesionActiva(@PathVariable String codigo) {
         SesionVotacion sesion = partidaService.getSesionActiva(codigo);
+        if (sesion == null) {
+            return ResponseEntity.noContent().build();
+        }
         return ResponseEntity.ok(sesion);
     }
 

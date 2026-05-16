@@ -218,13 +218,21 @@ const confirmarMuertesSemimuertos = async () => {
 
 const conectarWebSocket = () => {
   const token = store.getters['auth/token']
+  let codigo = codigoSala.value || sessionStorage.getItem('codigoSala')
+
+  if (!codigo) return
+
+  if (stompClient.value) return
+
   const cliente = new Client({
     webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
     connectHeaders: { Authorization: `Bearer ${token}` },
   })
 
-  cliente.onConnect = () => {
-    cliente.subscribe(`/topic/partida/${codigoSala.value}/fase`, (msg) => {
+cliente.onConnect = () => {
+    const codigo = codigoSala.value || sessionStorage.getItem('codigoSala')
+
+    cliente.subscribe(`/topic/partida/${codigo}/fase`, (msg) => {
       const payload = JSON.parse(msg.body)
       esDia.value = payload.fase === 'DIA'
       store.dispatch('sala/setFase', payload.fase)
@@ -240,13 +248,13 @@ const conectarWebSocket = () => {
       }
     })
 
-    cliente.subscribe(`/topic/partida/${codigoSala.value}/muerte`, (msg) => {
+    cliente.subscribe(`/topic/partida/${codigo}/muerte`, (msg) => {
       const payload = JSON.parse(msg.body)
       store.dispatch('sala/marcarMuerto', payload.nombreJugador)
       store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
     })
 
-    cliente.subscribe(`/topic/partida/${codigoSala.value}/alcalde`, (msg) => {
+    cliente.subscribe(`/topic/partida/${codigo}/alcalde`, (msg) => {
       const payload = JSON.parse(msg.body)
       if (payload.tipo === 'ALCALDE_ELEGIDO') {
         store.dispatch('sala/designarAlcalde', payload.nombreAlcalde)
@@ -258,12 +266,12 @@ const conectarWebSocket = () => {
       }
     })
 
-    cliente.subscribe(`/topic/partida/${codigoSala.value}/votos`, (msg) => {
+    cliente.subscribe(`/topic/partida/${codigo}/votos`, (msg) => {
       const payload = JSON.parse(msg.body)
       store.dispatch('sala/actualizarVotos', payload.votos)
     })
 
-    cliente.subscribe(`/topic/partida/${codigoSala.value}/fin`, (msg) => {
+    cliente.subscribe(`/topic/partida/${codigo}/fin`, (msg) => {
       const payload = JSON.parse(msg.body)
       store.dispatch('sala/setResultado', {
         bandoGanador: payload.bandoGanador,
@@ -272,7 +280,7 @@ const conectarWebSocket = () => {
       router.push({ name: 'resultados' })
     })
 
-    cliente.subscribe(`/topic/partida/${codigoSala.value}/votacion`, (msg) => {
+    cliente.subscribe(`/topic/partida/${codigo}/votacion`, (msg) => {
       const payload = JSON.parse(msg.body)
       console.log('📩 VOTACION PAYLOAD COMPLETO:', JSON.stringify(payload))
 
@@ -320,7 +328,7 @@ const conectarWebSocket = () => {
       }
     })
 
-    cliente.subscribe(`/topic/partida/${codigoSala.value}/turno`, (msg) => {
+    cliente.subscribe(`/topic/partida/${codigo}/turno`, (msg) => {
       const payload = JSON.parse(msg.body)
 
       if (payload.tipo === 'TURNO_FINALIZADO') {
@@ -608,6 +616,7 @@ const activarTurnoJugador = async (jugador) => {
 }
 
 onMounted(() => {
+  store.dispatch('sala/restaurarEstado')
   cargarDatos()
 })
 

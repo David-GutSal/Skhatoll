@@ -376,13 +376,17 @@ const cargarDatos = async () => {
 
 const conectarWebSocket = () => {
   const token = store.getters['auth/token']
+  const codigo = codigoSala.value || sessionStorage.getItem('codigoSala')
+
+  if (!codigo) return
+
   const cliente = new Client({
     webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
     connectHeaders: { Authorization: `Bearer ${token}` },
   })
 
   cliente.onConnect = () => {
-    cliente.subscribe(`/topic/partida/${codigoSala.value}/fase`, (msg) => {
+    cliente.subscribe(`/topic/partida/${codigo}/fase`, (msg) => {
       const payload = JSON.parse(msg.body)
       esDia.value = payload.fase === 'DIA'
       store.dispatch('sala/setFase', payload.fase)
@@ -400,7 +404,7 @@ const conectarWebSocket = () => {
       }
     })
 
-    cliente.subscribe(`/topic/partida/${codigoSala.value}/muerte`, (msg) => {
+    cliente.subscribe(`/topic/partida/${codigo}/muerte`, (msg) => {
       const payload = JSON.parse(msg.body)
       store.dispatch('sala/marcarMuerto', payload.nombreJugador)
       store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
@@ -440,7 +444,7 @@ const conectarWebSocket = () => {
           const jugadorPareja = jugadores.value.find((j) => j.nombre === nombrePareja)
           if (jugadorPareja && jugadorPareja.estaVivo) {
             stompClient.value.publish({
-              destination: `/topic/partida/${codigoSala.value}/turno`,
+              destination: `/topic/partida/${codigo}/turno`,
               body: JSON.stringify({
                 tipo: 'MUERTE_ENAMORADO',
                 nombreJugador: nombrePareja,
@@ -451,7 +455,7 @@ const conectarWebSocket = () => {
       }
     })
 
-    cliente.subscribe(`/topic/partida/${codigoSala.value}/votos`, (msg) => {
+    cliente.subscribe(`/topic/partida/${codigo}/votos`, (msg) => {
       const payload = JSON.parse(msg.body)
       const tipoVotacionActual = store.getters['sala/tipoVotacion']
       if (tipoVotacionActual === 'LOBOS') {
@@ -463,7 +467,7 @@ const conectarWebSocket = () => {
       store.dispatch('sala/actualizarVotos', payload.votos)
     })
 
-    cliente.subscribe(`/topic/partida/${codigoSala.value}/alcalde`, (msg) => {
+    cliente.subscribe(`/topic/partida/${codigo}/alcalde`, (msg) => {
       const payload = JSON.parse(msg.body)
       if (payload.tipo === 'ALCALDE_ELEGIDO') {
         store.dispatch('sala/designarAlcalde', payload.nombreAlcalde)
@@ -476,7 +480,7 @@ const conectarWebSocket = () => {
       }
     })
 
-    cliente.subscribe(`/topic/partida/${codigoSala.value}/votacion`, (msg) => {
+    cliente.subscribe(`/topic/partida/${codigo}/votacion`, (msg) => {
       const payload = JSON.parse(msg.body)
 
       if (payload.tipo === 'VOTACION_ABIERTA' || payload.tipo === 'VOTACION_CERRADA') {
@@ -523,7 +527,7 @@ const conectarWebSocket = () => {
       }
     })
 
-    cliente.subscribe(`/topic/partida/${codigoSala.value}/turno`, (msg) => {
+    cliente.subscribe(`/topic/partida/${codigo}/turno`, (msg) => {
       const payload = JSON.parse(msg.body)
 
       if (payload.tipo === 'EVENTOS_INICIADOS') {
@@ -542,8 +546,12 @@ const conectarWebSocket = () => {
         return
       }
 
-      if (payload.tipo === 'TURNO_FINALIZADO') return
-      if (payload.tipo === 'MUERTE_ENAMORADO') return
+      if (payload.tipo === 'TURNO_FINALIZADO') {
+        return
+      }
+      if (payload.tipo === 'MUERTE_ENAMORADO') {
+        return
+      }
 
       if (payload.tipo === 'FLECHAZO') {
         const soyEnamorado =
@@ -631,7 +639,7 @@ const conectarWebSocket = () => {
       }
     })
 
-    cliente.subscribe(`/topic/partida/${codigoSala.value}/fin`, (msg) => {
+    cliente.subscribe(`/topic/partida/${codigo}/fin`, (msg) => {
       const payload = JSON.parse(msg.body)
       store.dispatch('sala/setResultado', {
         bandoGanador: payload.bandoGanador,
@@ -646,14 +654,8 @@ const conectarWebSocket = () => {
 }
 
 onMounted(() => {
+  store.dispatch('sala/restaurarEstado')
   cargarDatos()
-})
-
-onUnmounted(() => {
-  if (stompClient.value) {
-    stompClient.value.deactivate()
-    stompClient.value = null
-  }
 })
 </script>
 

@@ -34,7 +34,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { Client } from '@stomp/stompjs'
@@ -48,7 +48,7 @@ const verPartida = ref(false)
 const esDia = ref(true)
 const stompClient = ref(null)
 
-const codigoSala = computed(() => store.getters['sala/codigoSala'])
+const codigoSala = computed(() => store.getters['sala/codigoSala'] || sessionStorage.getItem('codigoSala'))
 const jugadores = computed(() => store.getters['sala/jugadores'])
 
 const togglePartida = () => {
@@ -94,7 +94,12 @@ const conectarWebSocket = () => {
 }
 
 esDia.value = store.getters['sala/fase'] !== 'NOCHE'
-conectarWebSocket()
+
+onMounted(async () => {
+  store.dispatch('sala/restaurarEstado')
+  await new Promise((r) => setTimeout(r, 50))
+  conectarWebSocket()
+})
 
 onUnmounted(() => {
   if (stompClient.value) {

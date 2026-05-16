@@ -118,8 +118,10 @@ public class SalaService implements ISalaService {
         Sala sala = salaRepository.findByCodigoSala(codigoSala)
                 .orElseThrow(() -> new IllegalArgumentException(SALA_NO_ENCONTRADA));
 
-        if (!sala.getCreador().getIdUsuario().equals(solicitante.getIdUsuario())) {
-            throw new IllegalStateException("Solo el creador puede asignar el narrador");
+        boolean esCreador = sala.getCreador().getIdUsuario().equals(solicitante.getIdUsuario());
+        boolean esNarradorActual = sala.getNarrador().getIdUsuario().equals(solicitante.getIdUsuario());
+        if (!esCreador && !esNarradorActual) {
+            throw new IllegalStateException("Solo el creador o el narrador actual pueden asignar un narrador");
         }
 
         boolean estaEnSala = salaUsuarioRepository.existsBySala_IdSalaAndUsuario_IdUsuario(
@@ -148,8 +150,10 @@ public class SalaService implements ISalaService {
         Sala sala = salaRepository.findByCodigoSala(codigoSala)
                 .orElseThrow(() -> new IllegalArgumentException(SALA_NO_ENCONTRADA));
 
-        if (!sala.getCreador().getIdUsuario().equals(solicitante.getIdUsuario())) {
-            throw new IllegalStateException("Solo el creador puede iniciar la partida");
+        boolean esCreador = sala.getCreador().getIdUsuario().equals(solicitante.getIdUsuario());
+        boolean esNarradorActual = sala.getNarrador().getIdUsuario().equals(solicitante.getIdUsuario());
+        if (!esCreador && !esNarradorActual) {
+            throw new IllegalStateException("Solo el creador o el narrador pueden iniciar la partida");
         }
 
         List<SalaUsuario> jugadores = salaUsuarioRepository.findBySala_IdSala(sala.getIdSala());

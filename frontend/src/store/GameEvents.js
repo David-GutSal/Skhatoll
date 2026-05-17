@@ -1,6 +1,3 @@
-// GameEvents unificado — ahora usa Vuex en vez de gameState
-// Úsalo en cualquier componente: import { GameEvents } from '@/store/GameEvents'
-
 import store from '@/store'
 
 export const GameEvents = {

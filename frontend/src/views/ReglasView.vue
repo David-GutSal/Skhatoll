@@ -1,49 +1,84 @@
 <template>
   <main class="reglas">
     <div class="reglas-inner">
-
-      <!-- PARTE 1 -->
       <section class="seccion-intro">
         <h1 class="intro-titulo">REGLAS Y JUEGOS</h1>
-        <p class="intro-texto">En esta sección se recopilan las reglas principales del juego así como una guía de seguimiento de la partida y cosas a tener en cuenta.</p>
-        <p class="intro-texto">También hay una sección donde pueden verse expansiones y juegos similares a Los Hombres Lobo de Castronegro.</p>
+        <p class="intro-texto">
+          En esta sección se recopilan las reglas principales del juego así como una guía de
+          seguimiento de la partida y cosas a tener en cuenta.
+        </p>
+        <p class="intro-texto">
+          También hay una sección donde pueden verse expansiones y juegos similares a Los Hombres
+          Lobo de Castronegro.
+        </p>
       </section>
 
-      <!-- PARTE 2: Fichas -->
       <section class="fichas-grid mb-5">
         <div class="ficha">
           <img src="@/assets/imgs/medalla-alcalde.jpg" alt="Alcalde" class="ficha-img" />
           <h3 class="ficha-titulo">La figura del Alcalde / Alguacil</h3>
-          <p class="ficha-texto">Este cargo se puede asignar a cualquier jugador. Los jugadores presentan sus candidaturas y después serán votados. Ganará el jugador con más votos. Su función principal es la de desempatar en las votaciones. El cargo de alguacil tiene las siguientes características:</p>
+          <p class="ficha-texto">
+            Este cargo se puede asignar a cualquier jugador. Los jugadores presentan sus
+            candidaturas y después serán votados. Ganará el jugador con más votos. Su función
+            principal es la de desempatar en las votaciones. El cargo de alguacil tiene las
+            siguientes características:
+          </p>
           <ul class="ficha-lista">
             <li>No se puede rechazar el honor de ser Alguacil.</li>
             <li>El voto de este jugador contará como doble.</li>
-            <li>Si después de una votación hay un empate, el Alcalde decide quién será la víctima a linchar.</li>
+            <li>
+              Si después de una votación hay un empate, el Alcalde decide quién será la víctima a
+              linchar.
+            </li>
             <li>Si el Alguacil es eliminado, antes de morir elige a su sucesor en el cargo.</li>
           </ul>
         </div>
         <div class="ficha">
           <img src="@/assets/imgs/linchamiento.jpg" alt="Linchamiento" class="ficha-img" />
           <h3 class="ficha-titulo">Votación por linchamiento</h3>
-          <p class="ficha-texto">Estas votaciones ocurren durante el día y son la manera más eficaz de los aldeanos de eliminar a los lobos. En las votaciones por linchamiento los jugadores son libres de argumentar quién piensan que es un lobo o defenderse a ellos mismos de una acusación. Tras los debates empezarán las votaciones en las que los jugadores votarán a los presuntos lobos (puedes votarte a ti mismo).</p>
-          <p class="ficha-texto">En caso de empate será el alcalde el que decida qué persona será linchada. Esa persona linchada normalmente revelará su rol y quedará eliminada de la partida.</p>
+          <p class="ficha-texto">
+            Estas votaciones ocurren durante el día y son la manera más eficaz de los aldeanos de
+            eliminar a los lobos. En las votaciones por linchamiento los jugadores son libres de
+            argumentar quién piensan que es un lobo o defenderse a ellos mismos de una acusación.
+            Tras los debates empezarán las votaciones en las que los jugadores votarán a los
+            presuntos lobos (puedes votarte a ti mismo).
+          </p>
+          <p class="ficha-texto">
+            En caso de empate será el alcalde el que decida qué persona será linchada. Esa persona
+            linchada normalmente revelará su rol y quedará eliminada de la partida.
+          </p>
         </div>
         <div class="ficha">
           <img src="@/assets/imgs/diaynoche.jpg" alt="Fases del juego" class="ficha-img" />
           <h3 class="ficha-titulo">Las fases del juego</h3>
-          <p class="ficha-texto">Cada turno del juego transcurre en 2 fases completas de día y noche siempre guiadas por un narrador omnisciente que sabrá los roles que interpreta cada personaje.</p>
-          <p class="ficha-texto"><strong class="icono-ficha"><i class="fa-solid fa-moon"></i> Durante la noche:</strong> los jugadores cierran los ojos y son llamados por el narrador de forma ordenada para que usen sus poderes o sean informados de algo.</p>
-          <p class="ficha-texto"><strong class="icono-ficha"><i class="fa-solid fa-sun"></i> Durante el día:</strong> Los aldeanos abrirán los ojos y se revelarán las víctimas de la noche. Después debatirán y harán votaciones para eliminar a los lobos.</p>
+          <p class="ficha-texto">
+            Cada turno del juego transcurre en 2 fases completas de día y noche siempre guiadas por
+            un narrador omnisciente que sabrá los roles que interpreta cada personaje.
+          </p>
+          <p class="ficha-texto">
+            <strong class="icono-ficha"><i class="fa-solid fa-moon"></i> Durante la noche:</strong>
+            los jugadores cierran los ojos y son llamados por el narrador de forma ordenada para que
+            usen sus poderes o sean informados de algo.
+          </p>
+          <p class="ficha-texto">
+            <strong class="icono-ficha"><i class="fa-solid fa-sun"></i> Durante el día:</strong> Los
+            aldeanos abrirán los ojos y se revelarán las víctimas de la noche. Después debatirán y
+            harán votaciones para eliminar a los lobos.
+          </p>
         </div>
       </section>
 
-      <!-- PARTE 3: Tabla + Carrusel -->
       <section class="tabla-consejos-wrapper mb-4">
-
         <div class="seccion-tabla">
           <h2 class="tabla-titulo">Distribución de personajes en partidas</h2>
-          <p class="tabla-texto">Esta tabla es una guía básica para equilibrar ambos bandos. Se utilizan los personajes básicos e indispensables del juego.</p>
-          <p class="tabla-texto">Si se quieren meter más personajes siempre hay que buscar un equilibrio entre personajes buenos y malos teniendo en cuenta el poder de los personajes ambiguos.</p>
+          <p class="tabla-texto">
+            Esta tabla es una guía básica para equilibrar ambos bandos. Se utilizan los personajes
+            básicos e indispensables del juego.
+          </p>
+          <p class="tabla-texto">
+            Si se quieren meter más personajes siempre hay que buscar un equilibrio entre personajes
+            buenos y malos teniendo en cuenta el poder de los personajes ambiguos.
+          </p>
           <div class="tabla-wrapper">
             <table class="tabla-juego">
               <thead>
@@ -55,7 +90,11 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(fila, i) in tablaJugadores" :key="i" :class="i % 2 === 0 ? 'fila-gris' : 'fila-roja'">
+                <tr
+                  v-for="(fila, i) in tablaJugadores"
+                  :key="i"
+                  :class="i % 2 === 0 ? 'fila-gris' : 'fila-roja'"
+                >
                   <td>{{ fila[0] }}</td>
                   <td>{{ fila[1] }}</td>
                   <td>{{ fila[2] }}</td>
@@ -82,25 +121,32 @@
               </div>
             </template>
 
-            <template v-else>
-              <div class="consejo-contenido">
-                <div v-if="tarjetaActual.titulo" class="caja-blanca consejo-titulo-caja">
-                  <h3 class="consejo-titulo" :style="{ color: tarjetaActual.colorTitulo }">
-                    {{ tarjetaActual.titulo }}
-                  </h3>
-                </div>
-                <div
-                  v-for="(parrafo, i) in tarjetaActual.textos"
-                  :key="i"
-                  class="caja-blanca consejo-parrafo-caja"
-                >
-                  <p class="consejo-parrafo" :style="{ color: tarjetaActual.colorTexto }">
-                    <i class="fa-solid fa-file-pen icono-parrafo" :style="{ color: tarjetaActual.colorTexto }"></i>
-                    {{ parrafo }}
-                  </p>
-                </div>
-              </div>
-            </template>
+<template v-else>
+  <div class="consejo-contenido">
+    <div v-if="tarjetaActual.titulo" class="consejo-titulo-caja">
+      <h3 class="consejo-titulo" :style="{ color: tarjetaActual.colorTitulo }">
+        {{ tarjetaActual.titulo }}
+      </h3>
+    </div>
+
+    <!-- NUEVO CONTENEDOR ÚNICO PARA LOS TEXTOS -->
+    <div class="caja-blanca bloque-textos-consejo">
+      <div
+        v-for="(parrafo, i) in tarjetaActual.textos"
+        :key="i"
+        class="consejo-parrafo-caja-interna"
+      >
+        <p class="consejo-parrafo" :style="{ color: tarjetaActual.colorTexto }">
+          <i
+            class="fa-solid fa-file-pen icono-parrafo"
+            :style="{ color: tarjetaActual.colorTexto }"
+          ></i>
+          {{ parrafo }}
+        </p>
+      </div>
+    </div>
+  </div>
+</template>
           </div>
 
           <div class="consejos-nav">
@@ -113,15 +159,11 @@
             </button>
           </div>
         </div>
-
       </section>
 
-      <!-- PARTE 4: Lista de reglas -->
       <section class="mb-4">
         <ListaReglas />
       </section>
-
-      <!-- PARTE 5: Carrusel de juegos -->
       <section class="seccion-juegos mb-4">
         <div class="juegos-header">
           <h2 class="juegos-titulo">Si te gustó Los Hombres Lobo de Castronegro te gustarán...</h2>
@@ -138,7 +180,9 @@
               :style="{ backgroundImage: 'url(' + juego.imagen + ')' }"
             >
               <div class="juego-info">
-                <a :href="juego.enlace" target="_blank" class="juego-titulo-link">{{ juego.titulo }}</a>
+                <a :href="juego.enlace" target="_blank" class="juego-titulo-link">{{
+                  juego.titulo
+                }}</a>
                 <p class="juego-texto">{{ juego.texto }}</p>
               </div>
             </div>
@@ -148,7 +192,6 @@
           </button>
         </div>
       </section>
-
     </div>
   </main>
 </template>
@@ -170,31 +213,161 @@ const indiceJuego = ref(0)
 const fichasPorPantalla = ref(3)
 
 const tablaJugadores = ref([
-  [8,2,1,5],[9,2,1,6],[10,2,1,7],[11,2,1,8],
-  [12,3,1,8],[13,3,1,9],[14,3,1,10],[15,3,1,11],
-  [16,3,1,12],[17,3,1,13],[18,4,1,13],
+  [8, 2, 1, 5],
+  [9, 2, 1, 6],
+  [10, 2, 1, 7],
+  [11, 2, 1, 8],
+  [12, 3, 1, 8],
+  [13, 3, 1, 9],
+  [14, 3, 1, 10],
+  [15, 3, 1, 11],
+  [16, 3, 1, 12],
+  [17, 3, 1, 13],
+  [18, 4, 1, 13],
 ])
 
 const tarjetas = ref([
-  { color: '#3a3a3a', colorTitulo: '#cc0000', colorTexto: '#cc0000', titulo: 'PREPARACIÓN Y CONSEJOS', textos: [] },
-  { color: '#3a3a3a', colorTitulo: '#cc0000', colorTexto: '#111', titulo: 'PREPARACIÓN', textos: ['Los jugadores eligen un narrador que no juega pero guiará la partida. Este narrador repartirá las cartas e inicieará la partida.'] },
-  { color: '#cc0000', colorTitulo: '#000', colorTexto: '#000', titulo: 'Consejos al narrador', textos: ['Tu papel es fundamental: de tu talento depende el ambiente del juego. Guiados por ti, los jugadores se van a diverti'] },
-  { color: '#cc0000', colorTitulo: '#000', colorTexto: '#000', titulo: '', textos: ['Las frases de llamada nocturna de los personajes solo son ejemplos. Cuando domines bien la técnica, déjate llevar por tu propia inspiración.', 'Con jugadores experimentados, aunque no seáis muchos, no dude en utilizar los personajes con poderes especiales, porque añade interés a las partidas.'] },
-  { color: '#cc0000', colorTitulo: '#000', colorTexto: '#000', titulo: '', textos: ['Con jugadores novatos, introduce poco a poco las otras cartas de personajes. Las partidas son relativamente cortas, jugad varias seguidas y variad los personajes.', 'Cuando hables, ten cuidado de no dar pistas de la identidad de los personajes.', 'Por la noche, cuando te dirijas a los personajes, no dirijas la voz hacia ellos; el resto de jugadores podría deducir su posición en la mesa.'] },
-  { color: '#cc0000', colorTitulo: '#000', colorTexto: '#000', titulo: '', textos: ['Si los hombres lobo no consigue ponerse de acuerdo o no se decides, mala suerte para ellos, porque esa noche no habrá víctima.', 'Cuando la Vidente espía, haz como que le das la vuelta a las cartas de todos los jugadores.', 'Puedes esperar varios turnos antes de hacer elegir por votación al Alguacil.'] },
-  { color: '#cc0000', colorTitulo: '#000', colorTexto: '#000', titulo: 'Consejos para jugadores', textos: ['Los Hombres Lobo: una estrategia eficaz para librarse de una acusación es votar contra tu propio compañero.', 'La Vidente: cuidado, si has descubierto un Hombre Lobo, a lo mejor vale la pena descubrir tu identidad para acusar a un jugador, pero no demasiado pronto.'] },
-  { color: '#cc0000', colorTitulo: '#000', colorTexto: '#000', titulo: '', textos: ['La Niña Pequeña: es un personaje muy poderoso, pero muy angustioso de jugar. No dudes en espiar: da miedo pero hay que aprovecharlo rápidamente antes de ser eliminado.', 'El Cazador: siempre es bueno, en caso de acusación, hacerse pasar por el Cazador.', 'Cupido: si te designas a ti mismo como enamorado, no escojas un compañero sentimental bocazas.'] },
-  { color: '#cc0000', colorTitulo: '#000', colorTexto: '#000', titulo: '', textos: ['El Alguacil: no dudes en presentarte al cargo de Alguacil, haz campaña. Pero si eres Hombre Lobo, no busques el puesto demasiado abiertamente.', 'La Bruja: tu personaje va cobrando importancia a medida que se acerca el final de la partida. No desperdicies tus hechizos.'] },
+  {
+    color: '#3a3a3a',
+    colorTitulo: '#cc0000',
+    colorTexto: '#cc0000',
+    titulo: 'PREPARACIÓN Y CONSEJOS',
+    textos: [],
+  },
+  {
+    color: '#3a3a3a',
+    colorTitulo: '#cc0000',
+    colorTexto: '#111',
+    titulo: 'PREPARACIÓN',
+    textos: [
+      'Los jugadores eligen un narrador que no juega pero guiará la partida. Este narrador repartirá las cartas e inicieará la partida.',
+    ],
+  },
+  {
+    color: '#cc0000',
+    colorTitulo: '#000',
+    colorTexto: '#000',
+    titulo: 'Consejos al narrador',
+    textos: [
+      'Tu papel es fundamental: de tu talento depende el ambiente del juego. Guiados por ti, los jugadores se van a diverti',
+    ],
+  },
+  {
+    color: '#cc0000',
+    colorTitulo: '#000',
+    colorTexto: '#000',
+    titulo: '',
+    textos: [
+      'Las frases de llamada nocturna de los personajes solo son ejemplos. Cuando domines bien la técnica, déjate llevar por tu propia inspiración.',
+      'Con jugadores experimentados, aunque no seáis muchos, no dude en utilizar los personajes con poderes especiales, porque añade interés a las partidas.',
+    ],
+  },
+  {
+    color: '#cc0000',
+    colorTitulo: '#000',
+    colorTexto: '#000',
+    titulo: '',
+    textos: [
+      'Con jugadores novatos, introduce poco a poco las otras cartas de personajes. Las partidas son relativamente cortas, jugad varias seguidas y variad los personajes.',
+      'Cuando hables, ten cuidado de no dar pistas de la identidad de los personajes.',
+      'Por la noche, cuando te dirijas a los personajes, no dirijas la voz hacia ellos; el resto de jugadores podría deducir su posición en la mesa.',
+    ],
+  },
+  {
+    color: '#cc0000',
+    colorTitulo: '#000',
+    colorTexto: '#000',
+    titulo: '',
+    textos: [
+      'Si los hombres lobo no consigue ponerse de acuerdo o no se decides, mala suerte para ellos, porque esa noche no habrá víctima.',
+      'Cuando la Vidente espía, haz como que le das la vuelta a las cartas de todos los jugadores.',
+      'Puedes esperar varios turnos antes de hacer elegir por votación al Alguacil.',
+    ],
+  },
+  {
+    color: '#cc0000',
+    colorTitulo: '#000',
+    colorTexto: '#000',
+    titulo: 'Consejos para jugadores',
+    textos: [
+      'Los Hombres Lobo: una estrategia eficaz para librarse de una acusación es votar contra tu propio compañero.',
+      'La Vidente: cuidado, si has descubierto un Hombre Lobo, a lo mejor vale la pena descubrir tu identidad para acusar a un jugador, pero no demasiado pronto.',
+    ],
+  },
+  {
+    color: '#cc0000',
+    colorTitulo: '#000',
+    colorTexto: '#000',
+    titulo: '',
+    textos: [
+      'La Niña Pequeña: es un personaje muy poderoso, pero muy angustioso de jugar. No dudes en espiar: da miedo pero hay que aprovecharlo rápidamente antes de ser eliminado.',
+      'El Cazador: siempre es bueno, en caso de acusación, hacerse pasar por el Cazador.',
+      'Cupido: si te designas a ti mismo como enamorado, no escojas un compañero sentimental bocazas.',
+    ],
+  },
+  {
+    color: '#cc0000',
+    colorTitulo: '#000',
+    colorTexto: '#000',
+    titulo: '',
+    textos: [
+      'El Alguacil: no dudes en presentarte al cargo de Alguacil, haz campaña. Pero si eres Hombre Lobo, no busques el puesto demasiado abiertamente.',
+      'La Bruja: tu personaje va cobrando importancia a medida que se acerca el final de la partida. No desperdicies tus hechizos.',
+    ],
+  },
 ])
 
 const juegos = ref([
-  { titulo: 'Blood on the Clocktower', enlace: 'https://bloodontheclocktower.com/', imagen: imgBloodclock, texto: 'Un juego de deducción social para 5-20 jugadores ambientado en un pueblo victoriano. Ofrece roles únicos y la posibilidad de participar incluso después de morir.' },
-  { titulo: 'Samurai Sword', enlace: 'https://www.youtube.com/watch?v=udCXta6aW0E', imagen: imgSamurai, texto: 'Un juego de cartas para 3-7 jugadores ambientado en el Japón feudal donde samurái, shōgun, ninjas y rōnin luchan por el poder con roles ocultos y alianzas cambiantes.' },
-  { titulo: 'La Asamblea del Mal', enlace: 'https://www.youtube.com/watch?v=aTOuLHM4LiU', imagen: imgAsamblea, texto: 'Un juego de roles ocultos para 5-10 jugadores donde los villanos intentan infiltrarse en el consejo de héroes. Combina deducción con habilidades especiales.' },
-  { titulo: 'Los Hombres Lobo de Castronegro: La Aldea', enlace: 'https://es.scribd.com/document/444169570/La-Aldea-de-Castronegro', imagen: imgAldea, texto: 'Expansión oficial con nuevos personajes y escenarios de juego que amplían las posibilidades estratégicas de cada partida.' },
-  { titulo: 'One Night Ultimate Werewolf', enlace: 'https://beziergames.com/collections/one-night-ultimate-werewolf', imagen: imgUltimate, texto: 'Una versión rápida e intensa donde toda la partida ocurre en una sola noche. Ideal para grupos de 3-10 jugadores que quieren disfrutar de múltiples partidas.' },
-  { titulo: 'Los Hombres Lobo de Castronegro: Luna Nueva', enlace: 'https://es.scribd.com/document/389540969/Hombres-Lobo-de-Castronegro-Luna-Nueva-Reglamento-Cartas', imagen: imgLuna, texto: 'Expansión del juego que incorpora nuevos personajes con poderes únicos, añadiendo capas estratégicas y sorpresas a cada partida.' },
-  { titulo: 'BANG!', enlace: 'https://www.youtube.com/watch?v=1gRPOZKz5Y4', imagen: imgBang, texto: 'Un clásico juego de cartas del Oeste para 2-7 jugadores con roles ocultos. El Sheriff, los Forajidos, el Renegado y los Ayudantes luchan en duelos llenos de acción.' },
+  {
+    titulo: 'Blood on the Clocktower',
+    enlace: 'https://bloodontheclocktower.com/',
+    imagen: imgBloodclock,
+    texto:
+      'Un juego de deducción social para 5-20 jugadores ambientado en un pueblo victoriano. Ofrece roles únicos y la posibilidad de participar incluso después de morir.',
+  },
+  {
+    titulo: 'Samurai Sword',
+    enlace: 'https://www.youtube.com/watch?v=udCXta6aW0E',
+    imagen: imgSamurai,
+    texto:
+      'Un juego de cartas para 3-7 jugadores ambientado en el Japón feudal donde samurái, shōgun, ninjas y rōnin luchan por el poder con roles ocultos y alianzas cambiantes.',
+  },
+  {
+    titulo: 'La Asamblea del Mal',
+    enlace: 'https://www.youtube.com/watch?v=aTOuLHM4LiU',
+    imagen: imgAsamblea,
+    texto:
+      'Un juego de roles ocultos para 5-10 jugadores donde los villanos intentan infiltrarse en el consejo de héroes. Combina deducción con habilidades especiales.',
+  },
+  {
+    titulo: 'Los Hombres Lobo de Castronegro: La Aldea',
+    enlace: 'https://es.scribd.com/document/444169570/La-Aldea-de-Castronegro',
+    imagen: imgAldea,
+    texto:
+      'Expansión oficial con nuevos personajes y escenarios de juego que amplían las posibilidades estratégicas de cada partida.',
+  },
+  {
+    titulo: 'One Night Ultimate Werewolf',
+    enlace: 'https://beziergames.com/collections/one-night-ultimate-werewolf',
+    imagen: imgUltimate,
+    texto:
+      'Una versión rápida e intensa donde toda la partida ocurre en una sola noche. Ideal para grupos de 3-10 jugadores que quieren disfrutar de múltiples partidas.',
+  },
+  {
+    titulo: 'Los Hombres Lobo de Castronegro: Luna Nueva',
+    enlace:
+      'https://es.scribd.com/document/389540969/Hombres-Lobo-de-Castronegro-Luna-Nueva-Reglamento-Cartas',
+    imagen: imgLuna,
+    texto:
+      'Expansión del juego que incorpora nuevos personajes con poderes únicos, añadiendo capas estratégicas y sorpresas a cada partida.',
+  },
+  {
+    titulo: 'BANG!',
+    enlace: 'https://www.youtube.com/watch?v=1gRPOZKz5Y4',
+    imagen: imgBang,
+    texto:
+      'Un clásico juego de cartas del Oeste para 2-7 jugadores con roles ocultos. El Sheriff, los Forajidos, el Renegado y los Ayudantes luchan en duelos llenos de acción.',
+  },
 ])
 
 const tarjetaActual = computed(() => tarjetas.value[indiceTarjeta.value])
@@ -255,7 +428,6 @@ onUnmounted(() => {
   margin: 25px auto;
 }
 
-/* PARTE 1 */
 .seccion-intro {
   background: #1f1f1f;
   border-radius: 15px;
@@ -280,7 +452,6 @@ onUnmounted(() => {
   margin: 0;
 }
 
-/* PARTE 2 */
 .fichas-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -361,10 +532,13 @@ onUnmounted(() => {
   margin-bottom: 4px;
 }
 
-.ficha-lista li::marker { color: var(--color-dorado); }
-.icono-ficha { color: var(--color-rojo); }
+.ficha-lista li::marker {
+  color: var(--color-dorado);
+}
+.icono-ficha {
+  color: var(--color-rojo);
+}
 
-/* PARTE 3: Tabla + Consejos en fila, debajo de 1420px */
 .tabla-consejos-wrapper {
   display: flex;
   flex-direction: row;
@@ -396,11 +570,15 @@ onUnmounted(() => {
     flex: none;
     width: 100%;
   }
-  .seccion-tabla { padding: 30px; }
+  .seccion-tabla {
+    padding: 30px;
+  }
 }
 
 @media (max-width: 767px) {
-  .seccion-tabla { padding: 20px; }
+  .seccion-tabla {
+    padding: 20px;
+  }
 }
 
 .tabla-titulo {
@@ -421,7 +599,7 @@ onUnmounted(() => {
 }
 
 .tabla-wrapper {
-background: var(--color-gris-medio);
+  background: var(--color-gris-medio);
   border-radius: 15px;
   border: 6px solid var(--color-rojo);
   overflow: hidden;
@@ -456,20 +634,34 @@ background: var(--color-gris-medio);
   text-align: center;
 }
 
-.fila-gris { background: #3a3a3a; }
-.fila-roja { background: var(--color-rojo); }
+.fila-gris {
+  background: #3a3a3a;
+}
+.fila-roja {
+  background: var(--color-rojo);
+}
 
 @media (max-width: 1120px) {
-  .fila-cabecera th { font-size: 1.1rem; padding: 12px 4px; }
+  .fila-cabecera th {
+    font-size: 1.1rem;
+    padding: 12px 4px;
+  }
 }
 
 @media (max-width: 600px) {
-  .fila-cabecera th { font-size: 0.85rem; padding: 8px 3px; }
-  .tabla-juego td { font-size: 1.1rem; padding: 10px 4px; }
-  .tabla-texto { font-size: 1rem; }
+  .fila-cabecera th {
+    font-size: 0.85rem;
+    padding: 8px 3px;
+  }
+  .tabla-juego td {
+    font-size: 1.1rem;
+    padding: 10px 4px;
+  }
+  .tabla-texto {
+    font-size: 1rem;
+  }
 }
 
-/* Carrusel consejos */
 .tarjeta-consejo {
   flex: 1;
   border-radius: 15px;
@@ -487,7 +679,6 @@ background: var(--color-gris-medio);
   background-position: center;
 }
 
-/* Caja blanca reutilizable */
 .caja-blanca {
   background: rgba(255, 255, 255, 0.7);
   padding: 12px 15px;
@@ -510,7 +701,6 @@ background: var(--color-gris-medio);
   text-align: center;
 }
 
-/* Contenido tarjetas normales */
 .consejo-contenido {
   display: flex;
   flex-direction: column;
@@ -528,22 +718,34 @@ background: var(--color-gris-medio);
   font-size: 1.8rem;
   font-weight: bold;
   margin: 0;
+  color: #ffffff!important;
 }
 
 .consejo-parrafo-caja {
   flex-shrink: 0;
 }
 
-.consejo-parrafo {
-  font-family: var(--font-raleway);
-  font-size: 1.2rem;
-  font-weight: 600;
-  line-height: 1.6;
-  margin: 0;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
+.bloque-textos-consejo {
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 15px;
 }
+
+.consejo-parrafo-caja-interna {
+  background: transparent !important;
+  box-shadow: none !important;
+  margin-bottom: 15px;
+}
+
+.consejo-parrafo-caja-interna:last-child {
+  margin-bottom: 0;
+}
+
+.consejo-parrafo {
+  margin: 0;
+  line-height: 1.6;
+}
+
 
 .icono-parrafo {
   margin-top: 6px;
@@ -567,7 +769,9 @@ background: var(--color-gris-medio);
   transition: transform 0.25s ease;
 }
 
-.btn-nav:hover { transform: scale(1.2); }
+.btn-nav:hover {
+  transform: scale(1.2);
+}
 
 .consejos-contador {
   font-family: var(--font-raleway);
@@ -575,7 +779,6 @@ background: var(--color-gris-medio);
   font-size: 1.4rem;
 }
 
-/* PARTE 5 */
 .seccion-juegos {
   display: flex;
   flex-direction: column;
@@ -610,12 +813,11 @@ background: var(--color-gris-medio);
   font-size: 2rem;
   cursor: pointer;
   flex-shrink: 0;
-  transition: transform 0.30s ease;
+  transition: transform 0.3s ease;
 }
 
 .btn-carrusel:hover {
   transform: scale(1.2);
-
 }
 
 .carrusel-pista {
@@ -654,7 +856,9 @@ background: var(--color-gris-medio);
   cursor: pointer;
 }
 
-.juego-titulo-link:hover {color: var(--color-rojo); }
+.juego-titulo-link:hover {
+  color: var(--color-rojo);
+}
 
 .juego-texto {
   font-family: var(--font-raleway);
@@ -665,20 +869,44 @@ background: var(--color-gris-medio);
 }
 
 @media (max-width: 992px) {
-  .reglas-inner { width: 90%; }
-  .juegos-titulo { font-size: 1.4rem; }
+  .reglas-inner {
+    width: 90%;
+  }
+  .juegos-titulo {
+    font-size: 1.4rem;
+  }
 }
 
 @media (max-width: 600px) {
-  .reglas-inner { width: 95%; }
-  .seccion-intro { padding: 20px; }
-  .intro-titulo { font-size: 1.6rem; }
-  .intro-texto { font-size: 1rem; }
-  .tarjeta-consejo { min-height: 200px; }
-  .consejo-parrafo { font-size: 1rem; }
-  .consejo-titulo { font-size: 1.2rem; }
-  .portada-titulo { font-size: 1.2rem; }
-  .juegos-titulo { font-size: 1.3rem; }
-  .juego-ficha { height: 220px; }
+  .reglas-inner {
+    width: 95%;
+  }
+  .seccion-intro {
+    padding: 20px;
+  }
+  .intro-titulo {
+    font-size: 1.6rem;
+  }
+  .intro-texto {
+    font-size: 1rem;
+  }
+  .tarjeta-consejo {
+    min-height: 200px;
+  }
+  .consejo-parrafo {
+    font-size: 1rem;
+  }
+  .consejo-titulo {
+    font-size: 1.2rem;
+  }
+  .portada-titulo {
+    font-size: 1.2rem;
+  }
+  .juegos-titulo {
+    font-size: 1.3rem;
+  }
+  .juego-ficha {
+    height: 220px;
+  }
 }
 </style>

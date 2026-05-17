@@ -237,7 +237,7 @@ const toggleEventos = () => {
   color: var(--color-rojo);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .panel-principal {
     flex-direction: column;
     align-items: stretch;

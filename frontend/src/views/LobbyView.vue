@@ -309,6 +309,23 @@ const copiarCodigo = () => {
   }, 2000)
 }
 
+const copiarParaDiscord = () => {
+  const texto = `¡Únete a mi partida de Hombres Lobo! Código: ${codigoSala.value}`;
+  
+  navigator.clipboard.writeText(texto).then(() => {
+    copiado.value = true;
+    store.dispatch('toast/mostrar', { 
+      mensaje: 'Mensaje para Discord copiado al portapapeles', 
+      tipo: 'exito' 
+    });
+    
+    setTimeout(() => {
+      copiado.value = false;
+    }, 2000);
+  });
+};
+
+
 const salirSala = async () => {
   if (stompClient.value) {
     stompClient.value.deactivate()
@@ -357,8 +374,8 @@ onMounted(async () => {
 
 .grid-lobby {
   display: grid;
-  grid-template-columns: 65% 25%;
-  gap: 0 5%;
+  grid-template-columns: 60% 38%;
+  gap: 0 2%;
   width: 100%;
   max-width: 1200px;
   align-items: start;
@@ -635,7 +652,7 @@ onMounted(async () => {
   line-height: 1.5;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 905px) {
   .grid-lobby {
     grid-template-columns: 1fr;
     gap: 20px 0;

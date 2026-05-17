@@ -45,7 +45,6 @@
 </template>
 
 <script setup>
-
 defineProps({
   personaje: { type: Object, required: true },
   color: { type: String, required: true },
@@ -62,74 +61,76 @@ defineProps({
   overflow: hidden;
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.9);
   transition: var(--transition-normal);
+  align-items: stretch;
 }
 
 .tarjeta:hover {
   transform: translateY(-8px);
-  box-shadow: 0 8px 35px rgba(190, 190, 190, 0.6);
 }
 
 .tarjeta-img {
   width: 360px;
   min-width: 360px;
-  height: 480px;
-  object-fit: contain;
-  image-rendering: crisp-edges;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .tarjeta-img-container {
-  width: 360px;
-  min-width: 360px;
-  height: 480px;
+  width: 100%;
+  height: 100%;
   background: #3d3d3d;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
-  box-sizing: border-box;
 }
 
 .flip-card {
-  perspective: 1500px;
   width: 360px;
   min-width: 360px;
-  height: 480px;
+  position: relative;
 }
 
 .flip-card-inner {
-  position: relative;
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
-  transform-style: preserve-3d;
-}
-
-.flip-card:hover .flip-card-inner {
-  transform: rotateY(180deg);
 }
 
 .flip-card-front,
 .flip-card-back {
   position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  backface-visibility: hidden;
   background: #3d3d3d;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
-  box-sizing: border-box;
+  transition: opacity 0.6s ease;
 }
 
 .flip-card-back {
-  transform: rotateY(180deg);
+  opacity: 0;
+}
+
+.flip-card:hover .flip-card-front {
+  opacity: 0;
+}
+
+.flip-card:hover .flip-card-back {
+  opacity: 1;
+}
+
+.flip-card-front img,
+.flip-card-back img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 .tarjeta-info {
   background: #000000;
   padding: 35px 30px;
   flex: 1;
+  min-height: 400px;
 }
 
 .tarjeta-nombre {
@@ -176,28 +177,18 @@ defineProps({
   .flip-card {
     width: 100%;
     min-width: unset;
-    height: 420px;
+    height: auto;
+    aspect-ratio: 3 / 4;
   }
 
-  .flip-card-front,
-  .flip-card-back,
-  .tarjeta-img-container {
-    padding: 0;
-    background: #3d3d3d !important;
-    width: 100%;
-    height: 100%;
-  }
-}
-
-@media (max-width: 576px) {
-  .tarjeta-info {
-    padding: 25px 20px;
+  .flip-card {
+    position: relative;
+    height: unset;
   }
 
-  .tarjeta-img {
-    object-fit: contain;
-    image-rendering: crisp-edges;
-    border-right: none;
+  .flip-card-inner {
+    position: relative;
+    aspect-ratio: 3 / 4;
   }
 }
 </style>

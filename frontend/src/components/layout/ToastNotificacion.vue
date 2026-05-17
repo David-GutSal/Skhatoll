@@ -119,7 +119,7 @@ onUnmounted(() => {
   font-weight: 700;
   color: white;
   cursor: pointer;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   position: fixed;
 }
@@ -220,6 +220,9 @@ onUnmounted(() => {
 
 .toast-texto {
   line-height: 1.4;
+  word-break: break-word;
+  white-space: normal;
+  display: block;  
 }
 
 .toast-cola-badge {

@@ -23,6 +23,7 @@
               type="text"
               v-model="loginNombre"
               placeholder="Tu Usuario"
+              maxlength="20"
               class="dropdown-input"
             />
             <input
@@ -52,14 +53,21 @@
               type="text"
               v-model="registroNombre"
               placeholder="Usuario"
+              maxlength="20"
               class="dropdown-input dropdown-input-registro"
+              :class="{ 'input-error': registroNombre.length >= 20 }"
             />
+            <span v-if="registroNombre.length >= 20" class="error-texto"
+              >Máximo 20 caracteres alcanzado</span
+            >
             <input
               type="password"
               v-model="registroPassword"
               placeholder="Contraseña"
               class="dropdown-input dropdown-input-registro"
+              :class="{ 'input-error': registroPassword.length >= 20 }"
             />
+             <span v-if="registroPassword.length >= 20" class="error-texto">Máximo 20 caracteres alcanzado</span>
             <button class="dropdown-btn btn-registro" @click.prevent="handleRegistro">
               REGÍSTRATE
             </button>
@@ -143,7 +151,10 @@ export default {
           password: this.loginPassword,
         })
         this.login({ token: res.data.token, nombre: res.data.nombre, uuid: res.data.codigoUuid })
-        this.$store.dispatch('toast/mostrar', { mensaje: '¡Éxito al iniciar sesión!', tipo: 'exito' })
+        this.$store.dispatch('toast/mostrar', {
+          mensaje: '¡Éxito al iniciar sesión!',
+          tipo: 'exito',
+        })
         this.cerrarModales()
         this.loginNombre = ''
         this.loginPassword = ''
@@ -328,7 +339,9 @@ export default {
   font-weight: 700;
   letter-spacing: 0.05em;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition:
+    background 0.4s ease-out,
+    transform 0.8s ease-out;
   box-sizing: border-box;
   margin-top: 2px;
 }
@@ -340,6 +353,7 @@ export default {
 
 .btn-login:hover {
   background: #000000;
+  transition: background 0.4s ease-out;
 }
 
 .btn-registro {
@@ -349,6 +363,12 @@ export default {
 
 .btn-registro:hover {
   background: #990000;
+  transition: background 0.4s ease-out;
+}
+
+.btn-login:active,
+.btn-registro:active {
+  transform: scale(0.9);
 }
 
 .auth-bienvenido {
@@ -390,4 +410,21 @@ export default {
     transform: translateX(50%);
   }
 }
+
+.error-texto {
+  color: #ff4d4d;
+  font-size: 0.75rem;
+  font-family: var(--font-raleway);
+  margin-top: -10px;
+  margin-bottom: 2px;
+  width: 100%;
+  text-align: left;
+  font-weight: bold;
+}
+
+.input-error {
+  border-color: #ff4d4d !important;
+  box-shadow: 0 0 5px rgba(255, 77, 77, 0.3);
+}
+
 </style>

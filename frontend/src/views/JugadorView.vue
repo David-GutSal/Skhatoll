@@ -643,10 +643,31 @@ const conectarWebSocket = () => {
       }
 
       if (payload.tipo === 'MENTOR_ELEGIDO') {
-        if (payload.nombreNinno === nombre.value) return
-        const mentor = jugadores.value.find((j) => j.nombre === payload.nombreMentor)
-        if (mentor) mentor.esMentor = true
+        store.dispatch('sala/setMentorNinno', {
+          nombreNino: payload.nombreNinno,
+          nombreMentor: payload.nombreMentor,
+        })
         return
+      }
+    })
+
+    cliente.subscribe(`/topic/partida/${codigo}/rol-cambiado`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      const nombre = store.getters['auth/nombre']
+      const esJugador = !jugadores.value.some(j => j.esNarrador && j.nombre === nombre)
+      if (esJugador) {
+        const actualizar = (lista) =>
+          lista.map(j =>
+            j.nombre === payload.nombreJugador
+              ? { ...j, nombreRol: payload.nuevoRol }
+              : j
+          )
+        store.commit('sala/SET_JUGADORES', actualizar(store.getters['sala/jugadores']))
+        store.commit('sala/SET_JUGADORES_CON_ROL', actualizar(store.getters['sala/jugadoresConRol']))
+        store.dispatch('toast/mostrar', {
+          mensaje: `${payload.nombreJugador} se ha transformado en ${payload.nuevoRol}`,
+          tipo: 'info',
+        })
       }
     })
 

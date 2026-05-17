@@ -45,6 +45,9 @@ export default {
       state.miRol = nombreRol
       state.miRolDescripcion = descripcionRol
       state.miBando = bando
+      if (nombreRol === 'Niño Salvaje') {
+        sessionStorage.setItem('soyNinoSalvaje', 'true')
+      }
     },
     SET_FASE(state, fase) {
       state.fase = fase
@@ -175,9 +178,18 @@ export default {
     SET_BRUJA_POCION_MUERTE(state) {
       state.brujaPocionMuerteUsada = true
     },
-    SET_MENTOR_NINNO(state, nombreMentor) {
+    SET_MENTOR_NINNO(state, { nombreNino, nombreMentor }) {
       state.mentorNinno = nombreMentor
-      state.narradorActual = nombreMentor
+      state.jugadores = state.jugadores.map((j) => {
+        if (j.nombre === nombreMentor) return { ...j, esMentor: true }
+        if (j.nombre === nombreNino) return { ...j, esMentor: true, nombreRol: 'Niño Salvaje' }
+        return j
+      })
+      state.jugadoresConRol = state.jugadoresConRol.map((j) => {
+        if (j.nombre === nombreMentor) return { ...j, esMentor: true }
+        if (j.nombre === nombreNino) return { ...j, esMentor: true }
+        return j
+      })
     },
   },
 
@@ -286,9 +298,8 @@ export default {
     setBrujaPocionMuerte({ commit }) {
       commit('SET_BRUJA_POCION_MUERTE')
     },
-    setMentorNinno({ commit }, nombreMentor) {
-      commit('SET_MENTOR_NINNO', nombreMentor)
-      commit('SET_NARRADOR', nombreMentor)
+    setMentorNinno({ commit }, { nombreNino, nombreMentor }) {
+      commit('SET_MENTOR_NINNO', { nombreNino, nombreMentor })
     },
   },
 

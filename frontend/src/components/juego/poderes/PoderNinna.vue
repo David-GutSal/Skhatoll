@@ -79,9 +79,10 @@ const asomarseVentana = async () => {
   if (cargando.value || ventanaAbierta.value) return
   cargando.value = true
 
-  const vivosAjenos = jugadores.value.filter(
-    (j) => j.estaVivo && !j.esNarrador && j.nombre !== store.getters['auth/nombre'],
-  )
+  const vivosAjenos = jugadores.value.filter((j) => {
+    if (!j.estaVivo || j.esNarrador || j.nombre === store.getters['auth/nombre']) return false
+    return true
+  })
   const cantidad = Math.min(vivosAjenos.length, Math.floor(Math.random() * 3) + 2)
   const mezclados = [...vivosAjenos].sort(() => Math.random() - 0.5)
   sospechosos.value = mezclados.slice(0, cantidad).map((j) => j.nombre)
@@ -104,6 +105,7 @@ const resetear = () => {
   ventanaAbierta.value = false
   sospechosos.value = []
   cargando.value = false
+  hayLobo.value = false
 }
 
 const resetearNoche = () => {

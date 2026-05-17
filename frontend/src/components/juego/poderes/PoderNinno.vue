@@ -60,7 +60,10 @@ const elegirMentor = async () => {
   if (!puedeElegir.value) return
 
   try {
-    store.dispatch('sala/setMentorNinno', props.jugadorSeleccionado.nombre)
+    store.dispatch('sala/setMentorNinno', {
+      nombreNino: nombre.value,
+      nombreMentor: props.jugadorSeleccionado.nombre,
+    })
     mentorElegido.value = true
 
     emit('mentorElegido', {

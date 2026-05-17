@@ -274,6 +274,15 @@ cliente.onConnect = () => {
       store.dispatch('sala/actualizarVotos', payload.votos)
     })
 
+    cliente.subscribe(`/topic/partida/${codigo}/rol-cambiado`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      const listaActual = store.getters['sala/jugadoresConRol']
+      const listaActualizada = listaActual.map(j =>
+        j.nombre === payload.nombreJugador ? { ...j, nombreRol: payload.nuevoRol || null } : j
+      )
+      store.commit('sala/SET_JUGADORES_CON_ROL', listaActualizada)
+    })
+
     cliente.subscribe(`/topic/partida/${codigo}/fin`, (msg) => {
       const payload = JSON.parse(msg.body)
       store.dispatch('sala/setResultado', {
@@ -387,8 +396,10 @@ cliente.onConnect = () => {
         }
       }
       if (payload.tipo === 'MENTOR_ELEGIDO') {
-        const mentor = jugadoresConRol.value.find((j) => j.nombre === payload.nombreMentor)
-        if (mentor) mentor.esMentor = true
+        store.dispatch('sala/setMentorNinno', {
+          nombreNino: payload.nombreNinno,
+          nombreMentor: payload.nombreMentor,
+        })
 
         avisoSesion.value = `El Niño Salvaje ha elegido a ${payload.nombreMentor} como su mentor`
         setTimeout(() => {

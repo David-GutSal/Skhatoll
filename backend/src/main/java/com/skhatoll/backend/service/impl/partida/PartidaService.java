@@ -357,11 +357,16 @@ public class PartidaService implements IPartidaService {
 
                 salaSocketService.enviarRolPrivado(nino.getUsuario().getNombre(), new SalaSocketService.RolAsignadoEvent(WS_EVENTO_ROL_CAMBIADO, rolLobo.getIdRol(), rolLobo.getNombre(), rolLobo.getDescripcion(), rolLobo.getBando().name()));
 
+                String ninoNombre = nino.getUsuario().getNombre();
+                salaSocketService.notificarRolCambiadoPublico(codigoSala, ninoNombre, rolLobo.getNombre(), rolLobo.getBando().name());
+
                 List<String> companerosLobos = salaUsuarioRepository.findBySala_IdSala(sala.getIdSala()).stream().filter(su -> su.getEstaVivo() && su.getRol() != null && su.getRol().getBando() == Rol.Bando.lobo && !su.getUsuario().getIdUsuario().equals(nino.getUsuario().getIdUsuario())).map(su -> su.getUsuario().getNombre()).toList();
 
                 salaSocketService.enviarMensajePrivado(nino.getUsuario().getNombre(), "/queue/lobos", new SalaSocketService.CompañerosLobosEvent(WS_EVENTO_COMPANEROS_LOBOS, companerosLobos));
             });
         });
+
+        salaUsuarioRepository.findBySala_IdSalaAndIdModelo(sala.getIdSala(), idUsuario).ifPresent(nino -> comprobarFinPartida(codigoSala, sala));
 
         comprobarFinPartida(codigoSala, sala);
     }

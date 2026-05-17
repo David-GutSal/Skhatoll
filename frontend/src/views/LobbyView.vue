@@ -233,11 +233,11 @@ const conectarWebSocket = () => {
     cliente.subscribe(`/topic/sala/${codigoActual}/inicio`, (msg) => {
       const payload = JSON.parse(msg.body)
       console.log('[LOBBY /inicio] payload:', JSON.stringify(payload))
-      
+
       cargarJugadores()
-      
+
       store.dispatch('toast/mostrar', { mensaje: 'Partida iniciándose...', tipo: 'info' })
-      
+
       setTimeout(() => {
         const nombreActual = store.getters['auth/nombre']
         const listaJugadores = store.getters['sala/jugadores'] || []
@@ -245,7 +245,7 @@ const conectarWebSocket = () => {
         console.log('[LOBBY /inicio] jugadores:', JSON.stringify(listaJugadores))
         const esNarrador = listaJugadores.some(j => j.esNarrador && j.nombre === nombreActual)
         console.log('[LOBBY /inicio] esNarrador?:', esNarrador)
-        
+
         if (esNarrador) {
           console.log('[LOBBY /inicio] navigate -> esperaNarrador')
           router.push({ name: 'esperaNarrador' })
@@ -259,25 +259,6 @@ const conectarWebSocket = () => {
           router.push({ name: 'cargaRol' })
         }
       }, 500)
-    })
-
-    cliente.subscribe(`/user/queue/rol`, (msg) => {
-      const payload = JSON.parse(msg.body)
-      if (payload.tipo === 'ROL_ASIGNADO' || payload.tipo === 'ROL_CAMBIADO') {
-        const nombreActual = store.getters['auth/nombre']
-        const listaJugadores = store.getters['sala/jugadores'] || []
-        const esNarrador = listaJugadores.some(j => j.esNarrador && j.nombre === nombreActual)
-        if (esNarrador) {
-          router.push({ name: 'narrador' })
-          return
-        }
-        store.dispatch('sala/setRol', {
-          nombreRol: payload.nombreRol,
-          descripcionRol: payload.descripcionRol,
-          bando: payload.bando,
-        })
-        router.push({ name: 'cargaRol' })
-      }
     })
 
     cliente.subscribe(`/topic/sala/${codigoActual}`, (msg) => {

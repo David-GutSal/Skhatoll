@@ -125,7 +125,22 @@ public class SalaSocketService {
         private List<String> lobos;
     }
 
-    public void enviarMensajePrivado(String nombreUsuario, String destino, Object evento) {
+public void enviarMensajePrivado(String nombreUsuario, String destino, Object evento) {
         messagingTemplate.convertAndSendToUser(nombreUsuario, destino, evento);
+    }
+
+    public void notificarRolCambiadoPublico(String codigoSala, String nombreJugador, String nuevoRol, String bando) {
+        messagingTemplate.convertAndSend(
+                String.format("/topic/partida/%s/rol-cambiado", codigoSala),
+                new RolCambiadoPublicEvent(WS_EVENTO_ROL_CAMBIADO, nombreJugador, nuevoRol, bando));
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class RolCambiadoPublicEvent {
+        private String tipo;
+        private String nombreJugador;
+        private String nuevoRol;
+        private String bando;
     }
 }

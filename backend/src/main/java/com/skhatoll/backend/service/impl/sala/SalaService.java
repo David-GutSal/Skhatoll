@@ -290,11 +290,12 @@ public class SalaService implements ISalaService {
                 .orElseThrow(() -> new IllegalArgumentException(ErrorMessages.JUGADOR_NO_EN_SALA));
 
         if (salaUsuario.getRol() == null) {
-            return new MiRolDto(null, null, null);
+            return new MiRolDto(null, null, null, null);
         }
 
         Rol rol = salaUsuario.getRol();
         return new MiRolDto(
+                usuario.getIdUsuario(),
                 rol.getNombre(),
                 rol.getDescripcion(),
                 rol.getBando().name());

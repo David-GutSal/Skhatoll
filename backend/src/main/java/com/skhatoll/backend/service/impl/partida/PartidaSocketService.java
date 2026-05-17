@@ -8,6 +8,7 @@ import com.skhatoll.backend.entities.Sala;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,7 @@ import static com.skhatoll.backend.util.constants.GameConstants.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PartidaSocketService {
 
     private final SimpMessagingTemplate messagingTemplate;
@@ -58,6 +60,7 @@ public class PartidaSocketService {
     // Canal: /topic/partida/{codigo}/muerte
     // -------------------------------------------------------
     public void notificarMuerte(String codigoSala, MuerteConfirmadaDto muerte) {
+        log.info("Enviando notificacion de muerte a sala {}: jugador={}, muerteConfirmada={}", codigoSala, muerte.nombreJugador(), muerte.muerteConfirmada());
         messagingTemplate.convertAndSend(String.format(WS_MUERTE, codigoSala), muerte);
     }
 

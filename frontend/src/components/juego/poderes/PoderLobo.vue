@@ -60,22 +60,32 @@ export default {
   watch: {
     '$store.state.sala.jugadores': {
       handler(jugadores) {
-        const nuevosVotos = []
-        jugadores.forEach((j) => {
-          if (j.votos > 0) {
-            nuevosVotos.push({
-              nombreVotante: `${j.votos} voto${j.votos > 1 ? 's' : ''}`,
-              nombreObjetivo: j.nombre,
-            })
-          }
-        })
-        this.votosLobos = nuevosVotos
+        this.actualizarVotos(jugadores)
+      },
+      deep: true,
+    },
+    '$store.state.sala.jugadoresConRol': {
+      handler(jugadores) {
+        this.actualizarVotos(jugadores)
       },
       deep: true,
     },
   },
 
   methods: {
+    actualizarVotos(jugadores) {
+      const nuevosVotos = []
+      jugadores.forEach((j) => {
+        if (j.votos > 0) {
+          nuevosVotos.push({
+            nombreVotante: `${j.votos} voto${j.votos > 1 ? 's' : ''}`,
+            nombreObjetivo: j.nombre,
+          })
+        }
+      })
+      this.votosLobos = nuevosVotos
+    },
+
     async devorar() {
       if (!this.jugadorSeleccionado || this.poderUsado) return
 

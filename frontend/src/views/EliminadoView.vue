@@ -74,10 +74,12 @@ const conectarWebSocket = () => {
       store.dispatch('sala/setFase', payload.fase)
     })
 
-    cliente.subscribe(`/topic/partida/${codigoSala.value}/muerte`, (msg) => {
+cliente.subscribe(`/topic/partida/${codigoSala.value}/muerte`, (msg) => {
       const payload = JSON.parse(msg.body)
-      if (payload.muerteConfirmada) {
+      if (payload.tipo === 'CONFIRMAR') {
         store.dispatch('sala/marcarMuerto', payload.nombreJugador)
+      } else if (payload.tipo === 'REVIVIR') {
+        store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
       } else {
         store.dispatch('sala/marcarSemimuerto', payload.nombreJugador)
       }

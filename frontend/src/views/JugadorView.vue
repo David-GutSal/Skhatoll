@@ -404,8 +404,10 @@ const conectarWebSocket = () => {
 
     cliente.subscribe(`/topic/partida/${codigoSala.value}/muerte`, (msg) => {
       const payload = JSON.parse(msg.body)
-      if (payload.muerteConfirmada) {
+      if (payload.tipo === 'CONFIRMAR') {
         store.dispatch('sala/marcarMuerto', payload.nombreJugador)
+      } else if (payload.tipo === 'REVIVIR') {
+        store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
       } else {
         store.dispatch('sala/marcarSemimuerto', payload.nombreJugador)
       }
@@ -416,10 +418,25 @@ const conectarWebSocket = () => {
         store.getters['sala/mentorNinno'] === payload.nombreJugador
       ) {
         store.commit('sala/SET_ROL', {
-          nombreRol: 'Lobo',
+          nombreRol: 'NIÑO LOBO',
           descripcionRol: 'Te has transformado en un Hombre Lobo',
           bando: 'lobo',
+          nombreJugador: nombre.value,
         })
+        
+        axiosInstance.get(`/salas/${codigoSala.value}/mi-rol`)
+          .then(miIdRes => {
+            return axiosInstance.put(`/partida/${codigoSala.value}/jugador/${miIdRes.data.idUsuario}/rol`, {
+              nombreRol: 'NIÑO LOBO',
+            })
+          })
+          .then(() => {
+            console.log('[Niño Lobo] Rol actualizado en backend')
+          })
+          .catch(error => {
+            console.error('[Niño Lobo] Error al actualizar rol en backend:', error)
+          })
+        
         mensajeEvento.value = '¡Tu mentor ha muerto! ¡Te has convertido en un Hombre Lobo!'
         setTimeout(() => {
           mensajeEvento.value = null

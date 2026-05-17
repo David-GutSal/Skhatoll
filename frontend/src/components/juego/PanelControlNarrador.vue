@@ -25,7 +25,16 @@
         </button>
 
         <button
-          v-if="sesionActiva && sesionActualTipo === 'LOBOS'"
+          v-if="eventosActivos && sesionActualTipo !== 'LOBOS'"
+          class="btn-panel btn-lobos"
+          @click="$emit('iniciarVotacionLobos')"
+        >
+          <i class="fa-solid fa-paw"></i>
+          Iniciar Votación Lobos
+        </button>
+
+        <button
+          v-if="eventosActivos && sesionActualTipo === 'LOBOS'"
           class="btn-panel btn-finalizar-lobos"
           @click="$emit('finalizarVotacion')"
         >
@@ -70,6 +79,7 @@ const emit = defineEmits([
   'eventos',
   'verPersonajes',
   'verReglas',
+  'iniciarVotacionLobos',
 ])
 
 const eventosActivos = ref(false)
@@ -171,6 +181,17 @@ const toggleEventos = () => {
 .noche .btn-finalizar-lobos:hover {
   background: var(--color-dorado);
   color: #000;
+}
+
+.noche .btn-lobos {
+  background: var(--color-rojo);
+  color: #000;
+  border-color: white;
+}
+
+.noche .btn-lobos:hover {
+  background: white;
+  color: var(--color-rojo);
 }
 
 .btns-info {

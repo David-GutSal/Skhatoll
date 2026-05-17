@@ -103,7 +103,7 @@ public class HabilidadService implements IHabilidadService {
         HabilidadResultadoDto resultado = switch (nombreHabilidad) {
             case HAB_POCION_VIDA -> {
                 log.debug("Ejecutando habilidad POCION_VIDA para {}", solicitante.getNombre());
-                yield usarPocionVida(sala, request.objetivos());
+                yield usarPocionVida(codigoSala, sala, request.objetivos());
             }
             case HAB_POCION_MUERTE -> {
                 log.debug("Ejecutando habilidad POCION_MUERTE para {}", solicitante.getNombre());
@@ -127,7 +127,7 @@ public class HabilidadService implements IHabilidadService {
         return resultado;
     }
 
-    HabilidadResultadoDto usarPocionVida(Sala sala, List<Integer> objetivos) {
+    HabilidadResultadoDto usarPocionVida(String codigoSala, Sala sala, List<Integer> objetivos) {
         if (objetivos == null || objetivos.size() != 1) {
             throw new IllegalArgumentException("La poción de vida requiere exactamente un objetivo");
         }
@@ -145,6 +145,10 @@ public class HabilidadService implements IHabilidadService {
         objetivo.setEstaVivo(true);
         objetivo.setMuerteConfirmada(false);
         salaUsuarioRepository.save(objetivo);
+
+        String nombreRol = objetivo.getRol() != null ? objetivo.getRol().getNombre() : "aldeano";
+        String bando = objetivo.getRol() != null ? objetivo.getRol().getBando().name() : "aldea";
+        partidaSocketService.notificarMuerte(codigoSala, new MuerteConfirmadaDto(objetivo.getUsuario().getNombre(), nombreRol, bando, false, MuerteConfirmadaDto.TIPO_REVIVIR));
 
         return new HabilidadResultadoDto(HAB_POCION_VIDA, List.of(objetivo.getUsuario().getNombre()), RES_REVIVIDO, null);
     }
@@ -165,7 +169,7 @@ public class HabilidadService implements IHabilidadService {
         objetivo.setMuerteConfirmada(true);
         salaUsuarioRepository.save(objetivo);
 
-        MuerteConfirmadaDto muerte = new MuerteConfirmadaDto(objetivo.getUsuario().getNombre(), objetivo.getRol().getNombre(), objetivo.getRol().getBando().name(), true);
+        MuerteConfirmadaDto muerte = new MuerteConfirmadaDto(objetivo.getUsuario().getNombre(), objetivo.getRol().getNombre(), objetivo.getRol().getBando().name(), true, MuerteConfirmadaDto.TIPO_CONFIRMAR);
         partidaSocketService.notificarMuerte(codigoSala, muerte);
         comprobarFinPartida(codigoSala, sala);
 
@@ -223,7 +227,7 @@ public class HabilidadService implements IHabilidadService {
         objetivo.setMuerteConfirmada(true);
         salaUsuarioRepository.save(objetivo);
 
-        MuerteConfirmadaDto muerte = new MuerteConfirmadaDto(objetivo.getUsuario().getNombre(), objetivo.getRol().getNombre(), objetivo.getRol().getBando().name(), true);
+        MuerteConfirmadaDto muerte = new MuerteConfirmadaDto(objetivo.getUsuario().getNombre(), objetivo.getRol().getNombre(), objetivo.getRol().getBando().name(), true, MuerteConfirmadaDto.TIPO_CONFIRMAR);
         partidaSocketService.notificarMuerte(codigoSala, muerte);
         comprobarFinPartida(codigoSala, sala);
 

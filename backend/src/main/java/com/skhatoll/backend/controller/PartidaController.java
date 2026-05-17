@@ -3,12 +3,16 @@ package com.skhatoll.backend.controller;
 import com.skhatoll.backend.dto.partida.*;
 import com.skhatoll.backend.entities.SesionVotacion;
 import com.skhatoll.backend.service.interfaces.partida.IPartidaService;
+
+import java.util.List;
 import com.skhatoll.backend.service.interfaces.partida.IHabilidadService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+record ActualizarRolRequest(String nombreRol) {}
 
 @RestController
 @RequestMapping("/partida")
@@ -75,5 +79,19 @@ public class PartidaController {
     public ResponseEntity<EstadoPartidaDto> getEstadoPartida(@PathVariable String codigo) {
         EstadoPartidaDto estado = partidaService.getEstadoPartida(codigo);
         return ResponseEntity.ok(estado);
+    }
+
+    @GetMapping("/{codigo}/lobos")
+    public ResponseEntity<List<String>> getNombresLobos(@PathVariable String codigo) {
+        List<String> lobos = partidaService.getNombresLobos(codigo);
+        return ResponseEntity.ok(lobos);
+    }
+
+    @PutMapping("/{codigo}/jugador/{idUsuario}/rol")
+    public ResponseEntity<String> actualizarRol(@PathVariable String codigo,
+                                                @PathVariable Integer idUsuario,
+                                                @RequestBody ActualizarRolRequest request) {
+        partidaService.actualizarRol(codigo, idUsuario, request.nombreRol());
+        return ResponseEntity.ok("Rol actualizado");
     }
 }

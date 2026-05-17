@@ -41,10 +41,15 @@ export default {
     SET_JUGADORES_CON_ROL(state, jugadores) {
       state.jugadoresConRol = jugadores
     },
-    SET_ROL(state, { nombreRol, descripcionRol, bando }) {
+    SET_ROL(state, { nombreRol, descripcionRol, bando, nombreJugador }) {
       state.miRol = nombreRol
       state.miRolDescripcion = descripcionRol
       state.miBando = bando
+      if (nombreJugador) {
+        state.jugadoresConRol = state.jugadoresConRol.map((j) =>
+          j.nombre === nombreJugador ? { ...j, nombreRol, bando } : j
+        )
+      }
     },
     SET_FASE(state, fase) {
       state.fase = fase

@@ -45,6 +45,7 @@
         @eventos="iniciarEventos"
         @verPersonajes="seccionActiva = seccionActiva === 'personajes' ? null : 'personajes'"
         @verReglas="seccionActiva = seccionActiva === 'reglas' ? null : 'reglas'"
+        @iniciarVotacionLobos="iniciarVotacionLobos"
       />
 
       <div class="mesa-wrapper-outer">
@@ -242,8 +243,10 @@ const conectarWebSocket = () => {
 
     cliente.subscribe(`/topic/partida/${codigoSala.value}/muerte`, (msg) => {
       const payload = JSON.parse(msg.body)
-      if (payload.muerteConfirmada) {
+      if (payload.tipo === 'CONFIRMAR') {
         store.dispatch('sala/marcarMuerto', payload.nombreJugador)
+      } else if (payload.tipo === 'REVIVIR') {
+        store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
       } else {
         store.dispatch('sala/marcarSemimuerto', payload.nombreJugador)
       }
@@ -430,6 +433,38 @@ const iniciarVotacionAlcalde = async () => {
   }
 }
 
+const iniciarVotacionLobos = async () => {
+  try {
+    const res = await axiosInstance.post(`/partida/${codigoSala.value}/votacion/abrir`, {
+      tipo: 'LOBOS',
+    })
+    idSesionActual.value = res.data
+    sesionActualTipo.value = 'LOBOS'
+    votacionActiva.value = true
+
+    const lobosRes = await axiosInstance.get(`/partida/${codigoSala.value}/lobos`)
+    const nombresLobos = lobosRes.data
+
+    if (stompClient.value) {
+      stompClient.value.publish({
+        destination: `/topic/partida/${codigoSala.value}/turno`,
+        body: JSON.stringify({
+          tipo: 'TURNO_LOBOS',
+          nombresLobos: nombresLobos,
+        }),
+      })
+    }
+  } catch (error) {
+    store.dispatch('toast/mostrar', {
+      mensaje:
+        error.response?.status === 409
+          ? 'Ya hay una votación abierta'
+          : 'Error al iniciar votación de lobos',
+      tipo: 'error',
+    })
+  }
+}
+
 const finalizarVotacion = async () => {
   if (!idSesionActual.value) {
     store.dispatch('toast/mostrar', {
@@ -443,6 +478,7 @@ const finalizarVotacion = async () => {
       `/partida/${codigoSala.value}/votacion/${idSesionActual.value}/cerrar`,
     )
     idSesionActual.value = null
+    sesionActualTipo.value = null
     store.dispatch('sala/reiniciarVotos')
     store.dispatch('sala/setTipoVotacion', null)
   } catch (error) {
@@ -533,7 +569,7 @@ const activarTurnoJugador = async (jugador) => {
   jugadorSeleccionado.value = jugador
   store.dispatch('sala/setTurnoActivo', jugador)
 
-  const esLobo = jugador.nombreRol === 'Lobo'
+  const esLobo = jugador.nombreRol === 'Lobo' || jugador.nombreRol === 'NIÑO LOBO'
 
   if (esLobo) {
     try {
@@ -544,7 +580,7 @@ const activarTurnoJugador = async (jugador) => {
       sesionActualTipo.value = 'LOBOS'
 
       const lobosVivos = jugadoresConRol.value.filter(
-        (j) => j.nombreRol === 'Lobo' && j.estaVivo,
+(j) => (j.nombreRol === 'Lobo' || j.nombreRol === 'NIÑO LOBO') && j.estaVivo,
       )
       stompClient.value.publish({
         destination: `/topic/partida/${codigoSala.value}/turno`,

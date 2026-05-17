@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class MiRolDto {
+    private Integer idUsuario;
     private String nombreRol;
     private String descripcionRol;
     private String bando;

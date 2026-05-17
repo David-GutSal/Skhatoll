@@ -104,7 +104,7 @@ public class PartidaService implements IPartidaService {
                     String bando = su.getRol() != null ? su.getRol().getBando().name() : "aldea";
                     
                     log.info("Confirmando muerte de {} ({}) en sala {}", nombreEliminado, nombreRol, codigoSala);
-                    partidaSocketService.notificarMuerte(codigoSala, new MuerteConfirmadaDto(nombreEliminado, nombreRol, bando, true));
+                    partidaSocketService.notificarMuerte(codigoSala, new MuerteConfirmadaDto(nombreEliminado, nombreRol, bando, true, MuerteConfirmadaDto.TIPO_CONFIRMAR));
                 }
             }
         }
@@ -205,7 +205,7 @@ public class PartidaService implements IPartidaService {
                         String nombreEliminado = su.getUsuario().getNombre();
                         String nombreRol = su.getRol() != null ? su.getRol().getNombre() : " aldeano";
                         String bando = su.getRol() != null ? su.getRol().getBando().name() : "aldea";
-                        partidaSocketService.notificarMuerte(codigoSala, new MuerteConfirmadaDto(nombreEliminado, nombreRol, bando, false));
+                        partidaSocketService.notificarMuerte(codigoSala, new MuerteConfirmadaDto(nombreEliminado, nombreRol, bando, false, MuerteConfirmadaDto.TIPO_MUERTE));
                     });
         }
 
@@ -306,7 +306,7 @@ public class PartidaService implements IPartidaService {
             salaSocketService.notificarAlcalde(codigoSala, null);
         }
 
-        MuerteConfirmadaDto muerte = new MuerteConfirmadaDto(salaUsuario.getUsuario().getNombre(), salaUsuario.getRol().getNombre(), salaUsuario.getRol().getBando().name(), true);
+        MuerteConfirmadaDto muerte = new MuerteConfirmadaDto(salaUsuario.getUsuario().getNombre(), salaUsuario.getRol().getNombre(), salaUsuario.getRol().getBando().name(), true, MuerteConfirmadaDto.TIPO_CONFIRMAR);
 
         partidaSocketService.notificarMuerte(codigoSala, muerte);
 
@@ -335,7 +335,7 @@ public class PartidaService implements IPartidaService {
                     pareja.setMuerteConfirmada(true);
                     salaUsuarioRepository.save(pareja);
 
-                    MuerteConfirmadaDto muertePareja = new MuerteConfirmadaDto(pareja.getUsuario().getNombre(), pareja.getRol().getNombre(), pareja.getRol().getBando().name(), true);
+                    MuerteConfirmadaDto muertePareja = new MuerteConfirmadaDto(pareja.getUsuario().getNombre(), pareja.getRol().getNombre(), pareja.getRol().getBando().name(), true, MuerteConfirmadaDto.TIPO_CONFIRMAR);
                     partidaSocketService.notificarMuerte(codigoSala, muertePareja);
 
                     // Si la pareja era el CAZADOR, también debe disparar
@@ -511,5 +511,35 @@ public class PartidaService implements IPartidaService {
         String nombreAlcalde = sala.getAlcalde() != null ? sala.getAlcalde().getNombre() : null;
 
         return new EstadoPartidaDto(sala.getEstadoDia().name(), sala.getRondaActual(), jugadores, sesionActiva, nombreAlcalde);
+    }
+
+    @Override
+    public List<String> getNombresLobos(String codigoSala) {
+        Sala sala = salaRepository.findByCodigoSala(codigoSala).orElseThrow(() -> new IllegalArgumentException(ErrorMessages.SALA_NO_ENCONTRADA));
+        
+        List<SalaUsuario> lobos = salaUsuarioRepository.findBySala_IdSalaAndEstaVivoTrue(sala.getIdSala()).stream()
+            .filter(su -> {
+                String nombreRol = su.getRol() != null ? su.getRol().getNombre() : "";
+                return "Lobo".equals(nombreRol) || "NIÑO LOBO".equals(nombreRol);
+            })
+            .toList();
+        
+        return lobos.stream().map(su -> su.getUsuario().getNombre()).toList();
+    }
+
+    @Override
+    public void actualizarRol(String codigoSala, Integer idUsuario, String nombreRol) {
+        Sala sala = salaRepository.findByCodigoSala(codigoSala).orElseThrow(() -> new IllegalArgumentException(ErrorMessages.SALA_NO_ENCONTRADA));
+        
+        SalaUsuario salaUsuario = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), idUsuario)
+            .orElseThrow(() -> new IllegalArgumentException("Jugador no encontrado en la sala"));
+        
+        Rol rol = rolRepository.findByNombre(nombreRol)
+            .orElseThrow(() -> new IllegalArgumentException("Rol no encontrado: " + nombreRol));
+        
+        salaUsuario.setRol(rol);
+        salaUsuarioRepository.save(salaUsuario);
+        
+        log.info("Rol de {} actualizado a {} en sala {}", salaUsuario.getUsuario().getNombre(), nombreRol, codigoSala);
     }
 }

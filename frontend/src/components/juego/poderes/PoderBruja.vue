@@ -175,21 +175,39 @@ export default {
     async usarPocionVida() {
       if (!this.jugadorSemimuerto || this.pocionVidaUsada) return
       try {
-        await axiosInstance.post(`/partida/${this.codigoSala}/habilidad`, {
+        const response = await axiosInstance.post(`/partida/${this.codigoSala}/habilidad`, {
           nombreHabilidad: 'pocion_vida',
           objetivos: [this.jugadorSemimuerto.idUsuario],
         })
-        // Guardar en store (persiste)
-        this.$store.dispatch('sala/setBrujaPocionVida')
-        // Revertir semimuerto en el store local del jugador
-        this.$store.dispatch('sala/quitarSemimuerto', this.jugadorSemimuerto.nombre)
-        // Notificar al narrador vía STOMP (lo publica JugadorView)
-        this.$emit('vidaUsada', this.jugadorSemimuerto.nombre)
+        if (response.data?.resultado === 'REVIVIDO') {
+          this.$store.dispatch('sala/setBrujaPocionVida')
+          this.$store.dispatch('sala/quitarSemimuerto', this.jugadorSemimuerto.nombre)
+          this.$emit('vidaUsada', this.jugadorSemimuerto.nombre)
+          return
+        }
       } catch (err) {
         console.error('Error pocion_vida:', err.response?.status, err.response?.data)
+        if (!err.response) {
+          return
+        }
+        if (err.response?.data?.resultado === 'REVIVIDO') {
+          this.$store.dispatch('sala/setBrujaPocionVida')
+          this.$store.dispatch('sala/quitarSemimuerto', this.jugadorSemimuerto.nombre)
+          this.$emit('vidaUsada', this.jugadorSemimuerto.nombre)
+          return
+        }
+        let mensajeError = 'Error al usar la poción de vida'
+        if (err.response?.status === 400) {
+          mensajeError = 'La poción de vida solo puede usarse en jugadores semi-mertos'
+        } else if (err.response?.status === 409) {
+          mensajeError = 'La muerte ya fue confirmada, no se puede revivir'
+        } else if (err.response?.status === 500) {
+          mensajeError = 'Error del servidor'
+        } else if (err.response?.data?.mensaje) {
+          mensajeError = err.response.data.mensaje
+        }
         this.$store.dispatch('toast/mostrar', {
-          mensaje:
-            'Error al usar la poción de vida. Asegúrate de que el Narrador ha activado tu turno.',
+          mensaje: mensajeError,
           tipo: 'error',
         })
       }

@@ -2,19 +2,19 @@
   <div class="indicador-wrapper" :class="esDia ? 'dia' : 'noche'">
     <div
       class="btn-fase"
-      :class="{ activo: esDia, deshabilitado: votacionActiva }"
-      :aria-disabled="votacionActiva"
-      @click="votacionActiva ? null : $emit('cambiarFase', 'dia')"
-      :title="votacionActiva ? 'Cierra la votación antes de cambiar a día' : 'Cambiar a día'"
+      :class="{ activo: esDia, deshabilitado: votacionActiva || esDia }"
+      :aria-disabled="votacionActiva || esDia"
+      @click="(votacionActiva || esDia) ? null : $emit('cambiarFase', 'dia')"
+      :title="votacionActiva ? 'Cierra la votación antes de cambiar a día' : esDia ? 'Ya es de día' : 'Cambiar a día'"
     >
       <i class="fas fa-sun"></i>
     </div>
     <div
       class="btn-fase"
-      :class="{ activo: !esDia, deshabilitado: votacionActiva }"
-      :aria-disabled="votacionActiva"
-      @click="votacionActiva ? null : $emit('cambiarFase', 'noche')"
-      :title="votacionActiva ? 'Cierra la votación antes de cambiar a noche' : 'Cambiar a noche'"
+      :class="{ activo: !esDia, deshabilitado: votacionActiva || !esDia }"
+      :aria-disabled="votacionActiva || !esDia"
+      @click="(votacionActiva || !esDia) ? null : $emit('cambiarFase', 'noche')"
+      :title="votacionActiva ? 'Cierra la votación antes de cambiar a noche' : !esDia ? 'Ya es de noche' : 'Cambiar a noche'"
     >
       <i class="fas fa-moon"></i>
     </div>

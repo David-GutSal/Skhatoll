@@ -7,6 +7,7 @@ public final class GameConstants {
     // Nombre de bandos
     public static final String BANDO_LOBO       = "lobo";
     public static final String BANDO_ALDEA      = "aldea";
+    public static final String BANDO_ENAMORADOS = "enamorados";
 
     // Nombres de roles
     public static final String ROL_LOBO          = "Lobo";
@@ -56,6 +57,7 @@ public final class GameConstants {
     public static final String WS_VOTACION      = "/topic/partida/%s/votacion";
     public static final String WS_VOTOS         = "/topic/partida/%s/votos";
     public static final String WS_MUERTE        = "/topic/partida/%s/muerte";
+    public static final String WS_TURNO          = "/topic/partida/%s/turno";
     public static final String WS_FIN           = "/topic/partida/%s/fin";
     public static final String WS_ALCALDE       = "/topic/partida/%s/alcalde";
     public static final String WS_QUEUE_ROL     = "/queue/rol";

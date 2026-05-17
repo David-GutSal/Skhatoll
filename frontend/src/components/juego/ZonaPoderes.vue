@@ -41,9 +41,9 @@
       @vidaUsada="(nombre) => $emit('vidaUsada', nombre)"
     />
 
-    <!-- CAZADOR — solo puede usarlo cuando está muerto -->
+    <!-- CAZADOR — solo puede usarlo cuando está muerto o cuando el narrador activa su turno -->
     <PoderCazador
-      v-if="esRol('cazador') && cazadorMuerto"
+      v-if="esRol('cazador') && (cazadorMuerto || esMiTurno)"
       ref="poderCazador"
       :jugadorSeleccionado="jugadorSeleccionado"
       @disparo="(j) => $emit('disparo', j)"

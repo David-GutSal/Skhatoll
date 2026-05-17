@@ -65,7 +65,7 @@
       <span v-if="jugador.esEnamorado" class="badge-enamorado" title="Enamorado">
         <i class="fa-solid fa-heart"></i>
       </span>
-      <span v-if="jugador.esMentor" class="badge-mentor" title="Mentor del Niño Salvaje">
+      <span v-if="jugador.esMentor && puedeVerMentor" class="badge-mentor" title="Mentor del Niño Salvaje">
         <i class="fa-solid fa-hands-holding-child"></i>
       </span>
     </div>
@@ -114,7 +114,7 @@
         <i :class="esVotacionLobos ? 'fa-solid fa-bone' : 'fa-solid fa-check'"></i>
         {{ jugador.votos }}
       </span>
-      <span v-if="jugador.esMentor" class="badge-mentor" title="Mentor del Niño Salvaje">
+      <span v-if="jugador.esMentor && puedeVerMentor" class="badge-mentor" title="Mentor del Niño Salvaje">
         <i class="fa-solid fa-hands-holding-child"></i>
       </span>
     </div>
@@ -143,6 +143,12 @@ const emit = defineEmits(['seleccionar'])
 const store = useStore()
 
 const tipoVotacion = computed(() => store.getters['sala/tipoVotacion'])
+const miRol = computed(() => store.getters['sala/miRol'])
+
+const puedeVerMentor = computed(() => {
+  const rol = miRol.value || ''
+  return rol.toLowerCase().includes('niño') || rol.toLowerCase().includes('salvaje') || rol === 'Narrador'
+})
 
 const imagen = computed(() => getImagenRol(props.nombreRol))
 const colorBando = computed(() => getColorBando(props.bando))

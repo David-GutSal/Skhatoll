@@ -127,7 +127,7 @@ public class HabilidadService implements IHabilidadService {
         return resultado;
     }
 
-    private HabilidadResultadoDto usarPocionVida(Sala sala, List<Integer> objetivos) {
+    HabilidadResultadoDto usarPocionVida(Sala sala, List<Integer> objetivos) {
         if (objetivos == null || objetivos.size() != 1) {
             throw new IllegalArgumentException("La poción de vida requiere exactamente un objetivo");
         }
@@ -149,7 +149,7 @@ public class HabilidadService implements IHabilidadService {
         return new HabilidadResultadoDto(HAB_POCION_VIDA, List.of(objetivo.getUsuario().getNombre()), RES_REVIVIDO, null);
     }
 
-    private HabilidadResultadoDto usarPocionMuerte(String codigoSala, Sala sala, List<Integer> objetivos) {
+    HabilidadResultadoDto usarPocionMuerte(String codigoSala, Sala sala, List<Integer> objetivos) {
         if (objetivos == null || objetivos.size() != 1) {
             throw new IllegalArgumentException("La poción de muerte requiere exactamente un objetivo");
         }
@@ -165,14 +165,14 @@ public class HabilidadService implements IHabilidadService {
         objetivo.setMuerteConfirmada(true);
         salaUsuarioRepository.save(objetivo);
 
-        MuerteConfirmadaDto muerte = new MuerteConfirmadaDto(objetivo.getUsuario().getNombre(), objetivo.getRol().getNombre(), objetivo.getRol().getBando().name());
+        MuerteConfirmadaDto muerte = new MuerteConfirmadaDto(objetivo.getUsuario().getNombre(), objetivo.getRol().getNombre(), objetivo.getRol().getBando().name(), true);
         partidaSocketService.notificarMuerte(codigoSala, muerte);
         comprobarFinPartida(codigoSala, sala);
 
         return new HabilidadResultadoDto(HAB_POCION_MUERTE, List.of(objetivo.getUsuario().getNombre()), RES_ELIMINADO, null);
     }
 
-    private void comprobarFinPartida(String codigoSala, Sala sala) {
+    void comprobarFinPartida(String codigoSala, Sala sala) {
         List<SalaUsuario> jugadoresVivos = salaUsuarioRepository.findBySala_IdSala(sala.getIdSala()).stream()
                 .filter(su -> su.getEstaVivo() && !su.getUsuario().getIdUsuario().equals(sala.getNarrador().getIdUsuario()))
                 .toList();
@@ -203,7 +203,7 @@ public class HabilidadService implements IHabilidadService {
         }
     }
 
-    private HabilidadResultadoDto usarDisparo(String codigoSala, Sala sala, SalaUsuario cazador, List<Integer> objetivos) {
+    HabilidadResultadoDto usarDisparo(String codigoSala, Sala sala, SalaUsuario cazador, List<Integer> objetivos) {
         if (cazador.getEstaVivo()) {
             throw new IllegalStateException("El cazador solo puede disparar cuando ha sido eliminado");
         }
@@ -223,21 +223,16 @@ public class HabilidadService implements IHabilidadService {
         objetivo.setMuerteConfirmada(true);
         salaUsuarioRepository.save(objetivo);
 
-        MuerteConfirmadaDto muerte = new MuerteConfirmadaDto(objetivo.getUsuario().getNombre(), objetivo.getRol().getNombre(), objetivo.getRol().getBando().name());
+        MuerteConfirmadaDto muerte = new MuerteConfirmadaDto(objetivo.getUsuario().getNombre(), objetivo.getRol().getNombre(), objetivo.getRol().getBando().name(), true);
         partidaSocketService.notificarMuerte(codigoSala, muerte);
         comprobarFinPartida(codigoSala, sala);
 
         return new HabilidadResultadoDto(HAB_DISPARO, List.of(objetivo.getUsuario().getNombre()), RES_ELIMINADO, null);
     }
 
-    private HabilidadResultadoDto usarFlechazo(Sala sala, SalaUsuario cupido, List<Integer> objetivos) {
+    HabilidadResultadoDto usarFlechazo(Sala sala, SalaUsuario cupido, List<Integer> objetivos) {
         if (objetivos == null || objetivos.size() != 2) {
             throw new IllegalArgumentException("El flechazo requiere exactamente dos objetivos");
-        }
-
-        if (objetivos.get(0).equals(cupido.getUsuario().getIdUsuario()) ||
-            objetivos.get(1).equals(cupido.getUsuario().getIdUsuario())) {
-            throw new IllegalStateException("Cupido no puede unirse a sí mismo");
         }
 
         Usuario u1 = usuarioRepository.findById(objetivos.get(0)).orElseThrow(() -> new IllegalArgumentException("Jugador 1 no encontrado"));
@@ -263,7 +258,7 @@ public class HabilidadService implements IHabilidadService {
         return new HabilidadResultadoDto(HAB_FLECHAZO, List.of(u1.getNombre(), u2.getNombre()), RES_ENAMORADOS, null);
     }
 
-    private HabilidadResultadoDto usarVision(Sala sala, SalaUsuario vidente, List<Integer> objetivos) {
+    HabilidadResultadoDto usarVision(Sala sala, SalaUsuario vidente, List<Integer> objetivos) {
         if (objetivos == null || objetivos.size() != 1) {
             throw new IllegalArgumentException("La visión requiere exactamente un objetivo");
         }
@@ -283,7 +278,7 @@ public class HabilidadService implements IHabilidadService {
         return new HabilidadResultadoDto(HAB_VISION, List.of(objetivo.getUsuario().getNombre()), RES_ROL_REVELADO, detalle);
     }
 
-    private HabilidadResultadoDto usarEspiar(Sala sala, SalaUsuario nina) {
+    HabilidadResultadoDto usarEspiar(Sala sala, SalaUsuario nina) {
         if (nina.getRol() == null || !ROL_NINA.equals(nina.getRol().getNombre())) {
             throw new IllegalStateException("Solo la Niña puede usar esta habilidad");
         }
@@ -313,7 +308,7 @@ public class HabilidadService implements IHabilidadService {
         return new HabilidadResultadoDto(HAB_ESPIAR, resultado, RES_LISTA_SOSPECHOSOS, null);
     }
 
-    private HabilidadResultadoDto usarModelo(Sala sala, SalaUsuario ninoSalvaje, List<Integer> objetivos) {
+    HabilidadResultadoDto usarModelo(Sala sala, SalaUsuario ninoSalvaje, List<Integer> objetivos) {
         if (ninoSalvaje.getRol() == null || !ROL_NINO_SALVAJE.equals(ninoSalvaje.getRol().getNombre())) {
             throw new IllegalStateException("Solo el Niño Salvaje puede usar esta habilidad");
         }

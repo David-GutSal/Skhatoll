@@ -26,7 +26,7 @@
 
       <transition name="desplegable">
         <div v-if="verPartida" class="mesa-desplegable">
-          <MesaJugadores :jugadores="jugadores" :esDia="esDia" :modoNarrador="false" />
+          <MesaJugadores :jugadores="jugadores" :esDia="esDia" :modoNarrador="true" />
         </div>
       </transition>
     </div>
@@ -76,7 +76,11 @@ const conectarWebSocket = () => {
 
     cliente.subscribe(`/topic/partida/${codigoSala.value}/muerte`, (msg) => {
       const payload = JSON.parse(msg.body)
-      store.dispatch('sala/marcarMuerto', payload.nombreJugador)
+      if (payload.muerteConfirmada) {
+        store.dispatch('sala/marcarMuerto', payload.nombreJugador)
+      } else {
+        store.dispatch('sala/marcarSemimuerto', payload.nombreJugador)
+      }
     })
 
     cliente.subscribe(`/topic/partida/${codigoSala.value}/fin`, (msg) => {

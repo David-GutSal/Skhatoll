@@ -70,6 +70,14 @@ public class PartidaSocketService {
     }
 
     // -------------------------------------------------------
+    // Notifica eventos especiales (CAZADOR_MUERTO, etc.)
+    // Canal: /topic/partida/{codigo}/turno
+    // -------------------------------------------------------
+    public void notificarEventoEspecial(String codigoSala, String tipoEvento, String nombreJugador) {
+        messagingTemplate.convertAndSend(String.format(WS_TURNO, codigoSala), new EventoEspecialEvent(tipoEvento, nombreJugador));
+    }
+
+    // -------------------------------------------------------
     // Eventos internos
     // -------------------------------------------------------
 
@@ -94,5 +102,12 @@ public class PartidaSocketService {
     public static class VotosEvent {
         private String tipo;
         private List<VotoDto> votos;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class EventoEspecialEvent {
+        private String tipo;
+        private String nombreJugador;
     }
 }

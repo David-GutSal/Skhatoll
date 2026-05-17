@@ -250,8 +250,11 @@ cliente.onConnect = () => {
 
     cliente.subscribe(`/topic/partida/${codigo}/muerte`, (msg) => {
       const payload = JSON.parse(msg.body)
-      store.dispatch('sala/marcarMuerto', payload.nombreJugador)
-      store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
+      if (payload.muerteConfirmada) {
+        store.dispatch('sala/marcarMuerto', payload.nombreJugador)
+      } else {
+        store.dispatch('sala/marcarSemimuerto', payload.nombreJugador)
+      }
     })
 
     cliente.subscribe(`/topic/partida/${codigo}/alcalde`, (msg) => {
@@ -316,6 +319,8 @@ cliente.onConnect = () => {
         votacionActiva.value = false
         tipoVotacionLocal.value = null
         store.dispatch('sala/setTipoVotacion', null)
+        store.dispatch('sala/reiniciarVotos')
+        jugadorSeleccionado.value = null
         return
       }
 

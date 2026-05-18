@@ -381,6 +381,21 @@ export default {
   color: #ebc310;
 }
 
+@media (max-width: 473px) {
+  #nombramarillo {
+    display: inline-block;
+    vertical-align: bottom;
+    max-width: 80px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .auth-bienvenido {
+    font-size: 0.9rem;
+  }
+}
+
 .auth-salir {
   display: flex;
   align-items: center;

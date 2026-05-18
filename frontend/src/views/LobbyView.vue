@@ -96,7 +96,7 @@
             </div>
           </div>
         </template>
-        <!-- Indicador del narrador, pendiente de arreglar que desaparezca en el tablero -->
+       
         <div class="narrador-indicador" v-if="nombreNarrador">
           <i class="fa-solid fa-book-open-reader"></i> Narrador: {{ nombreNarrador }}
         </div>
@@ -359,6 +359,8 @@ onMounted(async () => {
   align-items: center;
   padding: 40px 20px;
   box-sizing: border-box;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .titulo-lobby {
@@ -370,6 +372,7 @@ onMounted(async () => {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin: 0 0 30px 0;
+  width: 100%;
 }
 
 .grid-lobby {
@@ -385,6 +388,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 15px;
+  min-width: 0;
 }
 
 .caja-panel {
@@ -393,6 +397,7 @@ onMounted(async () => {
   background-position: center;
   border-radius: 15px;
   overflow: hidden;
+  width: 100%;
 }
 
 .overlay {
@@ -402,6 +407,7 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   gap: 16px;
+  box-sizing: border-box;
 }
 
 .titulo-caja {
@@ -413,6 +419,7 @@ onMounted(async () => {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin: 0;
+  width: 100%;
 }
 
 .codigo-wrapper {
@@ -422,11 +429,13 @@ onMounted(async () => {
   overflow: hidden;
   border: 5px solid var(--color-dorado);
   background: white;
+  box-sizing: border-box;
 }
 
 .input-codigo {
   flex: 1;
-  padding: 14px 20px;
+  min-width: 0;
+  padding: 14px 10px;
   background: transparent;
   border: none;
   font-family: Arial, sans-serif;
@@ -474,9 +483,7 @@ onMounted(async () => {
   font-weight: 700;
   letter-spacing: 0.08em;
   cursor: pointer;
-  transition:
-    background 0.2s ease,
-    transform 0.15s ease;
+  transition: background 0.2s ease, transform 0.15s ease;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -500,6 +507,7 @@ onMounted(async () => {
   align-items: center;
   gap: 24px;
   flex-wrap: wrap;
+  box-sizing: border-box;
 }
 
 .texto-redes {
@@ -508,7 +516,6 @@ onMounted(async () => {
   font-weight: 700;
   font-size: 1.1rem;
   margin: 0;
-  white-space: nowrap;
 }
 
 .iconos-redes {
@@ -582,8 +589,7 @@ onMounted(async () => {
   width: 100%;
 }
 
-.boton-unirse {
-  background: #a30000;
+.boton-unirse, .boton-salir-jugador {
   color: white;
   border: none;
   padding: 13px 28px;
@@ -593,40 +599,13 @@ onMounted(async () => {
   font-weight: 700;
   cursor: pointer;
   letter-spacing: 0.05em;
-  transition:
-    background 0.2s ease,
-    transform 0.15s ease;
+  transition: background 0.2s ease, transform 0.15s ease;
 }
 
-.boton-unirse:hover {
-  background: #640000;
-}
-.boton-unirse:active {
-  transform: scale(0.95);
-}
-
-.boton-salir-jugador {
-  background: #c9a800;
-  color: white;
-  border: none;
-  padding: 13px 28px;
-  border-radius: 10px;
-  font-family: var(--font-cinzel);
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  letter-spacing: 0.05em;
-  transition:
-    background 0.2s ease,
-    transform 0.15s ease;
-}
-
-.boton-salir-jugador:hover {
-  background: var(--color-black);
-}
-.boton-salir-jugador:active {
-  transform: scale(0.95);
-}
+.boton-unirse { background: #a30000; }
+.boton-unirse:hover { background: #640000; }
+.boton-salir-jugador { background: #c9a800; }
+.boton-salir-jugador:hover { background: var(--color-black); }
 
 .narrador-indicador {
   display: flex;
@@ -657,40 +636,56 @@ onMounted(async () => {
     grid-template-columns: 1fr;
     gap: 20px 0;
   }
-  .titulo-caja {
-    font-size: 1.8rem;
-  }
-  .input-codigo {
-    font-size: 1.8rem;
-  }
-}
-
-@media (max-width: 1234px) and (min-width: 904px) {
-  .input-codigo {
-    font-size: 1.5rem;
-  }
-  .titulo-caja {
-    font-size: 1.5rem;
-  }
 }
 
 @media (max-width: 600px) {
-  .titulo-lobby {
-    font-size: 1.6rem;
+  .contenedor-lobby {
+    padding: 20px 10px;
   }
-  .titulo-caja {
-    font-size: 1.3rem;
-  }
+  .titulo-lobby { font-size: 1.6rem; }
+  .titulo-caja { font-size: 1.3rem; }
+
   .input-codigo {
     font-size: 1.2rem;
+    letter-spacing: 0.1em; 
+    padding: 10px;
   }
+  .input-jugador {
+    font-size: 1.2rem;
+    letter-spacing: 0.1em;
+    padding: 10px;
+  }
+
+  .overlay { padding: 20px 15px; }
+
   .caja-redes {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    gap: 15px;
   }
+  .texto-redes { white-space: normal; text-align: center; }
+
+  .iconos-redes {
+    justify-content: center;
+    gap: 10px;
+  }
+  .red-social {
+    width: 45px;
+    height: 45px;
+  }
+  .red-social svg {
+    width: 24px;
+    height: 24px;
+  }
+
   .botones-jugador {
     flex-direction: column;
     align-items: center;
+    width: 100%;
+  }
+  .boton-unirse, .boton-salir-jugador {
+    width: 100%;
   }
 }
 </style>
+

@@ -411,6 +411,29 @@ export default {
   }
 }
 
+@media (max-width: 450px) {
+
+  .dropdown {
+    width: 220px;
+    position: absolute;
+    top: calc(100% + 15px);
+  }
+
+  .dropdown-login {
+    right: -10px;
+  }
+
+  .dropdown-registro {
+    right: 150px;
+  }
+
+  .login-title, .registro-title {
+    font-size: 1.2rem;
+    white-space: normal;
+  }
+}
+
+
 .error-texto {
   color: #ff4d4d;
   font-size: 0.75rem;

@@ -1,6 +1,5 @@
 <template>
   <main class="inicio">
-
     <section class="hero-wrapper">
       <div class="hero-img-container">
         <div class="hero-bg"></div>
@@ -10,7 +9,6 @@
 
     <section class="bloques container-fluid px-0">
       <div class="bloques-inner">
-
         <aside class="bloque bloque-lateral bloque-izq">
           <h2 class="bloque-titulo-principal">Los Hombres Lobo de Castronegro</h2>
 
@@ -129,7 +127,7 @@
               class="img-centro"
             />
             <p class="cuadro-parrafo rojo-centro">
-              Es decir, es una manera más “segura” de jugar al juego sin dar pistas accidentales,
+              Es decir, es una manera más "segura" de jugar al juego sin dar pistas accidentales,
               ocultar mejor tu rol y servir de ayuda al narrador para revisar qué papel interpreta
               cada jugador o revisar reglas.
             </p>
@@ -186,19 +184,20 @@
             </p>
             <p class="cuadro-parrafo">
               La función de sus hijos es la de
-              <span class=" cuadro-parrafo rojo-centro">perseguir a los 2 grandes "Astros Celestiales"</span> por lo
+              <span class="rojo-centro">perseguir a los 2 grandes "Astros Celestiales"</span> por lo
               que uno persigue a la Luna y otro al Sol. Los lobos corren detrás de ellos día y
               noche, haciendo que los astros huyan aterrorizados hasta que, en el día del comienzo
               del Ragnarök, los alcanzarán y devorarán. Tras esto el día y la noche se volverán
               oscuros y se caerán todas las estrellas lo que indicará el comienzo del fin del mundo
               y la liberación de su padre.
             </p>
+
             <p class="cuadro-parrafo rojo-centro">
               En la mitología nórdica este mito explicaba por qué el Sol y la Luna se mueven
               constantemente por el cielo y además es una metáfora de lo que ocurre en el juego de
               los Hombres Lobo de Castronegro donde según avanzan los días van desapareciendo los
               habitantes de la aldea por los ataques de los lobos.
-            </p class="cuadro-parrafo">
+            </p>
           </div>
 
           <img src="@/assets/imgs/fenrirehijos.jpg" alt="Fenrir e hijos" class="img-fenrir" />
@@ -292,11 +291,21 @@
   </main>
 </template>
 
-<script setup>
-</script>
+<script setup></script>
 
 <style scoped>
-.inicio { width: 100%; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.inicio {
+  width: 100%;
+  max-width: 100%;
+
+  overflow-x: hidden;
+}
 
 .hero-wrapper {
   display: flex;
@@ -319,7 +328,6 @@
   background-image: url('@/assets/imgs/main-inicio.jpg');
   background-size: cover;
   background-position: center;
-  background-attachment: fixed;
 }
 
 .hero-logo {
@@ -333,9 +341,8 @@
 }
 
 .bloques {
-  display: flex;
-  justify-content: center;
   padding: 0 0 40px 0;
+  overflow-x: hidden;
 }
 
 .bloques-inner {
@@ -343,6 +350,8 @@
   grid-template-columns: 1fr 1.7fr 1fr;
   gap: 40px;
   width: 85%;
+  max-width: 100%;
+  margin: 0 auto;
   align-items: start;
 }
 
@@ -350,6 +359,7 @@
   background: rgba(0, 0, 0, 0.95);
   border-radius: 15px;
   padding: 25px;
+  min-width: 0;
 }
 
 .bloque-titulo-principal {
@@ -361,7 +371,9 @@
   text-align: center;
 }
 
-.noticia { margin-bottom: 50px; }
+.noticia {
+  margin-bottom: 50px;
+}
 
 .noticia-img {
   width: 100%;
@@ -412,50 +424,43 @@
 .btn-bloque:hover {
   transform: scale(0.96);
 }
-
 .btn-bloque:active {
   transform: scale(0.92);
   transition: transform 0.15s ease;
 }
 
-.btn-rojo { background: var(--color-rojo); color: white; }
-.btn-rojo:hover { background: white; color: #000000;}
-
-.btn-dorado { background: var(--color-dorado); color: white; }
-.btn-dorado:hover { background: white; color: var(--color-dorado);}
-
-.btn-sala-juegos:hover {
-  background: #000000;
-  animation: vaiven 0.4s ease-in-out infinite; 
-  box-shadow: 0 0 20px rgba(54, 54, 54, 0.4);
+.btn-rojo {
+  background: var(--color-rojo);
+  color: white;
+}
+.btn-rojo:hover {
+  background: white;
+  color: #000000;
 }
 
-@keyframes vaiven {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(4px); }
-  50% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
-  100% { transform: translateX(0); }
+.btn-dorado {
+  background: var(--color-dorado);
+  color: white;
 }
-
-.btn-sala-juegos:active {
-  transform: scale(0.9);
-  animation: none;
+.btn-dorado:hover {
+  background: white;
+  color: var(--color-dorado);
 }
 
 .bloque-central {
   display: flex;
   flex-direction: column;
   gap: 0;
+  min-width: 0;
 }
 
 .titulo-skhatoll {
   font-family: var(--font-cinzel);
-  font-size: 4rem;
+  font-size: 3rem;
   font-weight: 900;
   color: var(--color-dorado);
   text-align: center;
-  margin-bottom: 25px;
+  margin: 25px auto;
 }
 
 .cuadro-texto {
@@ -479,24 +484,29 @@
   margin-bottom: 12px;
 }
 
-.bold { font-weight: 600; }
-.rojo-centro { color: #8b0000; font-weight: 600; }
+.bold {
+  font-weight: 600;
+}
+.rojo-centro {
+  color: #8b0000;
+  font-weight: 600;
+}
 
 ul {
-margin: 10px 0;
-font-family: var(--font-raleway);
-list-style: square;
+  margin: 10px 0;
+  font-family: var(--font-raleway);
+  list-style: square;
 }
 
 li {
-margin: 10px 0;
-font-size: 0.95rem;
+  margin: 10px 0;
+  font-size: 0.95rem;
 }
 
 li::marker {
-color: var(--color-dorado);
-font-weight: bolder;
-font-size: 1.2rem;
+  color: var(--color-dorado);
+  font-weight: bolder;
+  font-size: 1.2rem;
 }
 
 .img-centro {
@@ -521,7 +531,6 @@ font-size: 1.2rem;
   background-image: url('@/assets/imgs/slide.jpeg');
   background-size: cover;
   background-position: center;
-  background-attachment: fixed;
   box-shadow: inset 0 0 50px 20px rgba(0, 0, 0, 0.8);
 }
 
@@ -568,7 +577,26 @@ font-size: 1.2rem;
 }
 
 .btn-sala-juegos:active {
-  transform: scale(0.93)!important;
+  transform: scale(0.93) !important;
+  animation: none;
+}
+
+@keyframes vaiven {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(4px);
+  }
+  50% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+  100% {
+    transform: translateX(0);
+  }
 }
 
 .img-fenrir {
@@ -585,9 +613,9 @@ font-size: 1.2rem;
     width: 90%;
   }
 
-  .bloque-central { order: -1; }
-
-  
+  .bloque-central {
+    order: -1;
+  }
 }
 
 @media (max-width: 768px) {
@@ -611,7 +639,6 @@ font-size: 1.2rem;
 }
 
 @media (max-width: 576px) {
-
   .bloques-inner {
     width: 95%;
   }
@@ -634,11 +661,9 @@ font-size: 1.2rem;
   .btn-sala-juegos {
     padding: 13px 32px;
     font-size: 1rem;
-    transition: all 0.4s ease;
   }
-
   .titulo-skhatoll {
-    font-size: 3.8rem;
+    font-size: 2rem;
   }
 }
 </style>

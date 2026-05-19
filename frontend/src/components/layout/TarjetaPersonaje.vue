@@ -1,6 +1,6 @@
 <template>
   <div class="tarjeta mb-4" :style="{ borderColor: color }">
-    <div v-if="personaje.nombre === 'El Niño Salvaje'" class="flip-card">
+    <div v-if="personaje.nombre === 'El Niño Salvaje' || personaje.nombre === 'NIÑO LOBO'" class="flip-card">
       <div class="flip-card-inner">
         <div class="flip-card-front">
           <img :src="personaje.imagen" :alt="personaje.nombre" class="tarjeta-img" />

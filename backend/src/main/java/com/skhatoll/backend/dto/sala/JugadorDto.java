@@ -5,6 +5,8 @@ public record JugadorDto(
     String nombre,
     String codigoUuid,
     Boolean estaVivo,
+    Boolean muerteConfirmada,
     boolean esNarrador,
-    Boolean esAlcalde
+    Boolean esAlcalde,
+    Boolean esMentor
 ) {}

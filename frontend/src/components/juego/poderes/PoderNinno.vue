@@ -85,6 +85,8 @@ const elegirMentor = async () => {
 const resetear = () => {
   notificacion.value = null
 }
+
+defineExpose({ resetear })
 </script>
 
 <style scoped>

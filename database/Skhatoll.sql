@@ -131,6 +131,7 @@ INSERT INTO roles (nombre, descripcion, bando) VALUES
 ('Cazador', 'Puede contraatacar al morir', 'aldea'),
 ('Bruja', 'Puede revivir o eliminar', 'aldea'),
 ('Niño salvaje', 'Puede transformarse en lobo', 'aldea'),
+('NIÑO LOBO', 'Niño transformado en lobo', 'lobo'),
 ('Cupido', 'Puede enamorar jugadores', 'aldea'),
 ('Niña', 'Puede espiar', 'aldea');
 

@@ -63,6 +63,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useStore } from 'vuex'
+import axiosInstance from '@/plugins/axios'
 
 const emit = defineEmits(['finalizarTurno'])
 
@@ -71,20 +72,35 @@ const store = useStore()
 const ventanaAbierta = ref(false)
 const cargando = ref(false)
 const sospechosos = ref([])
+const lobosReales = ref([])
 
 const codigoSala = computed(() => store.getters['sala/codigoSala'])
 const jugadores = computed(() => store.getters['sala/jugadores'])
+const mentorNinno = computed(() => store.getters['sala/mentorNinno'])
 
 const asomarseVentana = async () => {
   if (cargando.value || ventanaAbierta.value) return
   cargando.value = true
 
+  try {
+    const lobosRes = await axiosInstance.get(`/partida/${codigoSala.value}/lobos`)
+    lobosReales.value = lobosRes.data
+  } catch {
+    lobosReales.value = []
+  }
+
   const vivosAjenos = jugadores.value.filter(
     (j) => j.estaVivo && !j.esNarrador && j.nombre !== store.getters['auth/nombre'],
   )
+  const lobos = vivosAjenos.filter((j) => lobosReales.value.includes(j.nombre))
+  const noLobosNiMentor = vivosAjenos.filter(
+    (j) => !lobosReales.value.includes(j.nombre) && j.nombre !== mentorNinno.value,
+  )
   const cantidad = Math.min(vivosAjenos.length, Math.floor(Math.random() * 3) + 2)
-  const mezclados = [...vivosAjenos].sort(() => Math.random() - 0.5)
-  sospechosos.value = mezclados.slice(0, cantidad).map((j) => j.nombre)
+  const mezcladosNoLobos = [...noLobosNiMentor].sort(() => Math.random() - 0.5)
+  const sospechososSinLobos = mezcladosNoLobos.slice(0, Math.max(0, cantidad - 1))
+  const todosSospechosos = [...sospechososSinLobos, ...lobos].sort(() => Math.random() - 0.5)
+  sospechosos.value = todosSospechosos.map((j) => j.nombre)
 
   cargando.value = false
   ventanaAbierta.value = true

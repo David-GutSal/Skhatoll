@@ -3,12 +3,16 @@ package com.skhatoll.backend.controller;
 import com.skhatoll.backend.dto.partida.*;
 import com.skhatoll.backend.entities.SesionVotacion;
 import com.skhatoll.backend.service.interfaces.partida.IPartidaService;
+
+import java.util.List;
 import com.skhatoll.backend.service.interfaces.partida.IHabilidadService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+record ActualizarRolRequest(String nombreRol) {}
 
 @RestController
 @RequestMapping("/partida")
@@ -45,13 +49,6 @@ public class PartidaController {
         return ResponseEntity.ok("Voto registrado");
     }
 
-    @PutMapping("/{codigo}/jugador/{idUsuario}/confirmar-muerte")
-    public ResponseEntity<String> confirmarMuerte(@PathVariable String codigo,
-                                             @PathVariable Integer idUsuario) {
-        partidaService.confirmarMuerte(codigo, idUsuario);
-        return ResponseEntity.ok("Muerte confirmada");
-    }
-
     @GetMapping("/{codigo}/sesion-activa")
     public ResponseEntity<SesionVotacion> getSesionActiva(@PathVariable String codigo) {
         SesionVotacion sesion = partidaService.getSesionActiva(codigo);
@@ -71,9 +68,35 @@ public class PartidaController {
         return ResponseEntity.ok("Partida cerrada");
     }
 
+    @PutMapping("/{codigo}/cancelar")
+    public ResponseEntity<String> cancelarPartida(@PathVariable String codigo) {
+        partidaService.cancelarPartida(codigo);
+        return ResponseEntity.ok("Partida cancelada - Empate");
+    }
+
+    @PostMapping("/{codigo}/rendirse")
+    public ResponseEntity<String> rendirse(@PathVariable String codigo) {
+        partidaService.rendirse(codigo);
+        return ResponseEntity.ok("Te has rendido");
+    }
+
     @GetMapping("/{codigo}/estado")
     public ResponseEntity<EstadoPartidaDto> getEstadoPartida(@PathVariable String codigo) {
         EstadoPartidaDto estado = partidaService.getEstadoPartida(codigo);
         return ResponseEntity.ok(estado);
+    }
+
+    @GetMapping("/{codigo}/lobos")
+    public ResponseEntity<List<String>> getNombresLobos(@PathVariable String codigo) {
+        List<String> lobos = partidaService.getNombresLobos(codigo);
+        return ResponseEntity.ok(lobos);
+    }
+
+    @PutMapping("/{codigo}/jugador/{idUsuario}/rol")
+    public ResponseEntity<String> actualizarRol(@PathVariable String codigo,
+                                                @PathVariable Integer idUsuario,
+                                                @RequestBody ActualizarRolRequest request) {
+        partidaService.actualizarRol(codigo, idUsuario, request.nombreRol());
+        return ResponseEntity.ok("Rol actualizado");
     }
 }

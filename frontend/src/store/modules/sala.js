@@ -34,6 +34,15 @@ export default {
       state.tipoVotacion = null
       state.enamorados = null
       state.semiMuertos = []
+      state.bandoGanador = null
+      state.mensajeFin = null
+      state.fase = 'DIA'
+      state.narradorActual = null
+      state.turnoActivo = null
+      state.cupidoUsado = false
+      state.brujaPocionVidaUsada = false
+      state.brujaPocionMuerteUsada = false
+      state.mentorNinno = null
     },
     SET_JUGADORES(state, jugadores) {
       state.jugadores = jugadores
@@ -41,10 +50,15 @@ export default {
     SET_JUGADORES_CON_ROL(state, jugadores) {
       state.jugadoresConRol = jugadores
     },
-    SET_ROL(state, { nombreRol, descripcionRol, bando }) {
+    SET_ROL(state, { nombreRol, descripcionRol, bando, nombreJugador }) {
       state.miRol = nombreRol
       state.miRolDescripcion = descripcionRol
       state.miBando = bando
+      if (nombreJugador) {
+        state.jugadoresConRol = state.jugadoresConRol.map((j) =>
+          j.nombre === nombreJugador ? { ...j, nombreRol, bando } : j
+        )
+      }
     },
     SET_FASE(state, fase) {
       state.fase = fase
@@ -177,6 +191,12 @@ export default {
     },
     SET_MENTOR_NINNO(state, nombreMentor) {
       state.mentorNinno = nombreMentor
+      state.jugadores = state.jugadores.map(j =>
+        j.nombre === nombreMentor ? { ...j, esMentor: true } : j
+      )
+      state.jugadoresConRol = state.jugadoresConRol.map(j =>
+        j.nombre === nombreMentor ? { ...j, esMentor: true } : j
+      )
       state.narradorActual = nombreMentor
     },
   },
@@ -288,7 +308,6 @@ export default {
     },
     setMentorNinno({ commit }, nombreMentor) {
       commit('SET_MENTOR_NINNO', nombreMentor)
-      commit('SET_NARRADOR', nombreMentor)
     },
   },
 

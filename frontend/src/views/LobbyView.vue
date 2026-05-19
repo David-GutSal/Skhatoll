@@ -175,7 +175,6 @@ const iniciarPartida = async () => {
   if (!codigo) return
   try {
     await axiosInstance.post(`/salas/${codigo}/iniciar`)
-    store.dispatch('toast/mostrar', { mensaje: 'Partida iniciándose...', tipo: 'info' })
   } catch (error) {
     store.dispatch('toast/mostrar', { mensaje: 'Error al iniciar partida', tipo: 'error' })
   }
@@ -206,7 +205,7 @@ const conectarWebSocket = () => {
   }
   
   const cliente = new Client({
-    webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+    webSocketFactory: () => new SockJS('/ws'),
     connectHeaders: { Authorization: `Bearer ${token}` },
   })
 

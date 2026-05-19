@@ -3,6 +3,8 @@ package com.skhatoll.backend.service.interfaces.partida;
 import com.skhatoll.backend.dto.partida.*;
 import com.skhatoll.backend.entities.SesionVotacion;
 
+import java.util.List;
+
 public interface IPartidaService {
     void confirmarMuerte(String codigo, Integer idUsuario);
 
@@ -19,4 +21,12 @@ public interface IPartidaService {
     EstadoPartidaDto getEstadoPartida(String codigo);
 
     void cerrarPartida(String codigo);
+
+    void cancelarPartida(String codigo);
+
+    void rendirse(String codigo);
+
+    List<String> getNombresLobos(String codigo);
+
+    void actualizarRol(String codigo, Integer idUsuario, String nombreRol);
 }

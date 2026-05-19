@@ -83,7 +83,12 @@ const bandoGanador = computed(() => store.getters['sala/bandoGanador'])
 const miBando = computed(() => store.getters['sala/miBando'])
 const nombre = computed(() => store.getters['auth/nombre'])
 
-const esNarrador = computed(() => store.getters['sala/esCreador'])
+const esNarrador = computed(() => {
+  const miNombre = store.getters['auth/nombre']
+  const jugadores = store.getters['sala/jugadores']
+  const yo = jugadores?.find(j => j.nombre === miNombre)
+  return yo?.esNarrador === true
+})
 
 const esEmpate = computed(() => bandoGanador.value?.toLowerCase() === 'empate')
 

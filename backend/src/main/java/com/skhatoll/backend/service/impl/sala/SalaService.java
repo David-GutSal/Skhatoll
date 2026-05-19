@@ -259,8 +259,14 @@ public class SalaService implements ISalaService {
         boolean esCreador = sala.getCreador().getIdUsuario().equals(solicitante.getIdUsuario());
         boolean esNarrador = sala.getNarrador().getIdUsuario().equals(solicitante.getIdUsuario());
         
-        if (!esCreador && !esNarrador) {
-            throw new IllegalStateException("Solo el creador o el narrador pueden ver los roles");
+        SalaUsuario solicitanteSalaUsuario = salaUsuarioRepository
+                .findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), solicitante.getIdUsuario())
+                .orElse(null);
+        boolean estaMuertoConfirmado = solicitanteSalaUsuario != null && 
+                Boolean.TRUE.equals(solicitanteSalaUsuario.getMuerteConfirmada());
+        
+        if (!esCreador && !esNarrador && !estaMuertoConfirmado) {
+            throw new IllegalStateException("Solo el creador, el narrador o los jugadores muertos confirmados pueden ver los roles");
         }
 
         Integer idNarrador = sala.getNarrador().getIdUsuario();
@@ -268,14 +274,18 @@ public class SalaService implements ISalaService {
         return salaUsuarioRepository.findBySala_IdSala(sala.getIdSala())
                 .stream()
                 .filter(su -> !su.getUsuario().getIdUsuario().equals(idNarrador))
-                .map(su -> new JugadorRolDto(
-                        su.getUsuario().getIdUsuario(),
-                        su.getUsuario().getNombre(),
-                        su.getUsuario().getCodigoUuid(),
-                        su.getEstaVivo(),
-                        su.getRol() != null ? su.getRol().getNombre() : null,
-                        su.getRol() != null ? su.getRol().getBando().name() : null,
-                        false))
+                .map(su -> {
+                    boolean esMentor = !salaUsuarioRepository.findBySala_IdSalaAndMentor_IdUsuario(sala.getIdSala(), su.getUsuario().getIdUsuario()).isEmpty();
+                    return new JugadorRolDto(
+                            su.getUsuario().getIdUsuario(),
+                            su.getUsuario().getNombre(),
+                            su.getUsuario().getCodigoUuid(),
+                            su.getEstaVivo(),
+                            su.getRol() != null ? su.getRol().getNombre() : null,
+                            su.getRol() != null ? su.getRol().getBando().name() : null,
+                            false,
+                            esMentor);
+                })
                 .toList();
     }
 
@@ -290,11 +300,12 @@ public class SalaService implements ISalaService {
                 .orElseThrow(() -> new IllegalArgumentException(ErrorMessages.JUGADOR_NO_EN_SALA));
 
         if (salaUsuario.getRol() == null) {
-            return new MiRolDto(null, null, null);
+            return new MiRolDto(null, null, null, null);
         }
 
         Rol rol = salaUsuario.getRol();
         return new MiRolDto(
+                usuario.getIdUsuario(),
                 rol.getNombre(),
                 rol.getDescripcion(),
                 rol.getBando().name());
@@ -307,11 +318,10 @@ public class SalaService implements ISalaService {
         Sala sala = salaRepository.findByCodigoSala(codigoSala)
                 .orElseThrow(() -> new IllegalArgumentException(ErrorMessages.SALA_NO_ENCONTRADA));
 
-        if (sala.getEstadoSala() != Sala.EstadoSala.CREADA) {
-            throw new IllegalStateException("No puedes salir de una partida que ya ha comenzado");
-        }
+        boolean esNarrador = sala.getNarrador().getIdUsuario().equals(usuario.getIdUsuario());
+        boolean esCreador = sala.getCreador().getIdUsuario().equals(usuario.getIdUsuario());
 
-        if (sala.getCreador().getIdUsuario().equals(usuario.getIdUsuario())) {
+        if (esCreador) {
             throw new IllegalStateException("El creador no puede abandonar la sala");
         }
 
@@ -319,7 +329,19 @@ public class SalaService implements ISalaService {
                 .findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), usuario.getIdUsuario())
                 .orElseThrow(() -> new IllegalArgumentException(ErrorMessages.JUGADOR_NO_EN_SALA));
 
-        salaUsuarioRepository.delete(salaUsuario);
+        if (salaUsuario.getEstaVivo() != null && salaUsuario.getEstaVivo()) {
+            salaUsuario.setEstaVivo(false);
+            salaUsuario.setMuerteConfirmada(true);
+        }
+        salaUsuarioRepository.save(salaUsuario);
+
+        if (esNarrador) {
+            sala.setNarrador(sala.getCreador());
+            salaRepository.save(sala);
+            List<JugadorDto> jugadoresActualizados = jugadorService.getJugadores(codigoSala);
+            salaSocketService.notificarNarradorAsignado(codigoSala, jugadoresActualizados);
+            return;
+        }
 
         List<JugadorDto> jugadoresActualizados = jugadorService.getJugadores(codigoSala);
         salaSocketService.notificarJugadorSalio(codigoSala, jugadoresActualizados);

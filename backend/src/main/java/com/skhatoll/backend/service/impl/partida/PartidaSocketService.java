@@ -8,6 +8,7 @@ import com.skhatoll.backend.entities.Sala;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,7 @@ import static com.skhatoll.backend.util.constants.GameConstants.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PartidaSocketService {
 
     private final SimpMessagingTemplate messagingTemplate;
@@ -58,6 +60,7 @@ public class PartidaSocketService {
     // Canal: /topic/partida/{codigo}/muerte
     // -------------------------------------------------------
     public void notificarMuerte(String codigoSala, MuerteConfirmadaDto muerte) {
+        log.info("Enviando notificacion de muerte a sala {}: jugador={}, muerteConfirmada={}", codigoSala, muerte.nombreJugador(), muerte.muerteConfirmada());
         messagingTemplate.convertAndSend(String.format(WS_MUERTE, codigoSala), muerte);
     }
 
@@ -67,6 +70,14 @@ public class PartidaSocketService {
     // -------------------------------------------------------
     public void notificarFinPartida(String codigoSala, FinPartidaDto fin) {
         messagingTemplate.convertAndSend(String.format(WS_FIN, codigoSala), fin);
+    }
+
+    // -------------------------------------------------------
+    // Notifica eventos especiales (CAZADOR_MUERTO, etc.)
+    // Canal: /topic/partida/{codigo}/turno
+    // -------------------------------------------------------
+    public void notificarEventoEspecial(String codigoSala, String tipoEvento, String nombreJugador) {
+        messagingTemplate.convertAndSend(String.format(WS_TURNO, codigoSala), new EventoEspecialEvent(tipoEvento, nombreJugador));
     }
 
     // -------------------------------------------------------
@@ -94,5 +105,12 @@ public class PartidaSocketService {
     public static class VotosEvent {
         private String tipo;
         private List<VotoDto> votos;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class EventoEspecialEvent {
+        private String tipo;
+        private String nombreJugador;
     }
 }

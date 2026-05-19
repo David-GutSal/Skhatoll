@@ -86,6 +86,14 @@
       >
         <i class="fa-solid fa-arrow-up" aria-hidden="true"></i> Volver Arriba
       </button>
+      <button 
+        v-if="!soyNarrador"
+        class="boton-rendirse"
+        @click="confirmarRendirse"
+        aria-label="Rendirse y abandonar la partida"
+      >
+        <i class="fa-solid fa-flag" aria-hidden="true"></i> Rendirse
+      </button>
     </div>
 
     <div class="footer-aldea" :class="esDia ? 'footer-dia' : 'footer-noche'"></div>
@@ -185,12 +193,32 @@ const irArriba = () => {
   })
 }
 
+const confirmarRendirse = async () => {
+  if (!confirm('¿Estás seguro de que quieres rendirte? Serás eliminado de la partida.')) {
+    return
+  }
+  try {
+    await axiosInstance.post(`/partida/${codigoSala.value}/rendirse`)
+    store.dispatch('toast/mostrar', { mensaje: 'Te has rendido', tipo: 'info' })
+    if (stompClient.value) {
+      stompClient.value.deactivate()
+      stompClient.value = null
+    }
+    store.dispatch('sala/resetSala')
+    router.push({ name: 'inicio' })
+  } catch (error) {
+    store.dispatch('toast/mostrar', { mensaje: error.response?.data?.mensaje || 'Error al rendirse', tipo: 'error' })
+  }
+}
+
 /**
  * Select a player for voting or abilities
  * @param {Jugador} j - Player to select
  */
 const seleccionarJugador = (j) => {
-  if (j.nombre === nombre.value) return
+  const esVotacion = votacionActiva.value && tipoVotacionLocal.value !== 'HABILIDAD'
+  
+  if (esVotacion && j.nombre === nombre.value) return
   
   if (enamorados.value) {
     const miNombre = nombre.value
@@ -377,7 +405,7 @@ const cargarDatos = async () => {
 const conectarWebSocket = () => {
   const token = store.getters['auth/token']
   const cliente = new Client({
-    webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+    webSocketFactory: () => new SockJS('/ws'),
     connectHeaders: { Authorization: `Bearer ${token}` },
   })
 
@@ -402,8 +430,13 @@ const conectarWebSocket = () => {
 
     cliente.subscribe(`/topic/partida/${codigoSala.value}/muerte`, (msg) => {
       const payload = JSON.parse(msg.body)
-      store.dispatch('sala/marcarMuerto', payload.nombreJugador)
-      store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
+      if (payload.tipo === 'CONFIRMAR' || payload.tipo === 'LINCHAMIENTO' || payload.tipo === 'RENDIRSE') {
+        store.dispatch('sala/marcarMuerto', payload.nombreJugador)
+      } else if (payload.tipo === 'REVIVIR') {
+        store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
+      } else {
+        store.dispatch('sala/marcarSemimuerto', payload.nombreJugador)
+      }
 
       if (
         miRol.value &&
@@ -411,17 +444,36 @@ const conectarWebSocket = () => {
         store.getters['sala/mentorNinno'] === payload.nombreJugador
       ) {
         store.commit('sala/SET_ROL', {
-          nombreRol: 'Lobo',
+          nombreRol: 'NIÑO LOBO',
           descripcionRol: 'Te has transformado en un Hombre Lobo',
           bando: 'lobo',
+          nombreJugador: nombre.value,
         })
+        
+        axiosInstance.get(`/salas/${codigoSala.value}/mi-rol`)
+          .then(miIdRes => {
+            return axiosInstance.put(`/partida/${codigoSala.value}/jugador/${miIdRes.data.idUsuario}/rol`, {
+              nombreRol: 'NIÑO LOBO',
+            })
+          })
+          .then(() => {
+            console.log('[Niño Lobo] Rol actualizado en backend')
+          })
+          .catch(error => {
+            console.error('[Niño Lobo] Error al actualizar rol en backend:', error)
+          })
+        
         mensajeEvento.value = '¡Tu mentor ha muerto! ¡Te has convertido en un Hombre Lobo!'
         setTimeout(() => {
           mensajeEvento.value = null
         }, 8000)
       }
 
-      if (payload.nombreJugador === nombre.value) {
+      if (payload.nombreJugador === nombre.value && payload.muerteConfirmada) {
+        if (store.getters['sala/bandoGanador'] && router.currentRoute.value.name !== 'resultados') {
+          router.push({ name: 'resultados' })
+          return
+        }
         if ((miRol.value || '').toLowerCase() === 'cazador') {
           soyElCazadorMuerto.value = true
           mensajeEvento.value =
@@ -432,23 +484,7 @@ const conectarWebSocket = () => {
         return
       }
 
-      const enamorados = store.getters['sala/enamorados']
-      if (enamorados) {
-        const { jugador1, jugador2 } = enamorados
-        if (payload.nombreJugador === jugador1 || payload.nombreJugador === jugador2) {
-          const nombrePareja = payload.nombreJugador === jugador1 ? jugador2 : jugador1
-          const jugadorPareja = jugadores.value.find((j) => j.nombre === nombrePareja)
-          if (jugadorPareja && jugadorPareja.estaVivo) {
-            stompClient.value.publish({
-              destination: `/topic/partida/${codigoSala.value}/turno`,
-              body: JSON.stringify({
-                tipo: 'MUERTE_ENAMORADO',
-                nombreJugador: nombrePareja,
-              }),
-            })
-          }
-        }
-      }
+      
     })
 
     cliente.subscribe(`/topic/partida/${codigoSala.value}/votos`, (msg) => {
@@ -481,6 +517,12 @@ const conectarWebSocket = () => {
 
       if (payload.tipo === 'VOTACION_ABIERTA' || payload.tipo === 'VOTACION_CERRADA') {
         votacionActiva.value = payload.abierta
+
+        if (!payload.abierta) {
+          store.dispatch('sala/reiniciarVotos')
+          store.dispatch('sala/setTipoVotacion', null)
+          return
+        }
 
         if (payload.abierta) {
           tipoVotacionLocal.value = payload.tipoVotacion
@@ -543,7 +585,6 @@ const conectarWebSocket = () => {
       }
 
       if (payload.tipo === 'TURNO_FINALIZADO') return
-      if (payload.tipo === 'MUERTE_ENAMORADO') return
 
       if (payload.tipo === 'FLECHAZO') {
         const soyEnamorado =
@@ -625,8 +666,7 @@ const conectarWebSocket = () => {
 
       if (payload.tipo === 'MENTOR_ELEGIDO') {
         if (payload.nombreNinno === nombre.value) return
-        const mentor = jugadores.value.find((j) => j.nombre === payload.nombreMentor)
-        if (mentor) mentor.esMentor = true
+        store.dispatch('sala/setMentorNinno', payload.nombreMentor)
         return
       }
     })
@@ -637,7 +677,9 @@ const conectarWebSocket = () => {
         bandoGanador: payload.bandoGanador,
         mensaje: payload.mensaje,
       })
-      router.push({ name: 'resultados' })
+      if (router.currentRoute.value.name !== 'resultados') {
+        router.push({ name: 'resultados' })
+      }
     })
   }
 
@@ -836,6 +878,32 @@ onUnmounted(() => {
 }
 
 .boton-arriba:active {
+  transform: scale(0.96);
+}
+
+.boton-rendirse {
+  background: #8b0000;
+  border: 3px solid #ff6b6b;
+  color: white;
+  padding: 16px 36px;
+  border-radius: 10px;
+  font-family: var(--font-cinzel);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.boton-rendirse:hover {
+  background: #ff6b6b;
+  border-color: #8b0000;
+}
+
+.boton-rendirse:active {
   transform: scale(0.96);
 }
 </style>

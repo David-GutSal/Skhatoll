@@ -45,6 +45,8 @@
         @eventos="iniciarEventos"
         @verPersonajes="seccionActiva = seccionActiva === 'personajes' ? null : 'personajes'"
         @verReglas="seccionActiva = seccionActiva === 'reglas' ? null : 'reglas'"
+        @iniciarVotacionLobos="iniciarVotacionLobos"
+        @cancelarPartida="cancelarPartida"
       />
 
       <div class="mesa-wrapper-outer">
@@ -118,10 +120,12 @@ const hayAlcalde = computed(() => jugadoresConRol.value.some((j) => j.alcalde))
 
 const jugadoresConRolConEnamorados = computed(() => {
   if (!enamorados.value) return jugadoresConRol.value
-  return jugadoresConRol.value.map((j) => ({
-    ...j,
-    esEnamorado: j.nombre === enamorados.value.jugador1 || j.nombre === enamorados.value.jugador2,
-  }))
+  return jugadoresConRol.value.map((j) => {
+    return {
+      ...j,
+      esEnamorado: j.nombre === enamorados.value.jugador1 || j.nombre === enamorados.value.jugador2,
+    }
+  })
 })
 
 const textoAlcalde = computed(() => {
@@ -171,7 +175,6 @@ const cambiarFase = async (fase) => {
       eventosYaUsadosEstaNoche.value = false
       jugadoresYaActuadosEstaNoche.value = []
     } else {
-      await confirmarMuertesSemimuertos()
       store.dispatch('sala/reiniciarVotos')
       store.dispatch('sala/setTipoVotacion', null)
     }
@@ -192,34 +195,22 @@ const cambiarFase = async (fase) => {
   }
 }
 
-const confirmarMuertesSemimuertos = async () => {
-  const semimuertos = [...semiMuertos.value]
-  console.log('🌅 Confirmando muertes al amanecer:', semimuertos)
-  for (const nombre of semimuertos) {
-    const jugador = jugadoresConRol.value.find((j) => j.nombre === nombre)
-    if (jugador) {
-      try {
-        await axiosInstance.put(
-          `/partida/${codigoSala.value}/jugador/${jugador.idUsuario}/confirmar-muerte`,
-        )
-        console.log('✅ Muerte confirmada:', nombre)
-      } catch (error) {
-        console.error(
-          '❌ Error confirmando muerte de',
-          nombre,
-          ':',
-          error.response?.status,
-          error.response?.data,
-        )
-      }
-    }
+const cancelarPartida = async () => {
+  if (!confirm('¿Cancelar la partida? Se proclamará un empate.')) return
+  try {
+    await axiosInstance.put(`/partida/${codigoSala.value}/cancelar`)
+  } catch (error) {
+    store.dispatch('toast/mostrar', {
+      mensaje: 'Error al cancelar la partida',
+      tipo: 'error',
+    })
   }
 }
 
 const conectarWebSocket = () => {
   const token = store.getters['auth/token']
   const cliente = new Client({
-    webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+    webSocketFactory: () => new SockJS('/ws'),
     connectHeaders: { Authorization: `Bearer ${token}` },
   })
 
@@ -242,8 +233,13 @@ const conectarWebSocket = () => {
 
     cliente.subscribe(`/topic/partida/${codigoSala.value}/muerte`, (msg) => {
       const payload = JSON.parse(msg.body)
-      store.dispatch('sala/marcarMuerto', payload.nombreJugador)
-      store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
+      if (payload.tipo === 'CONFIRMAR' || payload.tipo === 'LINCHAMIENTO' || payload.tipo === 'RENDIRSE') {
+        store.dispatch('sala/marcarMuerto', payload.nombreJugador)
+      } else if (payload.tipo === 'REVIVIR') {
+        store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
+      } else {
+        store.dispatch('sala/marcarSemimuerto', payload.nombreJugador)
+      }
     })
 
     cliente.subscribe(`/topic/partida/${codigoSala.value}/alcalde`, (msg) => {
@@ -269,7 +265,9 @@ const conectarWebSocket = () => {
         bandoGanador: payload.bandoGanador,
         mensaje: payload.mensaje,
       })
-      router.push({ name: 'resultados' })
+      if (router.currentRoute.value.name !== 'resultados') {
+        router.push({ name: 'resultados' })
+      }
     })
 
     cliente.subscribe(`/topic/partida/${codigoSala.value}/votacion`, (msg) => {
@@ -308,6 +306,8 @@ const conectarWebSocket = () => {
         votacionActiva.value = false
         tipoVotacionLocal.value = null
         store.dispatch('sala/setTipoVotacion', null)
+        store.dispatch('sala/reiniciarVotos')
+        jugadorSeleccionado.value = null
         return
       }
 
@@ -365,17 +365,9 @@ const conectarWebSocket = () => {
         store.dispatch('sala/setCupidoUsado')
       }
 
-      if (payload.tipo === 'MUERTE_ENAMORADO') {
-        const jugador = jugadoresConRol.value.find((j) => j.nombre === payload.nombreJugador)
-        if (jugador) {
-          axiosInstance
-            .put(`/partida/${codigoSala.value}/jugador/${jugador.idUsuario}/confirmar-muerte`)
-            .catch(() => {})
-        }
-      }
+      
       if (payload.tipo === 'MENTOR_ELEGIDO') {
-        const mentor = jugadoresConRol.value.find((j) => j.nombre === payload.nombreMentor)
-        if (mentor) mentor.esMentor = true
+        store.dispatch('sala/setMentorNinno', payload.nombreMentor)
 
         avisoSesion.value = `El Niño Salvaje ha elegido a ${payload.nombreMentor} como su mentor`
         setTimeout(() => {
@@ -425,6 +417,38 @@ const iniciarVotacionAlcalde = async () => {
   }
 }
 
+const iniciarVotacionLobos = async () => {
+  try {
+    const res = await axiosInstance.post(`/partida/${codigoSala.value}/votacion/abrir`, {
+      tipo: 'LOBOS',
+    })
+    idSesionActual.value = res.data
+    sesionActualTipo.value = 'LOBOS'
+    votacionActiva.value = true
+
+    const lobosRes = await axiosInstance.get(`/partida/${codigoSala.value}/lobos`)
+    const nombresLobos = lobosRes.data
+
+    if (stompClient.value) {
+      stompClient.value.publish({
+        destination: `/topic/partida/${codigoSala.value}/turno`,
+        body: JSON.stringify({
+          tipo: 'TURNO_LOBOS',
+          nombresLobos: nombresLobos,
+        }),
+      })
+    }
+  } catch (error) {
+    store.dispatch('toast/mostrar', {
+      mensaje:
+        error.response?.status === 409
+          ? 'Ya hay una votación abierta'
+          : 'Error al iniciar votación de lobos',
+      tipo: 'error',
+    })
+  }
+}
+
 const finalizarVotacion = async () => {
   if (!idSesionActual.value) {
     store.dispatch('toast/mostrar', {
@@ -438,6 +462,7 @@ const finalizarVotacion = async () => {
       `/partida/${codigoSala.value}/votacion/${idSesionActual.value}/cerrar`,
     )
     idSesionActual.value = null
+    sesionActualTipo.value = null
     store.dispatch('sala/reiniciarVotos')
     store.dispatch('sala/setTipoVotacion', null)
   } catch (error) {
@@ -528,7 +553,7 @@ const activarTurnoJugador = async (jugador) => {
   jugadorSeleccionado.value = jugador
   store.dispatch('sala/setTurnoActivo', jugador)
 
-  const esLobo = jugador.nombreRol === 'Lobo'
+  const esLobo = jugador.nombreRol === 'Lobo' || jugador.nombreRol === 'NIÑO LOBO'
 
   if (esLobo) {
     try {
@@ -539,7 +564,7 @@ const activarTurnoJugador = async (jugador) => {
       sesionActualTipo.value = 'LOBOS'
 
       const lobosVivos = jugadoresConRol.value.filter(
-        (j) => j.nombreRol === 'Lobo' && j.estaVivo,
+(j) => (j.nombreRol === 'Lobo' || j.nombreRol === 'NIÑO LOBO') && j.estaVivo,
       )
       stompClient.value.publish({
         destination: `/topic/partida/${codigoSala.value}/turno`,

@@ -25,14 +25,19 @@ public class JugadorService implements IJugadorService {
 
         return salaUsuarioRepository.findBySala_IdSala(sala.getIdSala())
                 .stream()
-                .map(su -> new JugadorDto(
-                        su.getUsuario().getIdUsuario(),
-                        su.getUsuario().getNombre(),
-                        su.getUsuario().getCodigoUuid(),
-                        su.getEstaVivo(),
-                        su.getUsuario().getIdUsuario().equals(sala.getNarrador().getIdUsuario()),
-                        sala.getAlcalde() != null && su.getUsuario().getIdUsuario()
-                                .equals(sala.getAlcalde().getIdUsuario())))
+                .map(su -> {
+                    boolean esMentor = !salaUsuarioRepository.findBySala_IdSalaAndMentor_IdUsuario(sala.getIdSala(), su.getUsuario().getIdUsuario()).isEmpty();
+                    return new JugadorDto(
+                            su.getUsuario().getIdUsuario(),
+                            su.getUsuario().getNombre(),
+                            su.getUsuario().getCodigoUuid(),
+                            su.getEstaVivo(),
+                            su.getMuerteConfirmada(),
+                            su.getUsuario().getIdUsuario().equals(sala.getNarrador().getIdUsuario()),
+                            sala.getAlcalde() != null && su.getUsuario().getIdUsuario()
+                                    .equals(sala.getAlcalde().getIdUsuario()),
+                            esMentor);
+                })
                 .toList();
     }
 }

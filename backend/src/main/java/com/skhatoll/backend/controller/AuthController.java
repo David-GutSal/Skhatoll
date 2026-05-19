@@ -27,6 +27,16 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @GetMapping("/health")
+    public ResponseEntity<?> health() {
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/login")
+    public ResponseEntity<?> loginGet() {
+        return ResponseEntity.ok().build();
+    }
+
     // -------------------------------------------------------
     // POST /auth/login
     // Body: { "nombre": "...", "password": "..." }

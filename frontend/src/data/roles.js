@@ -1,11 +1,12 @@
-import brujaImg     from '@/assets/imgs/carta-bruja.jpg'
-import aldeanoImg   from '@/assets/imgs/carta-aldeano.jpg'
-import cazadorImg   from '@/assets/imgs/carta-cazador.jpg'
-import loboImg      from '@/assets/imgs/carta-lobo.jpg'
-import videnteImg   from '@/assets/imgs/carta-vidente.jpg'
-import ninnaImg     from '@/assets/imgs/carta-ninna.jpg'
-import ninnoImg     from '@/assets/imgs/carta-ninno.jpg'
-import cupidoImg    from '@/assets/imgs/carta-cupido.jpg'
+import brujaImg       from '@/assets/imgs/carta-bruja.jpg'
+import aldeanoImg     from '@/assets/imgs/carta-aldeano.jpg'
+import cazadorImg     from '@/assets/imgs/carta-cazador.jpg'
+import loboImg        from '@/assets/imgs/carta-lobo.jpg'
+import videnteImg     from '@/assets/imgs/carta-vidente.jpg'
+import ninnaImg       from '@/assets/imgs/carta-ninna.jpg'
+import ninnoImg       from '@/assets/imgs/carta-ninno.jpg'
+import ninnoLoboImg   from '@/assets/imgs/carta-ninnolobo.jpg'
+import cupidoImg      from '@/assets/imgs/carta-cupido.jpg'
 
 export const IMAGENES_ROL = {
   BRUJA:          brujaImg,
@@ -15,6 +16,7 @@ export const IMAGENES_ROL = {
   VIDENTE:        videnteImg,
   NIÑA:           ninnaImg,
   'NIÑO SALVAJE': ninnoImg,
+  'NIÑO LOBO':    ninnoLoboImg,
   CUPIDO:         cupidoImg,
   NARRADOR:       brujaImg,
 }

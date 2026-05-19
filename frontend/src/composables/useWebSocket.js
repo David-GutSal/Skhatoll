@@ -29,7 +29,7 @@ export function useWebSocket() {
 
     return new Promise((resolve, reject) => {
       const client = new Client({
-        webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+        webSocketFactory: () => new SockJS('/ws'),
         connectHeaders: { Authorization: `Bearer ${token}` },
       })
 

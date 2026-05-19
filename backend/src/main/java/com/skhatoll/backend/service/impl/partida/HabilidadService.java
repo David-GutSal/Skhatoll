@@ -166,10 +166,10 @@ public class HabilidadService implements IHabilidadService {
         }
 
         objetivo.setEstaVivo(false);
-        objetivo.setMuerteConfirmada(true);
+        objetivo.setMuerteConfirmada(false);
         salaUsuarioRepository.save(objetivo);
 
-        MuerteConfirmadaDto muerte = new MuerteConfirmadaDto(objetivo.getUsuario().getNombre(), objetivo.getRol().getNombre(), objetivo.getRol().getBando().name(), true, MuerteConfirmadaDto.TIPO_CONFIRMAR);
+        MuerteConfirmadaDto muerte = new MuerteConfirmadaDto(objetivo.getUsuario().getNombre(), objetivo.getRol().getNombre(), objetivo.getRol().getBando().name(), false, MuerteConfirmadaDto.TIPO_MUERTE);
         partidaSocketService.notificarMuerte(codigoSala, muerte);
         comprobarFinPartida(codigoSala, sala);
 
@@ -192,10 +192,10 @@ public class HabilidadService implements IHabilidadService {
         String bandoGanador = null;
         String mensaje = null;
 
-        if (lobosVivos == 0) {
+        if (aldeaViva > 0 && lobosVivos == 0) {
             bandoGanador = BANDO_ALDEA;
             mensaje = "¡La aldea ha eliminado a todos los hombres lobo!";
-        } else if (lobosVivos >= aldeaViva) {
+        } else if (lobosVivos > 0 && aldeaViva == 0) {
             bandoGanador = BANDO_LOBO;
             mensaje = "¡Los hombres lobo dominan la aldea!";
         }
@@ -336,7 +336,7 @@ public class HabilidadService implements IHabilidadService {
             throw new IllegalStateException("No puedes elegir un jugador eliminado como modelo");
         }
 
-        ninoSalvaje.setIdModelo(modelo.getUsuario().getIdUsuario());
+        ninoSalvaje.setMentor(modelo.getUsuario());
         salaUsuarioRepository.save(ninoSalvaje);
 
         return new HabilidadResultadoDto(HAB_MODELO, List.of(modelo.getUsuario().getNombre()), RES_MODELO_ASIGNADO, null);

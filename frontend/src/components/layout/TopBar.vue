@@ -122,6 +122,9 @@ export default {
 
   computed: {
     ...mapGetters('auth', ['estaAutenticado', 'nombre']),
+    enPartida() {
+      return !!this.$store.getters['sala/codigoSala']
+    },
   },
 
   methods: {

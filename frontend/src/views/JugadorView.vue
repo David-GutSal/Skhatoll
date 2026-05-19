@@ -86,6 +86,14 @@
       >
         <i class="fa-solid fa-arrow-up" aria-hidden="true"></i> Volver Arriba
       </button>
+      <button 
+        v-if="!soyNarrador"
+        class="boton-rendirse"
+        @click="confirmarRendirse"
+        aria-label="Rendirse y abandonar la partida"
+      >
+        <i class="fa-solid fa-flag" aria-hidden="true"></i> Rendirse
+      </button>
     </div>
 
     <div class="footer-aldea" :class="esDia ? 'footer-dia' : 'footer-noche'"></div>
@@ -183,6 +191,24 @@ const irArriba = () => {
     top: 0, 
     behavior: prefersReducedMotion ? 'auto' : 'smooth' 
   })
+}
+
+const confirmarRendirse = async () => {
+  if (!confirm('¿Estás seguro de que quieres rendirte? Serás eliminado de la partida.')) {
+    return
+  }
+  try {
+    await axiosInstance.post(`/partida/${codigoSala.value}/rendirse`)
+    store.dispatch('toast/mostrar', { mensaje: 'Te has rendido', tipo: 'info' })
+    if (stompClient.value) {
+      stompClient.value.deactivate()
+      stompClient.value = null
+    }
+    store.dispatch('sala/resetSala')
+    router.push({ name: 'inicio' })
+  } catch (error) {
+    store.dispatch('toast/mostrar', { mensaje: error.response?.data?.mensaje || 'Error al rendirse', tipo: 'error' })
+  }
 }
 
 /**
@@ -379,7 +405,7 @@ const cargarDatos = async () => {
 const conectarWebSocket = () => {
   const token = store.getters['auth/token']
   const cliente = new Client({
-    webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+    webSocketFactory: () => new SockJS('/ws'),
     connectHeaders: { Authorization: `Bearer ${token}` },
   })
 
@@ -404,7 +430,7 @@ const conectarWebSocket = () => {
 
     cliente.subscribe(`/topic/partida/${codigoSala.value}/muerte`, (msg) => {
       const payload = JSON.parse(msg.body)
-      if (payload.tipo === 'CONFIRMAR') {
+      if (payload.tipo === 'CONFIRMAR' || payload.tipo === 'LINCHAMIENTO' || payload.tipo === 'RENDIRSE') {
         store.dispatch('sala/marcarMuerto', payload.nombreJugador)
       } else if (payload.tipo === 'REVIVIR') {
         store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
@@ -444,6 +470,10 @@ const conectarWebSocket = () => {
       }
 
       if (payload.nombreJugador === nombre.value && payload.muerteConfirmada) {
+        if (store.getters['sala/bandoGanador'] && router.currentRoute.value.name !== 'resultados') {
+          router.push({ name: 'resultados' })
+          return
+        }
         if ((miRol.value || '').toLowerCase() === 'cazador') {
           soyElCazadorMuerto.value = true
           mensajeEvento.value =
@@ -454,23 +484,7 @@ const conectarWebSocket = () => {
         return
       }
 
-      const enamorados = store.getters['sala/enamorados']
-      if (enamorados) {
-        const { jugador1, jugador2 } = enamorados
-        if (payload.nombreJugador === jugador1 || payload.nombreJugador === jugador2) {
-          const nombrePareja = payload.nombreJugador === jugador1 ? jugador2 : jugador1
-          const jugadorPareja = jugadores.value.find((j) => j.nombre === nombrePareja)
-          if (jugadorPareja && jugadorPareja.estaVivo) {
-            stompClient.value.publish({
-              destination: `/topic/partida/${codigoSala.value}/turno`,
-              body: JSON.stringify({
-                tipo: 'MUERTE_ENAMORADO',
-                nombreJugador: nombrePareja,
-              }),
-            })
-          }
-        }
-      }
+      
     })
 
     cliente.subscribe(`/topic/partida/${codigoSala.value}/votos`, (msg) => {
@@ -571,7 +585,6 @@ const conectarWebSocket = () => {
       }
 
       if (payload.tipo === 'TURNO_FINALIZADO') return
-      if (payload.tipo === 'MUERTE_ENAMORADO') return
 
       if (payload.tipo === 'FLECHAZO') {
         const soyEnamorado =
@@ -653,8 +666,7 @@ const conectarWebSocket = () => {
 
       if (payload.tipo === 'MENTOR_ELEGIDO') {
         if (payload.nombreNinno === nombre.value) return
-        const mentor = jugadores.value.find((j) => j.nombre === payload.nombreMentor)
-        if (mentor) mentor.esMentor = true
+        store.dispatch('sala/setMentorNinno', payload.nombreMentor)
         return
       }
     })
@@ -665,7 +677,9 @@ const conectarWebSocket = () => {
         bandoGanador: payload.bandoGanador,
         mensaje: payload.mensaje,
       })
-      router.push({ name: 'resultados' })
+      if (router.currentRoute.value.name !== 'resultados') {
+        router.push({ name: 'resultados' })
+      }
     })
   }
 
@@ -864,6 +878,32 @@ onUnmounted(() => {
 }
 
 .boton-arriba:active {
+  transform: scale(0.96);
+}
+
+.boton-rendirse {
+  background: #8b0000;
+  border: 3px solid #ff6b6b;
+  color: white;
+  padding: 16px 36px;
+  border-radius: 10px;
+  font-family: var(--font-cinzel);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.boton-rendirse:hover {
+  background: #ff6b6b;
+  border-color: #8b0000;
+}
+
+.boton-rendirse:active {
   transform: scale(0.96);
 }
 </style>

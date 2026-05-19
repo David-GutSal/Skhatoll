@@ -60,10 +60,7 @@
       </button>
     </div>
 
-    <button class="btn-finalizar" @click="$emit('finalizarTurno')">
-      <i class="fa-solid fa-heart-crack"></i>
-      Finalizar turno de Cupido
-    </button>
+    
   </div>
 </template>
 

@@ -147,7 +147,7 @@ const miRol = computed(() => store.getters['sala/miRol'])
 
 const puedeVerMentor = computed(() => {
   const rol = miRol.value || ''
-  return rol.toLowerCase().includes('niño') || rol.toLowerCase().includes('salvaje') || rol === 'Narrador'
+  return rol.toLowerCase().includes('niño') || rol.toLowerCase().includes('salvaje') || props.modoVista === 'narrador'
 })
 
 const imagen = computed(() => getImagenRol(props.nombreRol))

@@ -49,13 +49,6 @@ public class PartidaController {
         return ResponseEntity.ok("Voto registrado");
     }
 
-    @PutMapping("/{codigo}/jugador/{idUsuario}/confirmar-muerte")
-    public ResponseEntity<String> confirmarMuerte(@PathVariable String codigo,
-                                             @PathVariable Integer idUsuario) {
-        partidaService.confirmarMuerte(codigo, idUsuario);
-        return ResponseEntity.ok("Muerte confirmada");
-    }
-
     @GetMapping("/{codigo}/sesion-activa")
     public ResponseEntity<SesionVotacion> getSesionActiva(@PathVariable String codigo) {
         SesionVotacion sesion = partidaService.getSesionActiva(codigo);
@@ -73,6 +66,18 @@ public class PartidaController {
     public ResponseEntity<String> cerrarPartida(@PathVariable String codigo) {
         partidaService.cerrarPartida(codigo);
         return ResponseEntity.ok("Partida cerrada");
+    }
+
+    @PutMapping("/{codigo}/cancelar")
+    public ResponseEntity<String> cancelarPartida(@PathVariable String codigo) {
+        partidaService.cancelarPartida(codigo);
+        return ResponseEntity.ok("Partida cancelada - Empate");
+    }
+
+    @PostMapping("/{codigo}/rendirse")
+    public ResponseEntity<String> rendirse(@PathVariable String codigo) {
+        partidaService.rendirse(codigo);
+        return ResponseEntity.ok("Te has rendido");
     }
 
     @GetMapping("/{codigo}/estado")

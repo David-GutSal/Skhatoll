@@ -31,6 +31,10 @@ public class SalaUsuario {
     @JoinColumn(name = "id_rol")
     private Rol rol;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_modelo")
+    private Usuario mentor;
+
     @Column(name = "esta_vivo", nullable = false)
     @Builder.Default
     private Boolean estaVivo = true;
@@ -39,6 +43,6 @@ public class SalaUsuario {
     @Builder.Default
     private Boolean muerteConfirmada = false;
 
-    @Column(name = "id_modelo")
+    @Column(name = "id_modelo", insertable = false, updatable = false)
     private Integer idModelo;
 }

@@ -13,4 +13,5 @@ public class JugadorRolDto {
     private String nombreRol;
     private String bando;
     private Boolean esNarrador;
+    private Boolean esMentor;
 }

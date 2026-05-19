@@ -149,7 +149,7 @@ class HabilidadServiceTest {
                     .thenReturn(Optional.of(salaUsuarioEliminado));
             when(salaUsuarioRepository.save(any(SalaUsuario.class))).thenReturn(salaUsuarioEliminado);
 
-            HabilidadResultadoDto result = habilidadService.usarPocionVida(sala, List.of(usuarioEliminado.getIdUsuario()));
+            HabilidadResultadoDto result = habilidadService.usarPocionVida("TEST123", sala, List.of(usuarioEliminado.getIdUsuario()));
 
             assertNotNull(result);
             assertEquals("pocion_vida", result.nombreHabilidad());
@@ -162,7 +162,7 @@ class HabilidadServiceTest {
         @DisplayName("Debe fallar si el jugador no está en la sala")
         void usarPocionVida_deberiaFallarSiJugadorNoEncontrado() {
             assertThrows(IllegalArgumentException.class, () ->
-                    habilidadService.usarPocionVida(sala, List.of(999)));
+                    habilidadService.usarPocionVida("TEST123", sala, List.of(999)));
         }
 
         @Test
@@ -175,16 +175,16 @@ class HabilidadServiceTest {
                     .thenReturn(Optional.of(salaUsuarioEliminado));
 
             assertThrows(IllegalStateException.class, () ->
-                    habilidadService.usarPocionVida(sala, List.of(usuarioEliminado.getIdUsuario())));
+                    habilidadService.usarPocionVida("TEST123", sala, List.of(usuarioEliminado.getIdUsuario())));
         }
 
         @Test
         @DisplayName("Debe fallar si no se proporciona exactamente un objetivo")
         void usarPocionVida_deberiaFallarSinObjetivoValido() {
             assertThrows(IllegalArgumentException.class, () ->
-                    habilidadService.usarPocionVida(sala, List.of()));
+                    habilidadService.usarPocionVida("TEST123", sala, List.of()));
             assertThrows(IllegalArgumentException.class, () ->
-                    habilidadService.usarPocionVida(sala, List.of(1, 2)));
+                    habilidadService.usarPocionVida("TEST123", sala, List.of(1, 2)));
         }
     }
 

@@ -32,6 +32,7 @@ public class SecurityConfig {
     private static final String[] RUTAS_PUBLICAS = {
             "/auth/registro",
             "/auth/login",
+            "/auth/health",
             "/ws/**"
     };
 

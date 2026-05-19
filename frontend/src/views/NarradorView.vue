@@ -46,6 +46,7 @@
         @verPersonajes="seccionActiva = seccionActiva === 'personajes' ? null : 'personajes'"
         @verReglas="seccionActiva = seccionActiva === 'reglas' ? null : 'reglas'"
         @iniciarVotacionLobos="iniciarVotacionLobos"
+        @cancelarPartida="cancelarPartida"
       />
 
       <div class="mesa-wrapper-outer">
@@ -119,10 +120,12 @@ const hayAlcalde = computed(() => jugadoresConRol.value.some((j) => j.alcalde))
 
 const jugadoresConRolConEnamorados = computed(() => {
   if (!enamorados.value) return jugadoresConRol.value
-  return jugadoresConRol.value.map((j) => ({
-    ...j,
-    esEnamorado: j.nombre === enamorados.value.jugador1 || j.nombre === enamorados.value.jugador2,
-  }))
+  return jugadoresConRol.value.map((j) => {
+    return {
+      ...j,
+      esEnamorado: j.nombre === enamorados.value.jugador1 || j.nombre === enamorados.value.jugador2,
+    }
+  })
 })
 
 const textoAlcalde = computed(() => {
@@ -172,7 +175,6 @@ const cambiarFase = async (fase) => {
       eventosYaUsadosEstaNoche.value = false
       jugadoresYaActuadosEstaNoche.value = []
     } else {
-      await confirmarMuertesSemimuertos()
       store.dispatch('sala/reiniciarVotos')
       store.dispatch('sala/setTipoVotacion', null)
     }
@@ -193,34 +195,22 @@ const cambiarFase = async (fase) => {
   }
 }
 
-const confirmarMuertesSemimuertos = async () => {
-  const semimuertos = [...semiMuertos.value]
-  console.log('🌅 Confirmando muertes al amanecer:', semimuertos)
-  for (const nombre of semimuertos) {
-    const jugador = jugadoresConRol.value.find((j) => j.nombre === nombre)
-    if (jugador) {
-      try {
-        await axiosInstance.put(
-          `/partida/${codigoSala.value}/jugador/${jugador.idUsuario}/confirmar-muerte`,
-        )
-        console.log('✅ Muerte confirmada:', nombre)
-      } catch (error) {
-        console.error(
-          '❌ Error confirmando muerte de',
-          nombre,
-          ':',
-          error.response?.status,
-          error.response?.data,
-        )
-      }
-    }
+const cancelarPartida = async () => {
+  if (!confirm('¿Cancelar la partida? Se proclamará un empate.')) return
+  try {
+    await axiosInstance.put(`/partida/${codigoSala.value}/cancelar`)
+  } catch (error) {
+    store.dispatch('toast/mostrar', {
+      mensaje: 'Error al cancelar la partida',
+      tipo: 'error',
+    })
   }
 }
 
 const conectarWebSocket = () => {
   const token = store.getters['auth/token']
   const cliente = new Client({
-    webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+    webSocketFactory: () => new SockJS('/ws'),
     connectHeaders: { Authorization: `Bearer ${token}` },
   })
 
@@ -243,7 +233,7 @@ const conectarWebSocket = () => {
 
     cliente.subscribe(`/topic/partida/${codigoSala.value}/muerte`, (msg) => {
       const payload = JSON.parse(msg.body)
-      if (payload.tipo === 'CONFIRMAR') {
+      if (payload.tipo === 'CONFIRMAR' || payload.tipo === 'LINCHAMIENTO' || payload.tipo === 'RENDIRSE') {
         store.dispatch('sala/marcarMuerto', payload.nombreJugador)
       } else if (payload.tipo === 'REVIVIR') {
         store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
@@ -275,7 +265,9 @@ const conectarWebSocket = () => {
         bandoGanador: payload.bandoGanador,
         mensaje: payload.mensaje,
       })
-      router.push({ name: 'resultados' })
+      if (router.currentRoute.value.name !== 'resultados') {
+        router.push({ name: 'resultados' })
+      }
     })
 
     cliente.subscribe(`/topic/partida/${codigoSala.value}/votacion`, (msg) => {
@@ -373,17 +365,9 @@ const conectarWebSocket = () => {
         store.dispatch('sala/setCupidoUsado')
       }
 
-      if (payload.tipo === 'MUERTE_ENAMORADO') {
-        const jugador = jugadoresConRol.value.find((j) => j.nombre === payload.nombreJugador)
-        if (jugador) {
-          axiosInstance
-            .put(`/partida/${codigoSala.value}/jugador/${jugador.idUsuario}/confirmar-muerte`)
-            .catch(() => {})
-        }
-      }
+      
       if (payload.tipo === 'MENTOR_ELEGIDO') {
-        const mentor = jugadoresConRol.value.find((j) => j.nombre === payload.nombreMentor)
-        if (mentor) mentor.esMentor = true
+        store.dispatch('sala/setMentorNinno', payload.nombreMentor)
 
         avisoSesion.value = `El Niño Salvaje ha elegido a ${payload.nombreMentor} como su mentor`
         setTimeout(() => {

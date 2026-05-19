@@ -22,6 +22,10 @@ public interface IPartidaService {
 
     void cerrarPartida(String codigo);
 
+    void cancelarPartida(String codigo);
+
+    void rendirse(String codigo);
+
     List<String> getNombresLobos(String codigo);
 
     void actualizarRol(String codigo, Integer idUsuario, String nombreRol);

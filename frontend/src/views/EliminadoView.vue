@@ -26,7 +26,7 @@
 
       <transition name="desplegable">
         <div v-if="verPartida" class="mesa-desplegable">
-          <MesaJugadores :jugadores="jugadores" :esDia="esDia" :modoNarrador="true" />
+          <MesaJugadores :jugadores="jugadoresConRol.length > 0 ? jugadoresConRol : jugadores" :esDia="esDia" :modoNarrador="true" />
         </div>
       </transition>
     </div>
@@ -39,6 +39,7 @@ import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
+import axiosInstance from '@/plugins/axios'
 import MesaJugadores from '@/components/juego/MesaJugadores.vue'
 
 const router = useRouter()
@@ -47,11 +48,20 @@ const store = useStore()
 const verPartida = ref(false)
 const esDia = ref(true)
 const stompClient = ref(null)
+const jugadoresConRol = ref([])
 
 const codigoSala = computed(() => store.getters['sala/codigoSala'])
 const jugadores = computed(() => store.getters['sala/jugadores'])
 
-const togglePartida = () => {
+const togglePartida = async () => {
+  if (!verPartida.value) {
+    try {
+      const res = await axiosInstance.get(`/salas/${codigoSala.value}/roles`)
+      jugadoresConRol.value = res.data
+    } catch (error) {
+      store.dispatch('toast/mostrar', { mensaje: 'Error al cargar roles', tipo: 'error' })
+    }
+  }
   verPartida.value = !verPartida.value
 }
 
@@ -63,7 +73,7 @@ const irInicio = () => {
 const conectarWebSocket = () => {
   const token = store.getters['auth/token']
   const cliente = new Client({
-    webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+    webSocketFactory: () => new SockJS('/ws'),
     connectHeaders: { Authorization: `Bearer ${token}` },
   })
 
@@ -76,7 +86,7 @@ const conectarWebSocket = () => {
 
 cliente.subscribe(`/topic/partida/${codigoSala.value}/muerte`, (msg) => {
       const payload = JSON.parse(msg.body)
-      if (payload.tipo === 'CONFIRMAR') {
+      if (payload.tipo === 'CONFIRMAR' || payload.tipo === 'LINCHAMIENTO' || payload.tipo === 'RENDIRSE') {
         store.dispatch('sala/marcarMuerto', payload.nombreJugador)
       } else if (payload.tipo === 'REVIVIR') {
         store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
@@ -91,7 +101,9 @@ cliente.subscribe(`/topic/partida/${codigoSala.value}/muerte`, (msg) => {
         bandoGanador: payload.bandoGanador,
         mensaje: payload.mensaje,
       })
-      router.push({ name: 'resultados' })
+      if (router.currentRoute.value.name !== 'resultados') {
+        router.push({ name: 'resultados' })
+      }
     })
   }
 

@@ -90,11 +90,21 @@ public class PartidaService implements IPartidaService {
         Sala.EstadoDia nuevaFase = sala.getEstadoDia() == Sala.EstadoDia.DIA ? Sala.EstadoDia.NOCHE : Sala.EstadoDia.DIA;
 
         if (nuevaFase == Sala.EstadoDia.DIA) {
-            log.debug("Transicion a DIA - procesando semi-muertos en sala {}", codigoSala);
+            log.info("=== TRANSICION NOCHE->DIA en sala {} ===", codigoSala);
             sala.setRondaActual(sala.getRondaActual() + 1);
             
+            Optional<Enamorados> enamoradoOpt = enamoradosRepository.findByIdSala(sala.getIdSala());
+            List<Integer> idsEnamorados = enamoradoOpt.map(e -> 
+                List.of(e.getUsuario1().getIdUsuario(), e.getUsuario2().getIdUsuario())
+            ).orElse(List.of());
+            log.info("idsEnamorados: {}", idsEnamorados);
+            
             List<SalaUsuario> semiMuertos = salaUsuarioRepository.findBySala_IdSalaAndEstaVivoFalse(sala.getIdSala());
+            log.info("semiMuertos encontrados: {}", semiMuertos.stream().map(su -> su.getUsuario().getNombre()).toList());
+            
             for (SalaUsuario su : semiMuertos) {
+                log.info("Procesando {} - estaVivo: {}, muerteConfirmada: {}", su.getUsuario().getNombre(), su.getEstaVivo(), su.getMuerteConfirmada());
+                
                 if (su.getMuerteConfirmada() == null || !su.getMuerteConfirmada()) {
                     su.setMuerteConfirmada(true);
                     salaUsuarioRepository.save(su);
@@ -105,6 +115,32 @@ public class PartidaService implements IPartidaService {
                     
                     log.info("Confirmando muerte de {} ({}) en sala {}", nombreEliminado, nombreRol, codigoSala);
                     partidaSocketService.notificarMuerte(codigoSala, new MuerteConfirmadaDto(nombreEliminado, nombreRol, bando, true, MuerteConfirmadaDto.TIPO_CONFIRMAR));
+                    
+                    if (!idsEnamorados.isEmpty() && idsEnamorados.contains(su.getUsuario().getIdUsuario())) {
+                        log.info("*** ENAMORADO {} MUERTO - MATANDO A SU PAREJA ***", su.getUsuario().getNombre());
+                        Integer idPareja = idsEnamorados.get(0).equals(su.getUsuario().getIdUsuario()) 
+                            ? idsEnamorados.get(1) : idsEnamorados.get(0);
+                        log.info("ID pareja a matar: {}", idPareja);
+                        
+                        var parejaOpt = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), idPareja);
+                        log.info("Pareja encontrada: {}", parejaOpt.isPresent());
+                        
+                        parejaOpt.ifPresent(pareja -> {
+                            log.info("Matando a pareja {} - estaVivo: {}, muerteConfirmada: {}", pareja.getUsuario().getNombre(), pareja.getEstaVivo(), pareja.getMuerteConfirmada());
+                            pareja.setEstaVivo(false);
+                            pareja.setMuerteConfirmada(true);
+                            salaUsuarioRepository.save(pareja);
+                            
+                            String nombrePareja = pareja.getUsuario().getNombre();
+                            String rolPareja = pareja.getRol() != null ? pareja.getRol().getNombre() : " aldeano";
+                            String bandoPareja = pareja.getRol() != null ? pareja.getRol().getBando().name() : "aldea";
+                            
+                            log.info("El enamorado {} muere junto a su pareja {} en sala {}", nombreEliminado, nombrePareja, codigoSala);
+                            partidaSocketService.notificarMuerte(codigoSala, new MuerteConfirmadaDto(nombrePareja, rolPareja, bandoPareja, true, MuerteConfirmadaDto.TIPO_CONFIRMAR));
+                        });
+                    }
+                } else {
+                    log.info("{} ya tiene muerte confirmada, saltando", su.getUsuario().getNombre());
                 }
             }
         }
@@ -186,9 +222,43 @@ public class PartidaService implements IPartidaService {
             salaSocketService.notificarAlcalde(codigoSala, resultado.nombreGanador());
         }
 
-        if (sesion.getTipo() == SesionVotacion.TipoVotacion.DIA && !resultado.empate() && resultado.nombreEliminado() != null) {
+if (sesion.getTipo() == SesionVotacion.TipoVotacion.DIA && !resultado.empate() && resultado.nombreEliminado() != null) {
+            usuarioRepository.findByNombre(resultado.nombreEliminado())
+                    .flatMap(eliminado -> salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(
+                            sala.getIdSala(), eliminado.getIdUsuario()))
+ .ifPresent(su -> {
+                        su.setEstaVivo(false);
+                        su.setMuerteConfirmada(true);
+                        salaUsuarioRepository.save(su);
 
-            usuarioRepository.findByNombre(resultado.nombreEliminado()).ifPresent(eliminado -> confirmarMuerte(codigoSala, eliminado.getIdUsuario()));
+                        String nombreEliminado = su.getUsuario().getNombre();
+                        String nombreRol = su.getRol() != null ? su.getRol().getNombre() : " aldeano";
+                        String bando = su.getRol() != null ? su.getRol().getBando().name() : "aldea";
+                        partidaSocketService.notificarMuerte(codigoSala, new MuerteConfirmadaDto(nombreEliminado, nombreRol, bando, true, MuerteConfirmadaDto.TIPO_LINCHAMIENTO));
+
+                        Optional<Enamorados> enamoradoOpt = enamoradosRepository.findByIdSala(sala.getIdSala());
+                        if (enamoradoOpt.isPresent()) {
+                            Enamorados enamorado = enamoradoOpt.get();
+                            Integer idJugador1 = enamorado.getUsuario1().getIdUsuario();
+                            Integer idJugador2 = enamorado.getUsuario2().getIdUsuario();
+
+                            if (su.getUsuario().getIdUsuario().equals(idJugador1) || su.getUsuario().getIdUsuario().equals(idJugador2)) {
+                                Integer idPareja = su.getUsuario().getIdUsuario().equals(idJugador1) ? idJugador2 : idJugador1;
+                                salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), idPareja)
+                                        .filter(p -> p.getEstaVivo() != null && p.getEstaVivo())
+                                        .ifPresent(pareja -> {
+                                            pareja.setEstaVivo(false);
+                                            pareja.setMuerteConfirmada(true);
+                                            salaUsuarioRepository.save(pareja);
+                                            String nombrePareja = pareja.getUsuario().getNombre();
+                                            String rolPareja = pareja.getRol() != null ? pareja.getRol().getNombre() : " aldeano";
+                                            String bandoPareja = pareja.getRol() != null ? pareja.getRol().getBando().name() : "aldea";
+                                            log.info("El enamorado {} linchado, su pareja {} también muere en sala {}", nombreEliminado, nombrePareja, codigoSala);
+                                            partidaSocketService.notificarMuerte(codigoSala, new MuerteConfirmadaDto(nombrePareja, rolPareja, bandoPareja, true, MuerteConfirmadaDto.TIPO_LINCHAMIENTO));
+                                        });
+                            }
+                        }
+                    });
         }
         if (sesion.getTipo() == SesionVotacion.TipoVotacion.LOBOS
                 && !resultado.empate()
@@ -316,7 +386,7 @@ public class PartidaService implements IPartidaService {
             // El narrador activará manualmente usando el endpoint de habilidad cuando sea de día
         }
 
-        // Si el jugador muerto está ENAMORADO, matar al otro automáticamente
+        // Si el jugador muerto está ENAMORADO, marcar al otro como semi-muerto (pendiente de confirmar)
         Optional<Enamorados> enamoradoOpt = enamoradosRepository.findByIdSala(sala.getIdSala());
         if (enamoradoOpt.isPresent()) {
             Enamorados enamorado = enamoradoOpt.get();
@@ -329,39 +399,28 @@ public class PartidaService implements IPartidaService {
 
                 if (parejaOpt.isPresent() && parejaOpt.get().getEstaVivo()) {
                     SalaUsuario pareja = parejaOpt.get();
-                    log.info("El enamorado {} ha muerto, su pareja {} muere por amor", salaUsuario.getUsuario().getNombre(), pareja.getUsuario().getNombre());
-
-                    pareja.setEstaVivo(false);
-                    pareja.setMuerteConfirmada(true);
-                    salaUsuarioRepository.save(pareja);
-
-                    MuerteConfirmadaDto muertePareja = new MuerteConfirmadaDto(pareja.getUsuario().getNombre(), pareja.getRol().getNombre(), pareja.getRol().getBando().name(), true, MuerteConfirmadaDto.TIPO_CONFIRMAR);
-                    partidaSocketService.notificarMuerte(codigoSala, muertePareja);
-
-                    // Si la pareja era el CAZADOR, también debe disparar
-                    if (ROL_CAZADOR.equals(pareja.getRol().getNombre())) {
-                        log.info("El Cazador {} ha muerto por despecho, debe elegir a alguien para disparar", pareja.getUsuario().getNombre());
-                        partidaSocketService.notificarEventoEspecial(codigoSala, "CAZADOR_MUERTO", pareja.getUsuario().getNombre());
-                    }
-
-                    // Si el Cazador enamorado murió, su habilidad se activa obligatoriamente
-                    // El narrador será notificado para que el Cazador elija objetivo
+                    log.info("El enamorado {} ha muerto, su pareja {} queda viva pero morirá si la muerte se confirma", salaUsuario.getUsuario().getNombre(), pareja.getUsuario().getNombre());
+                    // El enamorado 2 sigue vivo, morirá solo si la muerte del enamorado 1 se confirma al pasar de día
                 }
             }
         }
 
-        salaUsuarioRepository.findBySala_IdSalaAndIdModelo(sala.getIdSala(), idUsuario).ifPresent(nino -> {
-            rolRepository.findByNombre(ROL_LOBO).ifPresent(rolLobo -> {
-                nino.setRol(rolLobo);
-                salaUsuarioRepository.save(nino);
+        // Si el jugador confirmado muerto es el MENTOR del Niño Salvaje, transformarlo
+        List<SalaUsuario> ninosConMentor = salaUsuarioRepository.findBySala_IdSalaAndMentor_IdUsuario(sala.getIdSala(), idUsuario);
+        for (SalaUsuario nino : ninosConMentor) {
+            if (ROL_NINO_SALVAJE.equals(nino.getRol().getNombre())) {
+                rolRepository.findByNombre(ROL_LOBO).ifPresent(rolLobo -> {
+                    nino.setRol(rolLobo);
+                    salaUsuarioRepository.save(nino);
 
-                salaSocketService.enviarRolPrivado(nino.getUsuario().getNombre(), new SalaSocketService.RolAsignadoEvent(WS_EVENTO_ROL_CAMBIADO, rolLobo.getIdRol(), rolLobo.getNombre(), rolLobo.getDescripcion(), rolLobo.getBando().name()));
+                    salaSocketService.enviarRolPrivado(nino.getUsuario().getNombre(), new SalaSocketService.RolAsignadoEvent(WS_EVENTO_ROL_CAMBIADO, rolLobo.getIdRol(), rolLobo.getNombre(), rolLobo.getDescripcion(), rolLobo.getBando().name()));
 
-                List<String> companerosLobos = salaUsuarioRepository.findBySala_IdSala(sala.getIdSala()).stream().filter(su -> su.getEstaVivo() && su.getRol() != null && su.getRol().getBando() == Rol.Bando.lobo && !su.getUsuario().getIdUsuario().equals(nino.getUsuario().getIdUsuario())).map(su -> su.getUsuario().getNombre()).toList();
+                    List<String> companerosLobos = salaUsuarioRepository.findBySala_IdSala(sala.getIdSala()).stream().filter(su -> su.getEstaVivo() && su.getRol() != null && su.getRol().getBando() == Rol.Bando.lobo && !su.getUsuario().getIdUsuario().equals(nino.getUsuario().getIdUsuario())).map(su -> su.getUsuario().getNombre()).toList();
 
-                salaSocketService.enviarMensajePrivado(nino.getUsuario().getNombre(), "/queue/lobos", new SalaSocketService.CompañerosLobosEvent(WS_EVENTO_COMPANEROS_LOBOS, companerosLobos));
-            });
-        });
+                    salaSocketService.enviarMensajePrivado(nino.getUsuario().getNombre(), "/queue/lobos", new SalaSocketService.CompañerosLobosEvent(WS_EVENTO_COMPANEROS_LOBOS, companerosLobos));
+                });
+            }
+        }
 
         comprobarFinPartida(codigoSala, sala);
     }
@@ -406,10 +465,10 @@ public class PartidaService implements IPartidaService {
         if (enamoradoSonUltimos) {
             bandoGanador = BANDO_ENAMORADOS;
             mensaje = "¡Los amantes han ganado! Eliminaron a todos los demás jugadores.";
-        } else if (lobosVivos == 0) {
+        } else if (aldeaViva > 0 && lobosVivos == 0) {
             bandoGanador = BANDO_ALDEA;
             mensaje = "¡La aldea ha eliminado a todos los hombres lobo!";
-        } else if (aldeaViva == 0) {
+        } else if (lobosVivos > 0 && aldeaViva == 0) {
             bandoGanador = BANDO_LOBO;
             mensaje = "¡Los hombres lobo dominan la aldea!";
         }
@@ -494,6 +553,91 @@ public class PartidaService implements IPartidaService {
 
         log.info("Partida {} cerrada por narrador", codigoSala);
         partidaSocketService.notificarFinPartida(codigoSala, new FinPartidaDto(null, "Partida cerrada por el narrador"));
+    }
+
+    @Transactional
+    public void cancelarPartida(String codigoSala) {
+        Usuario solicitante = getUsuarioAutenticado();
+        log.info("Narrador {} cancelando partida (empate) en sala {}", solicitante.getNombre(), codigoSala);
+
+        Sala sala = getSalaIniciada(codigoSala);
+
+        if (!sala.getNarrador().getIdUsuario().equals(solicitante.getIdUsuario())) {
+            throw new IllegalStateException(ErrorMessages.SOLO_NARRADOR);
+        }
+
+        sala.setEstadoSala(Sala.EstadoSala.CERRADA);
+        salaRepository.save(sala);
+
+        log.info("Partida {} cancelada por narrador - EMPATE", codigoSala);
+        partidaSocketService.notificarFinPartida(codigoSala, new FinPartidaDto("empate", "El narrador ha cancelado la partida. ¡Empate!"));
+    }
+
+    @Transactional
+    public void rendirse(String codigoSala) {
+        Usuario jugador = getUsuarioAutenticado();
+        log.info("Jugador {} rindiéndose en sala {}", jugador.getNombre(), codigoSala);
+
+        Sala sala = getSalaIniciada(codigoSala);
+
+        SalaUsuario salaUsuario = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), jugador.getIdUsuario())
+                .orElseThrow(() -> new IllegalArgumentException(ErrorMessages.JUGADOR_NO_EN_SALA));
+
+        if (!salaUsuario.getEstaVivo()) {
+            log.warn("Jugador {} intentó rendirse pero ya está eliminado", jugador.getNombre());
+            throw new IllegalStateException("Ya estás eliminado");
+        }
+
+        salaUsuario.setEstaVivo(false);
+        salaUsuario.setMuerteConfirmada(true);
+        salaUsuarioRepository.save(salaUsuario);
+
+        String nombreRol = salaUsuario.getRol() != null ? salaUsuario.getRol().getNombre() : " aldeano";
+        String bando = salaUsuario.getRol() != null ? salaUsuario.getRol().getBando().name() : "aldea";
+        partidaSocketService.notificarMuerte(codigoSala, new MuerteConfirmadaDto(jugador.getNombre(), nombreRol, bando, true, MuerteConfirmadaDto.TIPO_RENDIRSE));
+
+        if (sala.getAlcalde() != null && sala.getAlcalde().getIdUsuario().equals(jugador.getIdUsuario())) {
+            sala.setAlcalde(null);
+            salaRepository.save(sala);
+            salaSocketService.notificarAlcalde(codigoSala, null);
+        }
+
+        if (salaUsuario.getMentor() != null) {
+            List<SalaUsuario> ninosConMentor = salaUsuarioRepository.findBySala_IdSalaAndMentor_IdUsuario(sala.getIdSala(), jugador.getIdUsuario());
+            for (SalaUsuario nino : ninosConMentor) {
+                if (ROL_NINO_SALVAJE.equals(nino.getRol().getNombre())) {
+                    rolRepository.findByNombre(ROL_LOBO).ifPresent(rolLobo -> {
+                        nino.setRol(rolLobo);
+                        salaUsuarioRepository.save(nino);
+                        salaSocketService.enviarRolPrivado(nino.getUsuario().getNombre(), new SalaSocketService.RolAsignadoEvent(WS_EVENTO_ROL_CAMBIADO, rolLobo.getIdRol(), rolLobo.getNombre(), rolLobo.getDescripcion(), rolLobo.getBando().name()));
+                        List<String> companerosLobos = salaUsuarioRepository.findBySala_IdSala(sala.getIdSala()).stream().filter(su -> su.getEstaVivo() && su.getRol() != null && su.getRol().getBando() == Rol.Bando.lobo && !su.getUsuario().getIdUsuario().equals(nino.getUsuario().getIdUsuario())).map(su -> su.getUsuario().getNombre()).toList();
+                        salaSocketService.enviarMensajePrivado(nino.getUsuario().getNombre(), "/queue/lobos", new SalaSocketService.CompañerosLobosEvent(WS_EVENTO_COMPANEROS_LOBOS, companerosLobos));
+                    });
+                }
+            }
+        }
+
+        Optional<Enamorados> enamoradoOpt = enamoradosRepository.findByIdSala(sala.getIdSala());
+        if (enamoradoOpt.isPresent()) {
+            Enamorados enamorado = enamoradoOpt.get();
+            Integer idJugador1 = enamorado.getUsuario1().getIdUsuario();
+            Integer idJugador2 = enamorado.getUsuario2().getIdUsuario();
+
+            if (jugador.getIdUsuario().equals(idJugador1) || jugador.getIdUsuario().equals(idJugador2)) {
+                Integer idPareja = jugador.getIdUsuario().equals(idJugador1) ? idJugador2 : idJugador1;
+                Optional<SalaUsuario> parejaOpt = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), idPareja);
+                if (parejaOpt.isPresent() && parejaOpt.get().getEstaVivo()) {
+                    SalaUsuario pareja = parejaOpt.get();
+                    pareja.setEstaVivo(false);
+                    pareja.setMuerteConfirmada(true);
+                    salaUsuarioRepository.save(pareja);
+                    MuerteConfirmadaDto muertePareja = new MuerteConfirmadaDto(pareja.getUsuario().getNombre(), pareja.getRol().getNombre(), pareja.getRol().getBando().name(), true, MuerteConfirmadaDto.TIPO_RENDIRSE);
+                    partidaSocketService.notificarMuerte(codigoSala, muertePareja);
+                }
+            }
+        }
+
+        comprobarFinPartida(codigoSala, sala);
     }
 
     public EstadoPartidaDto getEstadoPartida(String codigoSala) {

@@ -58,6 +58,10 @@
         <i class="fa-solid fa-scroll"></i>
         Reglas
       </button>
+      <button class="btn-danger" @click="$emit('cancelarPartida')">
+        <i class="fa-solid fa-ban"></i>
+        Cancelar
+      </button>
     </div>
   </div>
 </template>
@@ -80,6 +84,7 @@ const emit = defineEmits([
   'verPersonajes',
   'verReglas',
   'iniciarVotacionLobos',
+  'cancelarPartida',
 ])
 
 const eventosActivos = ref(false)
@@ -235,6 +240,32 @@ const toggleEventos = () => {
 .noche .btn-info:hover {
   background: white;
   color: var(--color-rojo);
+}
+
+.btn-danger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 3px solid var(--color-rojo);
+  background: transparent;
+  color: var(--color-rojo);
+  font-family: var(--font-raleway);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.btn-danger:hover {
+  background: var(--color-rojo);
+  color: white;
+  transform: scale(0.96);
 }
 
 @media (max-width: 900px) {

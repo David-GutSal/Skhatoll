@@ -15,7 +15,7 @@
 
       <section class="fichas-grid mb-5">
         <div class="ficha">
-          <img src="@/assets/imgs/medalla-alcalde.jpg" alt="Alcalde" class="ficha-img" />
+          <img src="@/assets/imgs/medalla-alcalde.webp" alt="Alcalde" class="ficha-img" />
           <h3 class="ficha-titulo">La figura del Alcalde / Alguacil</h3>
           <p class="ficha-texto">
             Este cargo se puede asignar a cualquier jugador. Los jugadores presentan sus
@@ -34,7 +34,7 @@
           </ul>
         </div>
         <div class="ficha">
-          <img src="@/assets/imgs/linchamiento.jpg" alt="Linchamiento" class="ficha-img" />
+          <img src="@/assets/imgs/linchamiento.webp" alt="Linchamiento" class="ficha-img" />
           <h3 class="ficha-titulo">Votación por linchamiento</h3>
           <p class="ficha-texto">
             Estas votaciones ocurren durante el día y son la manera más eficaz de los aldeanos de
@@ -49,7 +49,7 @@
           </p>
         </div>
         <div class="ficha">
-          <img src="@/assets/imgs/diaynoche.jpg" alt="Fases del juego" class="ficha-img" />
+          <img src="@/assets/imgs/diaynoche.webp" alt="Fases del juego" class="ficha-img" />
           <h3 class="ficha-titulo">Las fases del juego</h3>
           <p class="ficha-texto">
             Cada turno del juego transcurre en 2 fases completas de día y noche siempre guiadas por
@@ -199,14 +199,14 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import ListaReglas from '@/components/juego/ListaReglas.vue'
-import imgBloodclock from '@/assets/imgs/juego-bloodclock.jpg'
-import imgSamurai from '@/assets/imgs/juego-samurai.jpg'
-import imgAsamblea from '@/assets/imgs/juego-asambleadelmal.jpg'
-import imgAldea from '@/assets/imgs/juego-laaldea.jpg'
-import imgUltimate from '@/assets/imgs/juego-ultimatewerewolf.jpg'
-import imgLuna from '@/assets/imgs/juego-lunanueva.png'
-import imgBang from '@/assets/imgs/juego-bang.jpg'
-import slideImg from '@/assets/imgs/slide.jpeg'
+import imgBloodclock from '@/assets/imgs/juego-bloodclock.webp'
+import imgSamurai from '@/assets/imgs/juego-samurai.webp'
+import imgAsamblea from '@/assets/imgs/juego-asambleadelmal.webp'
+import imgAldea from '@/assets/imgs/juego-laaldea.webp'
+import imgUltimate from '@/assets/imgs/juego-ultimatewerewolf.webp'
+import imgLuna from '@/assets/imgs/juego-lunanueva.webp'
+import imgBang from '@/assets/imgs/juego-bang.webp'
+import slideImg from '@/assets/imgs/slide.webp'
 
 const indiceTarjeta = ref(0)
 const indiceJuego = ref(0)

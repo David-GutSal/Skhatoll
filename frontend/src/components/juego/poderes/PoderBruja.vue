@@ -115,8 +115,8 @@
 <script>
 import { mapGetters, mapState } from 'vuex'
 import axiosInstance from '@/plugins/axios'
-import imgVida from '@/assets/imgs/pocion-vida.png'
-import imgMuerte from '@/assets/imgs/pocion-muerte.png'
+import imgVida from '@/assets/imgs/pocion-vida.webp'
+import imgMuerte from '@/assets/imgs/pocion-muerte.webp'
 
 export default {
   name: 'PoderBruja',

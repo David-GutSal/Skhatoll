@@ -329,11 +329,13 @@ public class SalaService implements ISalaService {
                 .findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), usuario.getIdUsuario())
                 .orElseThrow(() -> new IllegalArgumentException(ErrorMessages.JUGADOR_NO_EN_SALA));
 
-        if (salaUsuario.getEstaVivo() != null && salaUsuario.getEstaVivo()) {
+        if (sala.getEstadoSala() == Sala.EstadoSala.INICIADA) {
             salaUsuario.setEstaVivo(false);
             salaUsuario.setMuerteConfirmada(true);
+            salaUsuarioRepository.save(salaUsuario);
+        } else {
+            salaUsuarioRepository.delete(salaUsuario);
         }
-        salaUsuarioRepository.save(salaUsuario);
 
         if (esNarrador) {
             sala.setNarrador(sala.getCreador());

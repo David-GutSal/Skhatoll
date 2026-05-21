@@ -4,7 +4,7 @@
       <h1 class="titulo">Sala de Juegos</h1>
 
       <div class="imagen-wrapper">
-        <img src="@/assets/imgs/bienvenida.jpg" alt="Aldea de Castronegro" class="imagen-sala" />
+        <img src="@/assets/imgs/bienvenida.webp" alt="Aldea de Castronegro" class="imagen-sala" />
         <div class="botones-sala">
           <button class="boton-sala" @click="handleCrearSala">Crear sala</button>
           <button class="boton-sala" @click="irUnirse">Unirse a sala</button>

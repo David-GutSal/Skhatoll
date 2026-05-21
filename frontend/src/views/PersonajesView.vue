@@ -46,7 +46,7 @@
 
           <div class="col-lg-5">
             <img 
-              src="@/assets/imgs/intropersonajes.jpg" 
+              src="@/assets/imgs/intropersonajes.webp" 
               alt="Personajes - Los Hombres Lobo de Castronegro" 
               class="intro-img img-fluid h-100 w-100"
             >
@@ -61,7 +61,7 @@
            
           <div class="col-lg-5">
             <img 
-              src="@/assets/imgs/narrador.png" 
+              src="@/assets/imgs/narrador.webp" 
               alt="El Narrador" 
               class="narrador-img img-fluid h-100 w-100"
             >

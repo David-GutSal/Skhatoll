@@ -710,10 +710,10 @@ onUnmounted(() => {
 }
 
 .dia {
-  background-image: url('@/assets/imgs/fondodia.png');
+  background-image: url('@/assets/imgs/fondodia.webp');
 }
 .noche {
-  background-image: url('@/assets/imgs/fondonoche.png');
+  background-image: url('@/assets/imgs/fondonoche.webp');
 }
 
 .contenido {
@@ -817,10 +817,10 @@ onUnmounted(() => {
 }
 
 .footer-dia {
-  background-image: url('@/assets/imgs/footer-dia.png');
+  background-image: url('@/assets/imgs/footer-dia.webp');
 }
 .footer-noche {
-  background-image: url('@/assets/imgs/footer-noche.png');
+  background-image: url('@/assets/imgs/footer-noche.webp');
 }
 
 @media (max-width: 900px) {

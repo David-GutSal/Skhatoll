@@ -96,7 +96,7 @@
             </div>
           </div>
         </template>
-       
+
         <div class="narrador-indicador" v-if="nombreNarrador">
           <i class="fa-solid fa-book-open-reader"></i> Narrador: {{ nombreNarrador }}
         </div>
@@ -147,8 +147,14 @@ const nombreNarrador = computed(() => {
 
 const soyNarrador = computed(() => nombreNarrador.value === nombre.value)
 
-  const handleUnirse = async () => {
-  if (!inputCodigo.value) return
+const handleUnirse = async () => {
+  if (!inputCodigo.value || inputCodigo.value.trim() === '') {
+    store.dispatch('toast/mostrar', {
+      mensaje: 'Introduce un código de sala para unirte',
+      tipo: 'error',
+    })
+    return
+  }
   try {
     await axiosInstance.post('/salas/unirse', { codigoSala: inputCodigo.value })
     store.dispatch('sala/setSala', { codigoSala: inputCodigo.value, esCreador: false })
@@ -161,7 +167,7 @@ const soyNarrador = computed(() => nombreNarrador.value === nombre.value)
 
 const asignarNarrador = async (idUsuario) => {
   const codigo = codigoSala.value || sessionStorage.getItem('codigoSala')
-  if (!codigo) return
+  if (codigo || codigo === 'null') return
   try {
     await axiosInstance.put(`/salas/${codigo}/narrador`, { idUsuario })
     cargarJugadores()
@@ -172,7 +178,7 @@ const asignarNarrador = async (idUsuario) => {
 
 const iniciarPartida = async () => {
   const codigo = codigoSala.value || sessionStorage.getItem('codigoSala')
-  if (!codigo) return
+  if (!codigo || codigo === 'null') return
   try {
     await axiosInstance.post(`/salas/${codigo}/iniciar`)
   } catch (error) {
@@ -182,7 +188,7 @@ const iniciarPartida = async () => {
 
 const cargarJugadores = async () => {
   const codigo = codigoSala.value || sessionStorage.getItem('codigoSala')
-  if (!codigo) return
+  if (!codigo || codigo === 'null') return
   try {
     const res = await axiosInstance.get(`/salas/${codigo}/jugadores`)
     console.log('[cargarJugadores] response:', JSON.stringify(res.data))
@@ -195,15 +201,15 @@ const cargarJugadores = async () => {
 const conectarWebSocket = () => {
   const token = store.getters['auth/token']
   const codigo = codigoSala.value || sessionStorage.getItem('codigoSala')
-  
-  if (!codigo) {
+
+  if (!codigo || codigo === 'null') {
     return
   }
-  
+
   if (stompClient.value) {
     return
   }
-  
+
   const cliente = new Client({
     webSocketFactory: () => new SockJS('/ws'),
     connectHeaders: { Authorization: `Bearer ${token}` },
@@ -220,19 +226,19 @@ const conectarWebSocket = () => {
     cliente.subscribe(`/topic/sala/${codigoActual}/inicio`, (msg) => {
       const payload = JSON.parse(msg.body)
       console.log('[LOBBY /inicio] payload:', JSON.stringify(payload))
-      
+
       cargarJugadores()
-      
+
       store.dispatch('toast/mostrar', { mensaje: 'Partida iniciándose...', tipo: 'info' })
-      
+
       setTimeout(() => {
         const nombreActual = store.getters['auth/nombre']
         const listaJugadores = store.getters['sala/jugadores'] || []
         console.log('[LOBBY /inicio] nombre:', nombreActual)
         console.log('[LOBBY /inicio] jugadores:', JSON.stringify(listaJugadores))
-        const esNarrador = listaJugadores.some(j => j.esNarrador && j.nombre === nombreActual)
+        const esNarrador = listaJugadores.some((j) => j.esNarrador && j.nombre === nombreActual)
         console.log('[LOBBY /inicio] esNarrador?:', esNarrador)
-        
+
         if (esNarrador) {
           console.log('[LOBBY /inicio] navigate -> esperaNarrador')
           router.push({ name: 'esperaNarrador' })
@@ -253,7 +259,7 @@ const conectarWebSocket = () => {
       if (payload.tipo === 'ROL_ASIGNADO' || payload.tipo === 'ROL_CAMBIADO') {
         const nombreActual = store.getters['auth/nombre']
         const listaJugadores = store.getters['sala/jugadores'] || []
-        const esNarrador = listaJugadores.some(j => j.esNarrador && j.nombre === nombreActual)
+        const esNarrador = listaJugadores.some((j) => j.esNarrador && j.nombre === nombreActual)
         if (esNarrador) {
           router.push({ name: 'narrador' })
           return
@@ -289,7 +295,6 @@ const conectarWebSocket = () => {
   stompClient.value = cliente
 }
 
-
 watch(codigoSala, (nuevo) => {
   if (nuevo && stompClient.value) {
     stompClient.value.deactivate()
@@ -309,21 +314,20 @@ const copiarCodigo = () => {
 }
 
 const copiarParaDiscord = () => {
-  const texto = `¡Únete a mi partida de Hombres Lobo! Código: ${codigoSala.value}`;
-  
-  navigator.clipboard.writeText(texto).then(() => {
-    copiado.value = true;
-    store.dispatch('toast/mostrar', { 
-      mensaje: 'Mensaje para Discord copiado al portapapeles', 
-      tipo: 'exito' 
-    });
-    
-    setTimeout(() => {
-      copiado.value = false;
-    }, 2000);
-  });
-};
+  const texto = `¡Únete a mi partida de Hombres Lobo! Código: ${codigoSala.value}`
 
+  navigator.clipboard.writeText(texto).then(() => {
+    copiado.value = true
+    store.dispatch('toast/mostrar', {
+      mensaje: 'Mensaje para Discord copiado al portapapeles',
+      tipo: 'exito',
+    })
+
+    setTimeout(() => {
+      copiado.value = false
+    }, 2000)
+  })
+}
 
 const salirSala = async () => {
   if (stompClient.value) {
@@ -331,7 +335,7 @@ const salirSala = async () => {
     stompClient.value = null
   }
   const codigo = codigoSala.value || sessionStorage.getItem('codigoSala')
-  if (codigo) {
+  if (codigo && codigo !== 'null') {
     try {
       await axiosInstance.delete(`/salas/${codigo}/salir`)
     } catch (error) {
@@ -482,7 +486,9 @@ onMounted(async () => {
   font-weight: 700;
   letter-spacing: 0.08em;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.15s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -588,7 +594,8 @@ onMounted(async () => {
   width: 100%;
 }
 
-.boton-unirse, .boton-salir-jugador {
+.boton-unirse,
+.boton-salir-jugador {
   color: white;
   border: none;
   padding: 13px 28px;
@@ -598,13 +605,23 @@ onMounted(async () => {
   font-weight: 700;
   cursor: pointer;
   letter-spacing: 0.05em;
-  transition: background 0.2s ease, transform 0.15s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease;
 }
 
-.boton-unirse { background: #a30000; }
-.boton-unirse:hover { background: #640000; }
-.boton-salir-jugador { background: #c9a800; }
-.boton-salir-jugador:hover { background: var(--color-black); }
+.boton-unirse {
+  background: #a30000;
+}
+.boton-unirse:hover {
+  background: #640000;
+}
+.boton-salir-jugador {
+  background: #c9a800;
+}
+.boton-salir-jugador:hover {
+  background: var(--color-black);
+}
 
 .narrador-indicador {
   display: flex;
@@ -641,12 +658,16 @@ onMounted(async () => {
   .contenedor-lobby {
     padding: 20px 10px;
   }
-  .titulo-lobby { font-size: 1.6rem; }
-  .titulo-caja { font-size: 1.3rem; }
+  .titulo-lobby {
+    font-size: 1.6rem;
+  }
+  .titulo-caja {
+    font-size: 1.3rem;
+  }
 
   .input-codigo {
     font-size: 1.2rem;
-    letter-spacing: 0.1em; 
+    letter-spacing: 0.1em;
     padding: 10px;
   }
   .input-jugador {
@@ -655,14 +676,19 @@ onMounted(async () => {
     padding: 10px;
   }
 
-  .overlay { padding: 20px 15px; }
+  .overlay {
+    padding: 20px 15px;
+  }
 
   .caja-redes {
     flex-direction: column;
     align-items: center;
     gap: 15px;
   }
-  .texto-redes { white-space: normal; text-align: center; }
+  .texto-redes {
+    white-space: normal;
+    text-align: center;
+  }
 
   .iconos-redes {
     justify-content: center;
@@ -682,9 +708,9 @@ onMounted(async () => {
     align-items: center;
     width: 100%;
   }
-  .boton-unirse, .boton-salir-jugador {
+  .boton-unirse,
+  .boton-salir-jugador {
     width: 100%;
   }
 }
 </style>
-

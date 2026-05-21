@@ -20,8 +20,8 @@
 <script setup>
 import { computed } from 'vue'
 import CartaRol from '@/components/juego/roles/CartaRol.vue'
-import mesaImg from '@/assets/imgs/mesa.jpg'
-import mesanocheImg from '@/assets/imgs/mesanoche.jpg'
+import mesaImg from '@/assets/imgs/mesa.webp'
+import mesanocheImg from '@/assets/imgs/mesanoche.webp'
 
 const props = defineProps({
   jugadores: { type: Array, default: () => [] },

@@ -50,8 +50,8 @@
 
 <script setup>
 import { computed } from 'vue'
-import solImg from '@/assets/imgs/sol.jpg'
-import lunaImg from '@/assets/imgs/luna.jpg'
+import solImg from '@/assets/imgs/sol.webp'
+import lunaImg from '@/assets/imgs/luna.webp'
 
 const props = defineProps({
   nombreJugador: { type: String, default: '' },

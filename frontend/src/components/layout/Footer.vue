@@ -10,7 +10,7 @@
           </div>
 
           <div class="footer-col footer-col-centro">
-            <img src="@/assets/imgs/logo-provisional.png" alt="Skhatoll" class="footer-logo" />
+            <img src="@/assets/imgs/logo-provisional.webp" alt="Skhatoll" class="footer-logo" />
           </div>
 
           <div class="footer-col footer-col-der">

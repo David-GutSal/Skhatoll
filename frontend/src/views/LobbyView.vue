@@ -86,8 +86,8 @@
               </div>
 
               <div class="botones-jugador">
-                <button class="boton-unirse" @click="handleUnirse">Unirse a partida</button>
-                <button class="boton-salir-jugador" @click="salirSala">Salir de la partida</button>
+                <button class="boton-unirse" @click="handleUnirse">Unirse a la sala</button>
+                <button class="boton-salir-jugador" @click="salirSala">Salir de la sala</button>
               </div>
 
               <p v-if="mensajeUnion" class="mensaje-union">
@@ -120,7 +120,7 @@ import axiosInstance from '@/plugins/axios'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
 import ListaJugadores from '@/components/lobby/ListaJugadores.vue'
-import bienvenidaImg from '@/assets/imgs/bienvenida.jpg'
+import bienvenidaImg from '@/assets/imgs/bienvenida.webp'
 
 const router = useRouter()
 const store = useStore()

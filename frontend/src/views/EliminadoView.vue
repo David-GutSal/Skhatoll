@@ -7,7 +7,7 @@
           <i class="fa-solid fa-skull-crossbones"></i>
         </h1>
 
-        <img src="@/assets/imgs/eliminados.png" alt="Eliminado" class="imagen-eliminado" />
+        <img src="@/assets/imgs/eliminados.webp" alt="Eliminado" class="imagen-eliminado" />
 
         <p class="texto">
           No importa si fue una copa envenenada, un disparo certero, o te convertiste en pienso para
@@ -125,7 +125,7 @@ onUnmounted(() => {
 <style scoped>
 .eliminado-pagina {
   min-height: 100vh;
-  background-image: url('@/assets/imgs/fondo.png');
+  background-image: url('@/assets/imgs/fondo.webp');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;

@@ -44,7 +44,7 @@
 </template>
 
 <script setup>
-import lobbyImg from '@/assets/imgs/bienvenida.jpg'
+import lobbyImg from '@/assets/imgs/bienvenida.webp'
 
 const props = defineProps({
   jugadores: Array,

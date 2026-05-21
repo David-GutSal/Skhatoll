@@ -1,7 +1,7 @@
 <template>
   <div class="topbar">
     <div class="logo">
-      <img src="@/assets/imgs/logo-provisional.png" alt="logo" />
+      <img src="@/assets/imgs/logo-provisional.webp" alt="logo" />
     </div>
 
     <div class="auth" v-click-outside="cerrarModales">

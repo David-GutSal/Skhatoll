@@ -88,8 +88,8 @@ import SockJS from 'sockjs-client'
 import IndicadorDiaNoche from '@/components/juego/IndicadorDiaNoche.vue'
 import PanelControlNarrador from '@/components/juego/PanelControlNarrador.vue'
 import MesaJugadores from '@/components/juego/MesaJugadores.vue'
-import solImg from '@/assets/imgs/sol.jpg'
-import lunaImg from '@/assets/imgs/luna.jpg'
+import solImg from '@/assets/imgs/sol.webp'
+import lunaImg from '@/assets/imgs/luna.webp'
 import ListaPersonajes from '@/components/juego/ListaPersonajes.vue'
 import ListaReglas from '@/components/juego/ListaReglas.vue'
 
@@ -655,10 +655,10 @@ onUnmounted(() => {
 }
 
 .dia {
-  background-image: url('@/assets/imgs/fondodia.png');
+  background-image: url('@/assets/imgs/fondodia.webp');
 }
 .noche {
-  background-image: url('@/assets/imgs/fondonoche.png');
+  background-image: url('@/assets/imgs/fondonoche.webp');
 }
 
 .contenido {
@@ -796,10 +796,10 @@ onUnmounted(() => {
 }
 
 .footer-dia {
-  background-image: url('@/assets/imgs/footer-dia.png');
+  background-image: url('@/assets/imgs/footer-dia.webp');
 }
 .footer-noche {
-  background-image: url('@/assets/imgs/footer-noche.png');
+  background-image: url('@/assets/imgs/footer-noche.webp');
 }
 
 @media (max-width: 900px) {

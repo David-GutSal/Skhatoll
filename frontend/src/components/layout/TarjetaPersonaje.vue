@@ -7,7 +7,7 @@
         </div>
         <div class="flip-card-back">
           <div class="tarjeta-img-container">
-            <img src="@/assets/imgs/carta-ninnolobo.jpg" alt="Niño Lobo" class="tarjeta-img" />
+            <img src="@/assets/imgs/carta-ninnolobo.webp" alt="Niño Lobo" class="tarjeta-img" />
           </div>
         </div>
       </div>

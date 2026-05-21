@@ -1,6 +1,6 @@
 <template>
   <div class="header">
-    <img src="@/assets/imgs/imagen-header.jpg" alt="cabecera pueblo ">
+    <img src="@/assets/imgs/imagen-header.webp" alt="cabecera pueblo ">
   </div>
 </template>
 

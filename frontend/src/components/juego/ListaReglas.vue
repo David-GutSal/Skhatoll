@@ -31,7 +31,7 @@
 <div v-if="abiertos.resumen" class="desplegable-contenido">
   <div class="imagen-hover-zoom">
     <img 
-      src="@/assets/imgs/resumenturnos.png" 
+      src="@/assets/imgs/resumenturnos.webp" 
       alt="Resumen de turnos" 
       class="img-resumen"
     />

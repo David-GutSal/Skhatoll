@@ -3,7 +3,7 @@
     <section class="hero-wrapper">
       <div class="hero-img-container">
         <div class="hero-bg"></div>
-        <img src="@/assets/imgs/logo-provisional.png" alt="Skhatoll" class="hero-logo" />
+        <img src="@/assets/imgs/logo-provisional.webp" alt="Skhatoll" class="hero-logo" />
       </div>
     </section>
 
@@ -13,7 +13,7 @@
           <h2 class="bloque-titulo-principal">Los Hombres Lobo de Castronegro</h2>
 
           <article class="noticia">
-            <img src="@/assets/imgs/img-bloqizq1.jpg" alt="Sobre el juego" class="noticia-img" />
+            <img src="@/assets/imgs/img-bloqizq1.webp" alt="Sobre el juego" class="noticia-img" />
             <h3 class="noticia-titulo">Sobre el juego</h3>
             <p class="noticia-texto">
               Los Hombres Lobo de Castronegro es un juego de roles ocultos orientado a un público a
@@ -36,7 +36,7 @@
 
           <article class="noticia">
             <img
-              src="@/assets/imgs/empatadoscelebrando.jpg"
+              src="@/assets/imgs/empatadoscelebrando.webp"
               alt="Roles ocultos"
               class="noticia-img"
             />
@@ -58,7 +58,7 @@
           </article>
 
           <article class="noticia">
-            <img src="@/assets/imgs/img-bloqizq3.jpg" alt="El Pacto" class="noticia-img" />
+            <img src="@/assets/imgs/img-bloqizq3.webp" alt="El Pacto" class="noticia-img" />
             <h3 class="noticia-titulo">Juego completo: El Pacto</h3>
             <p class="noticia-texto">
               Si te gusta el juego y quieres tenerlo en formato físico, te recomendamos la versión
@@ -79,7 +79,7 @@
 
           <article class="noticia">
             <img
-              src="@/assets/imgs/aldeanoscelebrando.jpg"
+              src="@/assets/imgs/aldeanoscelebrando.webp"
               alt="Aprender a jugar"
               class="noticia-img"
             />
@@ -122,7 +122,7 @@
               intuyeran información.
             </p>
             <img
-              src="@/assets/imgs/footer-dia.png"
+              src="@/assets/imgs/footer-dia.webp"
               alt="Pueblo de Castronegro"
               class="img-centro"
             />
@@ -200,7 +200,7 @@
             </p>
           </div>
 
-          <img src="@/assets/imgs/fenrirehijos.jpg" alt="Fenrir e hijos" class="img-fenrir" />
+          <img src="@/assets/imgs/fenrirehijos.webp" alt="Fenrir e hijos" class="img-fenrir" />
         </div>
 
         <aside class="bloque bloque-lateral bloque-der">
@@ -208,7 +208,7 @@
 
           <article class="noticia">
             <img
-              src="@/assets/imgs/loboscelebrando.jpg"
+              src="@/assets/imgs/loboscelebrando.webp"
               alt="Lobos y Mafiosos"
               class="noticia-img"
             />
@@ -228,7 +228,7 @@
           </article>
 
           <article class="noticia">
-            <img src="@/assets/imgs/carta-ninna.jpg" alt="La Niña Tramposa" class="noticia-img" />
+            <img src="@/assets/imgs/carta-ninna.webp" alt="La Niña Tramposa" class="noticia-img" />
             <h3 class="noticia-titulo">La Niña Tramposa</h3>
             <p class="noticia-texto">
               Este personaje surgió de una anécdota real que ocurría en las partidas caseras,
@@ -246,7 +246,7 @@
           </article>
 
           <article class="noticia">
-            <img src="@/assets/imgs/img-bloqder1.jpg" alt="Licantropía" class="noticia-img" />
+            <img src="@/assets/imgs/img-bloqder1.webp" alt="Licantropía" class="noticia-img" />
             <h3 class="noticia-titulo">El origen de la Licantropía</h3>
             <p class="noticia-texto">
               La leyenda de la licantropía tiene raíces milenarias que se remontan a la Antigua
@@ -264,7 +264,7 @@
           </article>
 
           <article class="noticia">
-            <img src="@/assets/imgs/img-bloqder2.jpg" alt="Castronegro" class="noticia-img" />
+            <img src="@/assets/imgs/img-bloqder2.webp" alt="Castronegro" class="noticia-img" />
             <h3 class="noticia-titulo">El nombre de Castronegro</h3>
             <p class="noticia-texto">
               El nombre del pueblo "Castronegro" (en francés, Thiercelieux), donde acontecen los
@@ -325,7 +325,7 @@
 .hero-bg {
   position: absolute;
   inset: 0;
-  background-image: url('@/assets/imgs/main-inicio.jpg');
+  background-image: url('@/assets/imgs/main-inicio.webp');
   background-size: cover;
   background-position: center;
 }
@@ -528,7 +528,7 @@ li::marker {
 .slide-fijo {
   width: 100%;
   height: 100%;
-  background-image: url('@/assets/imgs/slide.jpeg');
+  background-image: url('@/assets/imgs/slide.webp');
   background-size: cover;
   background-position: center;
   box-shadow: inset 0 0 50px 20px rgba(0, 0, 0, 0.8);

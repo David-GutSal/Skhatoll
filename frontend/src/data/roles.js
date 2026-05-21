@@ -1,12 +1,12 @@
-import brujaImg       from '@/assets/imgs/carta-bruja.jpg'
-import aldeanoImg     from '@/assets/imgs/carta-aldeano.jpg'
-import cazadorImg     from '@/assets/imgs/carta-cazador.jpg'
-import loboImg        from '@/assets/imgs/carta-lobo.jpg'
-import videnteImg     from '@/assets/imgs/carta-vidente.jpg'
-import ninnaImg       from '@/assets/imgs/carta-ninna.jpg'
-import ninnoImg       from '@/assets/imgs/carta-ninno.jpg'
-import ninnoLoboImg   from '@/assets/imgs/carta-ninnolobo.jpg'
-import cupidoImg      from '@/assets/imgs/carta-cupido.jpg'
+import brujaImg       from '@/assets/imgs/carta-bruja.webp'
+import aldeanoImg     from '@/assets/imgs/carta-aldeano.webp'
+import cazadorImg     from '@/assets/imgs/carta-cazador.webp'
+import loboImg        from '@/assets/imgs/carta-lobo.webp'
+import videnteImg     from '@/assets/imgs/carta-vidente.webp'
+import ninnaImg       from '@/assets/imgs/carta-ninna.webp'
+import ninnoImg       from '@/assets/imgs/carta-ninno.webp'
+import ninnoLoboImg   from '@/assets/imgs/carta-ninnolobo.webp'
+import cupidoImg      from '@/assets/imgs/carta-cupido.webp'
 
 export const IMAGENES_ROL = {
   BRUJA:          brujaImg,

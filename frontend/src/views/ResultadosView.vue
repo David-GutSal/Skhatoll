@@ -72,10 +72,10 @@
 <script setup>
 import { computed } from 'vue'
 import { useStore } from 'vuex'
-import aldeanoscelebrandoImg from '@/assets/imgs/aldeanoscelebrando.jpg'
-import loboscelebrandoImg from '@/assets/imgs/loboscelebrando.jpg'
-import empatadoscelebrandoImg from '@/assets/imgs/empatadoscelebrando.jpg'
-import enamoradoscelebrandoImg from '@/assets/imgs/enamoradoscelebrando.jpg'
+import aldeanoscelebrandoImg from '@/assets/imgs/aldeanoscelebrando.webp'
+import loboscelebrandoImg from '@/assets/imgs/loboscelebrando.webp'
+import empatadoscelebrandoImg from '@/assets/imgs/empatadoscelebrando.webp'
+import enamoradoscelebrandoImg from '@/assets/imgs/enamoradoscelebrando.webp'
 
 const store = useStore()
 
@@ -164,15 +164,15 @@ const limpiarSala = () => {
   background-position: center;
 }
 
-.fondo-victoria { background-image: url('@/assets/imgs/fondovictoria.png'); }
-.fondo-derrota { background-image: url('@/assets/imgs/fondonoche.png'); }
-.fondo-empate { background-image: url('@/assets/imgs/fondodia.png'); }
-.fondo-enamorados { background-image: url('@/assets/imgs/fondoenamorado.png'); }
+.fondo-victoria { background-image: url('@/assets/imgs/fondovictoria.webp'); }
+.fondo-derrota { background-image: url('@/assets/imgs/fondonoche.webp'); }
+.fondo-empate { background-image: url('@/assets/imgs/fondodia.webp'); }
+.fondo-enamorados { background-image: url('@/assets/imgs/fondoenamorado.webp'); }
 
 .cuadro {
   width: 95%;
   max-width: 800px;
-  background-image: url('@/assets/imgs/mesa.jpg');
+  background-image: url('@/assets/imgs/mesa.webp');
   background-size: cover;
   background-position: center;
   border-radius: 15px;

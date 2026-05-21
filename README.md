@@ -1,6 +1,11 @@
 <div align="center">
 
-# 🎓 TFG – Skhatoll
+<table>
+  <tr>
+    <td><img src="frontend/src/assets/imgs/logo-skhatoll-sin-txt.png" alt="Skhatoll logo" width="120"/></td>
+    <td><h1>🎓 TFG – Skhatoll</h1></td>
+  </tr>
+</table>
 
 Aplicación web desarrollada como **Trabajo de Fin de Grado**, basada en una arquitectura
 cliente-servidor con frontend SPA y backend desacoplado mediante API REST y WebSocket.

@@ -21,13 +21,13 @@
     </div>
 
     <div class="frases-wrapper">
-      <img src="@/assets/imgs/logo-provisional.png" alt="logo" class="logo-frase" />
+      <img src="@/assets/imgs/logo-skhatoll.png" alt="logo" class="logo-frase" />
       <div class="frase-caja">
         <transition name="fade" mode="out-in">
           <p class="frase" :key="fraseActual">"{{ FRASES[fraseActual] }}"</p>
         </transition>
       </div>
-      <img src="@/assets/imgs/logo-provisional.png" alt="logo" class="logo-frase" />
+      <img src="@/assets/imgs/logo-skhatoll.png" alt="logo" class="logo-frase" />
     </div>
 
   </div>

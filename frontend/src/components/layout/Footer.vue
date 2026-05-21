@@ -10,7 +10,7 @@
           </div>
 
           <div class="footer-col footer-col-centro">
-            <img src="@/assets/imgs/logo-provisional.webp" alt="Skhatoll" class="footer-logo" />
+            <img src="@/assets/imgs/logo-skhatoll-sin-txt.png" alt="Skhatoll" class="footer-logo" />
           </div>
 
           <div class="footer-col footer-col-der">
@@ -90,8 +90,7 @@ import footerImg from '@/assets/imgs/footer-castronegro.svg'
 
 .footer-logo {
   height: clamp(70px, 12vw, 90px);
-  width: auto;
-  max-height: 90px;
+  max-height: 150px;
   object-fit: contain;
   object-position: center;
 }

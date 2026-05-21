@@ -21,13 +21,13 @@
     </div>
 
     <div class="frases-wrapper">
-      <img src="@/assets/imgs/logo-provisional.webp" alt="logo" class="logo-frase" />
+      <img src="@/assets/imgs/logo-skhatoll.png" alt="logo" class="logo-frase" />
       <div class="frase-caja">
         <transition name="fade" mode="out-in">
           <p class="frase" :key="fraseActual">"{{ FRASES[fraseActual] }}"</p>
         </transition>
       </div>
-      <img src="@/assets/imgs/logo-provisional.webp" alt="logo" class="logo-frase" />
+      <img src="@/assets/imgs/logo-skhatoll.png" alt="logo" class="logo-frase" />
     </div>
 
   </div>
@@ -148,17 +148,18 @@ onUnmounted(() => {
   margin-top: 8px;
 }
 
-
-
 .texto-cargando {
   font-family: var(--font-raleway);
   font-style: italic;
   color: #aaa;
-  font-size: 0.9rem;
+  font-size: 1rem;
   margin: 0;
 }
 
-
+.logo-frase {
+  width: 100px;
+  height: auto;
+}
 
 
 </style>

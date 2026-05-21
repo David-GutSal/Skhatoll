@@ -1,7 +1,7 @@
 <template>
   <div class="topbar">
     <div class="logo">
-      <img src="@/assets/imgs/logo-provisional.webp" alt="logo" />
+      <img src="@/assets/imgs/logo-skhatoll-sin-txt.png" alt="logo" />
     </div>
 
     <div class="auth" v-click-outside="cerrarModales">
@@ -212,7 +212,7 @@ export default {
 }
 
 .logo img {
-  height: 70px;
+  height: 90px;
   object-fit: contain;
 }
 

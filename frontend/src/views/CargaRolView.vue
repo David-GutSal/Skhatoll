@@ -34,13 +34,13 @@
     </div>
 
     <div class="frases-wrapper">
-      <img src="@/assets/imgs/logo-provisional.webp" alt="logo" class="logo-frase" />
+      <img src="@/assets/imgs/logo-skhatoll.png" alt="logo" class="logo-frase" />
       <div class="frase-caja">
         <transition name="fade" mode="out-in">
           <p class="frase" :key="fraseActual">"{{ FRASES[fraseActual] }}"</p>
         </transition>
       </div>
-      <img src="@/assets/imgs/logo-provisional.webp" alt="logo" class="logo-frase" />
+      <img src="@/assets/imgs/logo-skhatoll.png" alt="logo" class="logo-frase" />
     </div>
   </div>
 </template>
@@ -218,8 +218,6 @@ onUnmounted(() => {
   gap: 16px;
 }
 
-
-
 .texto-espera-rol {
   font-family: var(--font-raleway);
   font-style: italic;
@@ -227,7 +225,10 @@ onUnmounted(() => {
   margin: 0;
 }
 
-
+.logo-frase {
+  width: 100px;
+  height: auto;
+}
 
 
 </style>

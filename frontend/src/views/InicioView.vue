@@ -3,7 +3,7 @@
     <section class="hero-wrapper">
       <div class="hero-img-container">
         <div class="hero-bg"></div>
-        <img src="@/assets/imgs/logo-provisional.png" alt="Skhatoll" class="hero-logo" />
+        <img src="@/assets/imgs/logo-skhatoll.png" alt="Skhatoll" class="hero-logo" />
       </div>
     </section>
 
@@ -335,9 +335,10 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  height: 120px;
+  height: 230px;
   object-fit: contain;
   z-index: 2;
+   filter: drop-shadow(0 4px 8px rgb(0, 0, 0));
 }
 
 .bloques {

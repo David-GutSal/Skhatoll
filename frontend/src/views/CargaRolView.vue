@@ -218,8 +218,6 @@ onUnmounted(() => {
   gap: 16px;
 }
 
-
-
 .texto-espera-rol {
   font-family: var(--font-raleway);
   font-style: italic;
@@ -227,7 +225,10 @@ onUnmounted(() => {
   margin: 0;
 }
 
-
+.logo-frase {
+  width: 100px;
+  height: auto;
+}
 
 
 </style>

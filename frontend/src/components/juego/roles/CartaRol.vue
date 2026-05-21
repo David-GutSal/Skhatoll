@@ -83,8 +83,12 @@
     }"
     @click="$emit('seleccionar', jugador)"
   >
-    <div class="carta-mesa-imagen carta-imagen-oculta">
-      <i class="fa-solid fa-person"></i>
+   <div class="carta-mesa-imagen carta-imagen-oculta">
+  <img
+    src="@/assets/imgs/logo-skhatoll.png"
+    alt="Skhatoll"
+    class="logo-jugador"
+  />
       <span v-if="jugador.muerteConfirmada" class="overlay-muerto">
         <i class="fa-solid fa-skull"></i>
       </span>
@@ -454,4 +458,10 @@ const esVotacionLobos = computed(() => tipoVotacion.value === 'LOBOS')
   color: white;
   font-size: 5rem;
 }
+
+.logo-jugador {
+  width: 130px !important;
+  opacity: 0.75;
+}
+
 </style>

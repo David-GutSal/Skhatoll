@@ -148,17 +148,18 @@ onUnmounted(() => {
   margin-top: 8px;
 }
 
-
-
 .texto-cargando {
   font-family: var(--font-raleway);
   font-style: italic;
   color: #aaa;
-  font-size: 0.9rem;
+  font-size: 1rem;
   margin: 0;
 }
 
-
+.logo-frase {
+  width: 100px;
+  height: auto;
+}
 
 
 </style>

@@ -32,9 +32,6 @@
 </template>
 
 <script>
-import axiosInstance from '@/plugins/axios'
-import { mapGetters } from 'vuex'
-
 export default {
   name: 'PoderCazador',
 
@@ -42,7 +39,7 @@ export default {
     jugadorSeleccionado: { type: Object, default: null },
   },
 
-  emits: ['disparo', 'finalizarTurno'],
+  emits: ['disparo'],
 
   data() {
     return {
@@ -50,30 +47,11 @@ export default {
     }
   },
 
-  computed: {
-    ...mapGetters('sala', ['codigoSala']),
-  },
-
   methods: {
-    async disparar() {
+    disparar() {
       if (!this.jugadorSeleccionado || this.disparado) return
-      try {
-        await axiosInstance.post(`/partida/${this.codigoSala}/habilidad`, {
-          nombreHabilidad: 'disparo',
-          objetivos: [this.jugadorSeleccionado.idUsuario],
-        })
-        this.disparado = true
-        this.$emit('disparo', this.jugadorSeleccionado)
-        // Dar tiempo a que el jugador vea el resultado antes de cerrar el turno
-        setTimeout(() => {
-          this.$emit('finalizarTurno')
-        }, 2500)
-      } catch {
-        this.$store.dispatch('toast/mostrar', {
-          mensaje: 'Error al usar el disparo',
-          tipo: 'error',
-        })
-      }
+      this.disparado = true
+      this.$emit('disparo', this.jugadorSeleccionado)
     },
 
     resetear() {

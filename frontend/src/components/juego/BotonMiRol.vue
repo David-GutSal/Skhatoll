@@ -6,7 +6,7 @@
     </button>
 
     <button
-      v-if="enamorados"
+      v-if="soyEnamorado"
       class="boton-enamorado"
       @click="mostrarEnamorado = !mostrarEnamorado"
     >
@@ -62,12 +62,16 @@ const miRol = computed(() => store.getters['sala/miRol'])
 const miRolDescripcion = computed(() => store.getters['sala/miRolDescripcion'])
 const miBando = computed(() => store.getters['sala/miBando'])
 const enamorados = computed(() => store.getters['sala/enamorados'])
-const nombre = computed(() => store.getters['sala/nombre'])
+const miNombre = computed(() => store.getters['auth/nombre'])
+
+const soyEnamorado = computed(() => {
+  if (!enamorados.value) return false
+  return enamorados.value.jugador1 === miNombre.value || enamorados.value.jugador2 === miNombre.value
+})
 
 const nombreEnamorado = computed(() => {
   if (!enamorados.value) return null
-  const miNombre = store.getters['auth/nombre']
-  if (enamorados.value.jugador1 === miNombre) return enamorados.value.jugador2
+  if (enamorados.value.jugador1 === miNombre.value) return enamorados.value.jugador2
   return enamorados.value.jugador1
 })
 </script>

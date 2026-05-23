@@ -244,10 +244,6 @@ const ejecutarRendirse = async () => {
  * @param {Jugador} j - Player to select
  */
 const seleccionarJugador = (j) => {
-  const esVotacion = votacionActiva.value && tipoVotacionLocal.value !== 'HABILIDAD'
-
-  if (esVotacion && j.nombre === nombre.value) return
-
   if (enamorados.value) {
     const miNombre = nombre.value
     const { jugador1, jugador2 } = enamorados.value
@@ -257,7 +253,7 @@ const seleccionarJugador = (j) => {
       if (j.nombre === nombrePareja) return
     }
   }
-  if (!votacionActiva.value && !esMiTurno.value) return
+  if (!votacionActiva.value && !esMiTurno.value && !soyElCazadorMuerto.value) return
   jugadorSeleccionado.value = j
 }
 
@@ -353,12 +349,17 @@ const finalizarTurno = () => {
   })
   if (soyElCazadorMuerto.value) {
     setTimeout(() => {
-      router.push({ name: 'eliminado' })
+      if (router.currentRoute.value.name === 'jugador') {
+        router.push({ name: 'eliminado' })
+      }
     }, 1500)
   }
 }
 
+let disparoEnProgreso = false
 const manejarDisparo = async (jugador) => {
+  if (disparoEnProgreso) return
+  disparoEnProgreso = true
   console.log('🔫 Cazador disparó a:', jugador.nombre)
 
   try {
@@ -371,6 +372,7 @@ const manejarDisparo = async (jugador) => {
       tipo: 'success',
     })
     await cargarDatos()
+    finalizarTurno()
   } catch (error) {
     store.dispatch('toast/mostrar', {
       mensaje: error.response?.data?.mensaje || 'Error al disparar',
@@ -525,7 +527,15 @@ const conectarWebSocket = () => {
             '¡Has sido eliminado! El Narrador activará tu poder de Cazador en breve...'
           return
         }
-        router.push({ name: 'eliminado' })
+        if (store.getters['sala/bandoGanador']) {
+          router.push({ name: 'resultados' })
+          return
+        }
+        setTimeout(() => {
+          if (router.currentRoute.value.name !== 'resultados') {
+            router.push({ name: 'eliminado' })
+          }
+        }, 500)
         return
       }
     })
@@ -643,6 +653,15 @@ const conectarWebSocket = () => {
             mensajeEvento.value = null
           }, 8000)
         }
+        return
+      }
+
+      if (payload.tipo === 'ROL_CAMBIADO') {
+        store.commit('sala/UPDATE_JUGADOR_ROL', {
+          nombreJugador: payload.nombreJugador,
+          nombreRol: payload.nombreRol,
+          bando: payload.bando,
+        })
         return
       }
 

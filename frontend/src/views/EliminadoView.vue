@@ -34,7 +34,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { Client } from '@stomp/stompjs'
@@ -52,6 +52,7 @@ const jugadoresConRol = ref([])
 
 const codigoSala = computed(() => store.getters['sala/codigoSala'])
 const jugadores = computed(() => store.getters['sala/jugadores'])
+const bandoGanador = computed(() => store.getters['sala/bandoGanador'])
 
 const togglePartida = async () => {
   if (!verPartida.value) {
@@ -103,6 +104,17 @@ cliente.subscribe(`/topic/partida/${codigoSala.value}/muerte`, (msg) => {
       })
       if (router.currentRoute.value.name !== 'resultados') {
         router.push({ name: 'resultados' })
+      }
+    })
+
+    cliente.subscribe(`/topic/partida/${codigoSala.value}/turno`, (msg) => {
+      const payload = JSON.parse(msg.body)
+      if (payload.tipo === 'ROL_CAMBIADO') {
+        store.commit('sala/UPDATE_JUGADOR_ROL', {
+          nombreJugador: payload.nombreJugador,
+          nombreRol: payload.nombreRol,
+          bando: payload.bando,
+        })
       }
     })
   }

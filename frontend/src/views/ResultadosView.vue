@@ -89,8 +89,9 @@ const nombre = computed(() => store.getters['auth/nombre'])
 
 const esNarrador = computed(() => {
   const miNombre = store.getters['auth/nombre']
-  const jugadores = store.getters['sala/jugadores']
-  const yo = jugadores?.find((j) => j.nombre === miNombre)
+  const jugadores = store.getters['sala/jugadores'] || []
+  const jugadoresConRol = store.getters['sala/jugadoresConRol'] || []
+  const yo = jugadores.find((j) => j.nombre === miNombre) || jugadoresConRol.find((j) => j.nombre === miNombre)
   return yo?.esNarrador === true
 })
 

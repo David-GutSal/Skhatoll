@@ -177,6 +177,11 @@ export default {
     SET_BRUJA_POCION_MUERTE(state) {
       state.brujaPocionMuerteUsada = true
     },
+    UPDATE_JUGADOR_ROL(state, { nombreJugador, nombreRol, bando }) {
+      state.jugadoresConRol = state.jugadoresConRol.map((j) =>
+        j.nombre === nombreJugador ? { ...j, nombreRol, bando } : j,
+      )
+    },
     SET_MENTOR_NINNO(state, nombreMentor) {
       state.mentorNinno = nombreMentor
       state.jugadores = state.jugadores.map((j) =>

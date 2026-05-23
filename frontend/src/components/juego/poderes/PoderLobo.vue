@@ -13,9 +13,9 @@
       <span v-else class="victima-placeholder">Selecciona una víctima en el tablero</span>
     </div>
 
-    <button class="btn-poder" :disabled="!jugadorSeleccionado || poderUsado" @click="devorar">
+    <button class="btn-poder" :disabled="!jugadorSeleccionado || votando" @click="devorar">
       <i class="fa-solid fa-bone"></i>
-      {{ poderUsado ? 'Ya has votado esta noche' : 'Devorar' }}
+      {{ votando ? 'Votando...' : 'Devorar' }}
     </button>
 
     <div v-if="votosLobos.length > 0" class="votos-lobos">
@@ -48,7 +48,7 @@ export default {
 
   data() {
     return {
-      poderUsado: false,
+      votando: false,
       votosLobos: [],
     }
   },
@@ -87,21 +87,23 @@ export default {
     },
 
     async devorar() {
-      if (!this.jugadorSeleccionado || this.poderUsado) return
+      if (!this.jugadorSeleccionado || this.votando) return
+
+      this.votando = true
 
       try {
         await axiosInstance.post(`/partida/${this.codigoSala}/votar`, {
           idObjetivo: this.jugadorSeleccionado.idUsuario,
         })
-        this.poderUsado = true
         this.$emit('devorar')
       } catch (error) {
         this.$store.dispatch('toast/mostrar', { mensaje: 'Error al votar', tipo: 'error' })
+      } finally {
+        this.votando = false
       }
     },
 
     resetear() {
-      this.poderUsado = false
       this.votosLobos = []
     },
   },

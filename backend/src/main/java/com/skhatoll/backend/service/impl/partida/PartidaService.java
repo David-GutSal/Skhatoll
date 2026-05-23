@@ -315,11 +315,6 @@ if (sesion.getTipo() == SesionVotacion.TipoVotacion.DIA && !resultado.empate() &
             throw new IllegalStateException("No puedes votar a un jugador eliminado");
         }
 
-        if (votante.getIdUsuario().equals(objetivo.getIdUsuario())) {
-            log.warn("Usuario {} intentó votarse a si mismo", votante.getNombre());
-            throw new IllegalStateException("No puedes votarte a ti mismo");
-        }
-
         Optional<Voto> votoExistente = votoRepository.findBySesion_IdSesionAndVotante_IdUsuario(sesion.getIdSesion(), votante.getIdUsuario());
 
         Voto voto;
@@ -683,7 +678,13 @@ if (sesion.getTipo() == SesionVotacion.TipoVotacion.DIA && !resultado.empate() &
         
         salaUsuario.setRol(rol);
         salaUsuarioRepository.save(salaUsuario);
-        
+
+        partidaSocketService.notificarRolCambiado(codigoSala,
+            new RolCambiadoDto(WS_EVENTO_ROL_CAMBIADO,
+                salaUsuario.getUsuario().getNombre(),
+                nombreRol,
+                rol.getBando().name()));
+
         log.info("Rol de {} actualizado a {} en sala {}", salaUsuario.getUsuario().getNombre(), nombreRol, codigoSala);
     }
 }

@@ -25,12 +25,13 @@
         </button>
 
         <button
-          v-if="eventosActivos && sesionActualTipo !== 'LOBOS'"
+          v-if="eventosActivos && sesionActualTipo !== 'LOBOS' && !votacionLobosRealizada"
           class="btn-panel btn-lobos"
+          :disabled="votacionLobosCargando"
           @click="$emit('iniciarVotacionLobos')"
         >
           <i class="fa-solid fa-paw"></i>
-          Iniciar Votación Lobos
+          {{ votacionLobosCargando ? 'Iniciando...' : 'Iniciar Votación Lobos' }}
         </button>
 
         <button
@@ -74,6 +75,8 @@ const props = defineProps({
   hayAlcalde: { type: Boolean, default: false },
   sesionActiva: { type: Boolean, default: false },
   sesionActualTipo: { type: String, default: null },
+  votacionLobosCargando: { type: Boolean, default: false },
+  votacionLobosRealizada: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([

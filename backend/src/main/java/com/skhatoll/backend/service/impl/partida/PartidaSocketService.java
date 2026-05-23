@@ -3,6 +3,7 @@ package com.skhatoll.backend.service.impl.partida;
 import com.skhatoll.backend.dto.partida.FinPartidaDto;
 import com.skhatoll.backend.dto.partida.MuerteConfirmadaDto;
 import com.skhatoll.backend.dto.partida.ResultadoVotacionDto;
+import com.skhatoll.backend.dto.partida.RolCambiadoDto;
 import com.skhatoll.backend.dto.partida.VotoDto;
 import com.skhatoll.backend.entities.Sala;
 import lombok.AllArgsConstructor;
@@ -44,7 +45,7 @@ public class PartidaSocketService {
     // Canal: /topic/partida/{codigo}/votacion
     // -------------------------------------------------------
     public void notificarResultadoVotacion(String codigoSala, ResultadoVotacionDto resultado) {
-        messagingTemplate.convertAndSend(WS_VOTACION, resultado);
+        messagingTemplate.convertAndSend(String.format(WS_VOTACION, codigoSala), resultado);
     }
 
     // -------------------------------------------------------
@@ -78,6 +79,14 @@ public class PartidaSocketService {
     // -------------------------------------------------------
     public void notificarEventoEspecial(String codigoSala, String tipoEvento, String nombreJugador) {
         messagingTemplate.convertAndSend(String.format(WS_TURNO, codigoSala), new EventoEspecialEvent(tipoEvento, nombreJugador));
+    }
+
+    // -------------------------------------------------------
+    // Notifica cambio de rol de un jugador
+    // Canal: /topic/partida/{codigo}/turno
+    // -------------------------------------------------------
+    public void notificarRolCambiado(String codigoSala, RolCambiadoDto dto) {
+        messagingTemplate.convertAndSend(String.format(WS_TURNO, codigoSala), dto);
     }
 
     // -------------------------------------------------------

@@ -39,6 +39,8 @@
         :hayAlcalde="hayAlcalde"
         :sesionActiva="!!idSesionActual"
         :sesionActualTipo="sesionActualTipo"
+        :votacionLobosCargando="votacionLobosLoading"
+        :votacionLobosRealizada="votacionLobosRealizada"
         @votarLinchamiento="iniciarVotacionLinchamiento"
         @votarAlcalde="iniciarVotacionAlcalde"
         @finalizarVotacion="finalizarVotacion"
@@ -75,12 +77,11 @@
     </div>
 
     <div class="footer-aldea" :class="esDia ? 'footer-dia' : 'footer-noche'"></div>
-  </div>
 
-  <div
-  v-if="mostrarCancelarModal"
-  class="modal-overlay"
-  @click.self="mostrarCancelarModal = false"
+    <div
+    v-if="mostrarCancelarModal"
+    class="modal-overlay"
+    @click.self="mostrarCancelarModal = false"
 >
   <div class="modal-confirmacion">
     <h2>
@@ -109,6 +110,7 @@
         Sí, cancelar
       </button>
     </div>
+  </div>
   </div>
 </div>
 </template>
@@ -144,6 +146,8 @@ const eventosYaUsadosEstaNoche = ref(false)
 const votacionActiva = ref(false)
 const tipoVotacionLocal = ref(null)
 const mostrarCancelarModal = ref(false)
+const votacionLobosLoading = ref(false)
+const votacionLobosRealizada = ref(false)
 
 const nombre = computed(() => store.getters['auth/nombre'])
 const codigoSala = computed(() => store.getters['sala/codigoSala'])
@@ -210,6 +214,7 @@ const cambiarFase = async (fase) => {
     if (esNoche) {
       eventosYaUsadosEstaNoche.value = false
       jugadoresYaActuadosEstaNoche.value = []
+      votacionLobosRealizada.value = false
     } else {
       store.dispatch('sala/reiniciarVotos')
       store.dispatch('sala/setTipoVotacion', null)
@@ -236,6 +241,11 @@ const cancelarPartida = async () => {
     await axiosInstance.put(`/partida/${codigoSala.value}/cancelar`)
 
     mostrarCancelarModal.value = false
+    store.dispatch('sala/setResultado', {
+      bandoGanador: 'empate',
+      mensaje: 'La partida fue cancelada',
+    })
+    router.push({ name: 'resultados' })
   } catch (error) {
     store.dispatch('toast/mostrar', {
       mensaje: 'Error al cancelar la partida',
@@ -412,6 +422,19 @@ const conectarWebSocket = () => {
         }, 5000)
         return
       }
+
+      if (payload.tipo === 'ROL_CAMBIADO') {
+        store.commit('sala/UPDATE_JUGADOR_ROL', {
+          nombreJugador: payload.nombreJugador,
+          nombreRol: payload.nombreRol,
+          bando: payload.bando,
+        })
+        avisoSesion.value = `${payload.nombreJugador} ha cambiado su rol a ${payload.nombreRol}`
+        setTimeout(() => {
+          avisoSesion.value = null
+        }, 5000)
+        return
+      }
     })
   }
 
@@ -455,6 +478,8 @@ const iniciarVotacionAlcalde = async () => {
 }
 
 const iniciarVotacionLobos = async () => {
+  if (votacionLobosLoading.value) return
+  votacionLobosLoading.value = true
   try {
     const res = await axiosInstance.post(`/partida/${codigoSala.value}/votacion/abrir`, {
       tipo: 'LOBOS',
@@ -462,6 +487,7 @@ const iniciarVotacionLobos = async () => {
     idSesionActual.value = res.data
     sesionActualTipo.value = 'LOBOS'
     votacionActiva.value = true
+    votacionLobosRealizada.value = true
 
     const lobosRes = await axiosInstance.get(`/partida/${codigoSala.value}/lobos`)
     const nombresLobos = lobosRes.data
@@ -483,6 +509,8 @@ const iniciarVotacionLobos = async () => {
           : 'Error al iniciar votación de lobos',
       tipo: 'error',
     })
+  } finally {
+    votacionLobosLoading.value = false
   }
 }
 
@@ -542,10 +570,14 @@ const iniciarEventos = () => {
 const activarTurnoJugador = async (jugador) => {
   if (!modoEventos.value) return
 
-  const esCazadorMuerto =
-    (jugador.nombreRol || '').toLowerCase() === 'cazador' && !jugador.estaVivo
+  const esCazador = (jugador.nombreRol || '').toLowerCase() === 'cazador'
+  const esBrujaSemimuerta = (jugador.nombreRol || '').toLowerCase() === 'bruja' && !jugador.estaVivo && !jugador.muerteConfirmada
 
-  if (!jugador.estaVivo && !esCazadorMuerto) {
+  if (!jugador.estaVivo && !esCazador && !esBrujaSemimuerta) {
+    return
+  }
+
+  if (jugador.estaVivo && esCazador) {
     return
   }
 

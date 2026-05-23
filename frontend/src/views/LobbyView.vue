@@ -167,7 +167,7 @@ const handleUnirse = async () => {
 
 const asignarNarrador = async (idUsuario) => {
   const codigo = codigoSala.value || sessionStorage.getItem('codigoSala')
-  if (codigo || codigo === 'null') return
+  if (!codigo || codigo === 'null') return
   try {
     await axiosInstance.put(`/salas/${codigo}/narrador`, { idUsuario })
     cargarJugadores()

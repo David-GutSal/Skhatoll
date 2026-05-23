@@ -69,7 +69,7 @@ public class HabilidadService implements IHabilidadService {
             return usarDisparo(codigoSala, sala, salaUsuario, request.objetivos());
         }
 
-        if (!salaUsuario.getEstaVivo()) {
+        if (!salaUsuario.getEstaVivo() && !HAB_POCION_VIDA.equals(nombreHabilidad)) {
             log.warn("Jugador {} intentado usar habilidad {} pero está eliminado", solicitante.getNombre(), nombreHabilidad);
             throw new IllegalStateException("Los jugadores eliminados no pueden usar habilidades");
         }

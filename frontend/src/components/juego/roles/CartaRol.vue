@@ -447,7 +447,13 @@ const esVotacionLobos = computed(() => tipoVotacion.value === 'LOBOS')
 
 .badge-mentor {
   color: #5dade2;
-  font-size: 2rem;
+  font-size: 1.5rem;
+}
+
+
+.fa-heart {
+    color: rgb(255, 24, 216);
+  font-size:1.5rem;
 }
 
 .carta-narrador {

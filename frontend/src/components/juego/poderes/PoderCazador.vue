@@ -118,7 +118,7 @@ export default {
   font-family: var(--font-raleway);
   font-weight: 700;
   font-size: 1rem;
-  color: #2980b9;
+  color: #a4b322;
   margin: 0;
 }
 
@@ -144,7 +144,7 @@ export default {
 
 .victima-activa {
   background: rgba(41, 128, 185, 0.15);
-  border: 2px solid #2980b9;
+  border: 2px solid #a4b322;
   color: white;
   box-shadow:
     0 0 8px rgba(41, 128, 185, 0.4),
@@ -152,7 +152,7 @@ export default {
 }
 
 .victima-activa i {
-  color: #2980b9;
+  color: #a4b322;
 }
 
 .placeholder {
@@ -168,8 +168,8 @@ export default {
   gap: 10px;
   padding: 14px 32px;
   border-radius: 10px;
-  border: 3px solid #2980b9;
-  background: #2980b9;
+  border: 3px solid #a4b322;
+  background: #1e5f00;
   color: white;
   font-family: var(--font-raleway);
   font-weight: 700;
@@ -183,8 +183,7 @@ export default {
 }
 
 .btn-disparar:hover:not(:disabled):not(.disparado) {
-  background: #1a5f8a;
-  border-color: #1a5f8a;
+  background: #3ab600;
 }
 
 /* Estado tras disparar: rojo y más pequeño */
@@ -203,9 +202,11 @@ export default {
 /* ── Mensaje post-disparo ── */
 .mensaje-disparo {
   font-family: var(--font-raleway);
-  font-size: 0.9rem;
+  font-size: 1.2rem;
   font-style: italic;
-  color: #888;
+  color: #ffffff;
+  background-color: #1e5f00;
+  padding: 7px;
   text-align: center;
   display: flex;
   align-items: center;

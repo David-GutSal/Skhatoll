@@ -550,7 +550,7 @@ const conectarWebSocket = () => {
         store.dispatch('sala/reiniciarVotos')
         store.dispatch('toast/mostrar', {
           mensaje: `¡${payload.nombreAlcalde} ha sido elegido alcalde!`,
-          tipo: 'aviso',
+          tipo: 'alcaldia',
         })
       }
     })

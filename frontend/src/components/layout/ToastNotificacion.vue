@@ -54,6 +54,7 @@ const icono = computed(() => {
     brujeria: 'fa-solid fa-hat-wizard',
     videncia: 'fa-solid fa-eye',
     amorio: 'fa-solid fa-heart',
+    alcaldia: 'fa-solid fa-medal',
   }
   return iconos[tipo.value] || iconos.info
 })
@@ -203,6 +204,18 @@ onUnmounted(() => {
 
 .toast-amorio .toast-barra{
   background: #9e0069;
+}
+
+.toast-alcaldia {
+  border-color: var(--color-dorado);
+}
+
+.toast-alcaldia .toast-icono {
+  color: var(--color-dorado);
+}
+
+.toast-alcaldia .toast-barra {
+  background: var(--color-dorado);
 }
 
 .toast-icono {

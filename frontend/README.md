@@ -36,3 +36,63 @@ npm run dev
 ```sh
 npm run build
 ```
+
+```
+frontend
+│
+├─ index.html
+├─ public
+├─ src
+│  ├─ App.vue
+│  ├─ assets
+│  │  ├─ imgs
+│  │  └─ styles
+│  │
+│  ├─ components
+│  │  ├─ juego
+│  │  │  ├─ BotonMiRol.vue
+│  │  │  ├─ CabeceraJugador.vue
+│  │  │  ├─ IndicadorDiaNoche.test.js
+│  │  │  ├─ IndicadorDiaNoche.vue
+│  │  │  ├─ ListaPersonajes.vue
+│  │  │  ├─ ListaReglas.vue
+│  │  │  ├─ MesaJugadores.vue
+│  │  │  ├─ PanelControlNarrador.vue
+│  │  │  ├─ PanelVotacionesJugador.vue
+│  │  │  ├─ poderes
+│  │  │  ├─ roles
+│  │  │  │
+│  │  │  └─ ZonaPoderes.vue
+│  │  ├─ layout
+│  │  └─ lobby
+│  │
+│  ├─ composables
+│  ├─ data
+│  ├─ main.js
+│  ├─ plugins
+│  ├─ router
+│  ├─ services
+│  ├─ store
+│  │  ├─ GameEvents.js
+│  │  ├─ index.js
+│  │  └─ modules
+│  │
+│  ├─ test
+│  │  └─ setup.js
+│  └─ views
+│     ├─ CargaRolView.vue
+│     ├─ EliminadoView.vue
+│     ├─ EsperaNarradorView.vue
+│     ├─ InicioView.vue
+│     ├─ JugadorView.vue
+│     ├─ LobbyView.vue
+│     ├─ NarradorView.vue
+│     ├─ PersonajesView.vue
+│     ├─ ReglasView.vue
+│     ├─ ResultadosView.vue
+│     └─ SalaView.vue
+├─ vite.config.js
+└─ vitest.config.js
+
+
+```

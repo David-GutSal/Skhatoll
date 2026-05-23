@@ -236,6 +236,13 @@ const textoAlcalde = computed(() => props.alcaldeNombre || 'Elecciones pendiente
   font-weight: bold;
 }
 
+@media (max-width: 400px) {
+  .cuadro-alcalde {
+    width: 250px;
+    padding: 10px;
+  }
+}
+
 .cuadro-alcalde i {
   font-size: 3rem;
   flex-shrink: 0;

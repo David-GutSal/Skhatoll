@@ -9,7 +9,7 @@
         :alcaldeNombre="alcaldeNombre"
       />
 
-      <div 
+      <div
         v-if="mensajeEvento"
         class="cuadro-evento"
         :class="esDia ? 'evento-dia' : 'evento-noche'"
@@ -18,7 +18,11 @@
       >
         <i v-if="tipoVotacionLocal === 'ALCALDE'" class="fa-solid fa-medal" aria-hidden="true"></i>
         <i v-else-if="tipoVotacionLocal === 'DIA'" class="fa-solid fa-gavel" aria-hidden="true"></i>
-        <i v-else-if="tipoVotacionLocal === 'LOBOS'" class="fa-solid fa-skull" aria-hidden="true"></i>
+        <i
+          v-else-if="tipoVotacionLocal === 'LOBOS'"
+          class="fa-solid fa-skull"
+          aria-hidden="true"
+        ></i>
         <i v-else class="fa-solid fa-bell" aria-hidden="true"></i>
         <span>{{ mensajeEvento }}</span>
       </div>
@@ -37,8 +41,8 @@
           <i class="fa-solid fa-moon"></i>
           <span>Es tu turno! Selecciona un jugador y activa tu poder</span>
         </div>
-        <button 
-          class="btn-ir-poderes" 
+        <button
+          class="btn-ir-poderes"
           @click="scrollAPoderes"
           aria-label="Desplazarse a la seccion de poderes"
         >
@@ -79,14 +83,10 @@
     </div>
 
     <div class="boton-arriba-wrapper">
-      <button 
-        class="boton-arriba" 
-        @click="irArriba"
-        aria-label="Volver al inicio de la pagina"
-      >
+      <button class="boton-arriba" @click="irArriba" aria-label="Volver al inicio de la pagina">
         <i class="fa-solid fa-arrow-up" aria-hidden="true"></i> Volver Arriba
       </button>
-      <button 
+      <button
         v-if="!soyNarrador"
         class="boton-rendirse"
         @click="confirmarRendirse"
@@ -95,7 +95,28 @@
         <i class="fa-solid fa-flag" aria-hidden="true"></i> Rendirse
       </button>
     </div>
-
+    <!-- Modal rendirse -->
+    <Transition name="modal">
+      <div
+        v-if="mostrarModalRendirse"
+        class="modal-overlay"
+        @click.self="mostrarModalRendirse = false"
+      >
+        <div class="modal-rendirse">
+          <p class="modal-pregunta">
+            ¿Estás seguro de que quieres rendirte?
+            <i class="fa-solid fa-flag"></i>
+          </p>
+          <p class="modal-subtitulo">Serás eliminado de la partida.</p>
+          <div class="modal-botones">
+            <button class="btn-modal-rendirse" @click="ejecutarRendirse">Rendirse</button>
+            <button class="btn-modal-cancelar" @click="mostrarModalRendirse = false">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
     <div class="footer-aldea" :class="esDia ? 'footer-dia' : 'footer-noche'"></div>
   </div>
 </template>
@@ -177,8 +198,8 @@ const jugadoresVisibles = computed(() => {
  */
 const scrollAPoderes = () => {
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  zonaPoderes.value?.$el?.scrollIntoView({ 
-    behavior: prefersReducedMotion ? 'auto' : 'smooth' 
+  zonaPoderes.value?.$el?.scrollIntoView({
+    behavior: prefersReducedMotion ? 'auto' : 'smooth',
   })
 }
 
@@ -187,16 +208,20 @@ const scrollAPoderes = () => {
  */
 const irArriba = () => {
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  window.scrollTo({ 
-    top: 0, 
-    behavior: prefersReducedMotion ? 'auto' : 'smooth' 
+  window.scrollTo({
+    top: 0,
+    behavior: prefersReducedMotion ? 'auto' : 'smooth',
   })
 }
 
-const confirmarRendirse = async () => {
-  if (!confirm('¿Estás seguro de que quieres rendirte? Serás eliminado de la partida.')) {
-    return
-  }
+const mostrarModalRendirse = ref(false)
+
+const confirmarRendirse = () => {
+  mostrarModalRendirse.value = true
+}
+
+const ejecutarRendirse = async () => {
+  mostrarModalRendirse.value = false
   try {
     await axiosInstance.post(`/partida/${codigoSala.value}/rendirse`)
     store.dispatch('toast/mostrar', { mensaje: 'Te has rendido', tipo: 'info' })
@@ -207,7 +232,10 @@ const confirmarRendirse = async () => {
     store.dispatch('sala/resetSala')
     router.push({ name: 'inicio' })
   } catch (error) {
-    store.dispatch('toast/mostrar', { mensaje: error.response?.data?.mensaje || 'Error al rendirse', tipo: 'error' })
+    store.dispatch('toast/mostrar', {
+      mensaje: error.response?.data?.mensaje || 'Error al rendirse',
+      tipo: 'error',
+    })
   }
 }
 
@@ -217,9 +245,9 @@ const confirmarRendirse = async () => {
  */
 const seleccionarJugador = (j) => {
   const esVotacion = votacionActiva.value && tipoVotacionLocal.value !== 'HABILIDAD'
-  
+
   if (esVotacion && j.nombre === nombre.value) return
-  
+
   if (enamorados.value) {
     const miNombre = nombre.value
     const { jugador1, jugador2 } = enamorados.value
@@ -240,7 +268,10 @@ const votarAlcalde = async () => {
       idObjetivo: jugadorSeleccionado.value.idUsuario,
     })
   } catch (error) {
-    store.dispatch('toast/mostrar', { mensaje: error.response?.data?.mensaje || 'Error al votar', tipo: 'error' })
+    store.dispatch('toast/mostrar', {
+      mensaje: error.response?.data?.mensaje || 'Error al votar',
+      tipo: 'error',
+    })
   }
 }
 
@@ -251,7 +282,10 @@ const votarCulpable = async () => {
       idObjetivo: jugadorSeleccionado.value.idUsuario,
     })
   } catch (error) {
-    store.dispatch('toast/mostrar', { mensaje: error.response?.data?.mensaje || 'Error al votar', tipo: 'error' })
+    store.dispatch('toast/mostrar', {
+      mensaje: error.response?.data?.mensaje || 'Error al votar',
+      tipo: 'error',
+    })
   }
 }
 
@@ -262,7 +296,10 @@ const devorarJugador = async () => {
       idObjetivo: jugadorSeleccionado.value.idUsuario,
     })
   } catch (error) {
-    store.dispatch('toast/mostrar', { mensaje: error.response?.data?.mensaje || 'Error al devorar', tipo: 'error' })
+    store.dispatch('toast/mostrar', {
+      mensaje: error.response?.data?.mensaje || 'Error al devorar',
+      tipo: 'error',
+    })
   }
 }
 
@@ -323,28 +360,28 @@ const finalizarTurno = () => {
 
 const manejarDisparo = async (jugador) => {
   console.log('🔫 Cazador disparó a:', jugador.nombre)
-  
+
   try {
     await axiosInstance.post(`/partida/${codigoSala.value}/habilidad`, {
       nombreHabilidad: 'disparo',
-      objetivos: [jugador.idUsuario]
+      objetivos: [jugador.idUsuario],
     })
     store.dispatch('toast/mostrar', {
       mensaje: `¡Has eliminado a ${jugador.nombre}!`,
-      tipo: 'success'
+      tipo: 'success',
     })
     await cargarDatos()
   } catch (error) {
     store.dispatch('toast/mostrar', {
       mensaje: error.response?.data?.mensaje || 'Error al disparar',
-      tipo: 'error'
+      tipo: 'error',
     })
   }
 }
 
 const cargarDatos = async () => {
   console.log('[cargarDatos] Iniciando carga de datos...')
-  
+
   try {
     const res = await axiosInstance.get(`/salas/${codigoSala.value}/jugadores`)
     store.dispatch('sala/setJugadores', res.data)
@@ -376,7 +413,7 @@ const cargarDatos = async () => {
       esDia.value = !esNoche
       store.dispatch('sala/setFase', estado.data.estadoDia)
       console.log('[cargarDatos] Fase cargada:', estado.data.estadoDia)
-      
+
       if (estado.data.nombreAlcalde) {
         store.dispatch('sala/designarAlcalde', estado.data.nombreAlcalde)
         alcaldeNombre.value = estado.data.nombreAlcalde
@@ -430,7 +467,11 @@ const conectarWebSocket = () => {
 
     cliente.subscribe(`/topic/partida/${codigoSala.value}/muerte`, (msg) => {
       const payload = JSON.parse(msg.body)
-      if (payload.tipo === 'CONFIRMAR' || payload.tipo === 'LINCHAMIENTO' || payload.tipo === 'RENDIRSE') {
+      if (
+        payload.tipo === 'CONFIRMAR' ||
+        payload.tipo === 'LINCHAMIENTO' ||
+        payload.tipo === 'RENDIRSE'
+      ) {
         store.dispatch('sala/marcarMuerto', payload.nombreJugador)
       } else if (payload.tipo === 'REVIVIR') {
         store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
@@ -449,20 +490,24 @@ const conectarWebSocket = () => {
           bando: 'lobo',
           nombreJugador: nombre.value,
         })
-        
-        axiosInstance.get(`/salas/${codigoSala.value}/mi-rol`)
-          .then(miIdRes => {
-            return axiosInstance.put(`/partida/${codigoSala.value}/jugador/${miIdRes.data.idUsuario}/rol`, {
-              nombreRol: 'NIÑO LOBO',
-            })
+
+        axiosInstance
+          .get(`/salas/${codigoSala.value}/mi-rol`)
+          .then((miIdRes) => {
+            return axiosInstance.put(
+              `/partida/${codigoSala.value}/jugador/${miIdRes.data.idUsuario}/rol`,
+              {
+                nombreRol: 'NIÑO LOBO',
+              },
+            )
           })
           .then(() => {
             console.log('[Niño Lobo] Rol actualizado en backend')
           })
-          .catch(error => {
+          .catch((error) => {
             console.error('[Niño Lobo] Error al actualizar rol en backend:', error)
           })
-        
+
         mensajeEvento.value = '¡Tu mentor ha muerto! ¡Te has convertido en un Hombre Lobo!'
         setTimeout(() => {
           mensajeEvento.value = null
@@ -483,8 +528,6 @@ const conectarWebSocket = () => {
         router.push({ name: 'eliminado' })
         return
       }
-
-      
     })
 
     cliente.subscribe(`/topic/partida/${codigoSala.value}/votos`, (msg) => {
@@ -587,8 +630,7 @@ const conectarWebSocket = () => {
       if (payload.tipo === 'TURNO_FINALIZADO') return
 
       if (payload.tipo === 'FLECHAZO') {
-        const soyEnamorado =
-          payload.jugador1 === nombre.value || payload.jugador2 === nombre.value
+        const soyEnamorado = payload.jugador1 === nombre.value || payload.jugador2 === nombre.value
         if (soyEnamorado) {
           const nombrePareja =
             payload.jugador1 === nombre.value ? payload.jugador2 : payload.jugador1
@@ -626,7 +668,7 @@ const conectarWebSocket = () => {
         console.log('[TURNO_JUGADOR] Payload:', payload)
         console.log('[TURNO_JUGADOR] miRol store:', miRol.value)
         console.log('[TURNO_JUGADOR] nombre.value:', nombre.value)
-        
+
         const faseDelPayload = payload.fase
         if (faseDelPayload) {
           esDia.value = faseDelPayload === 'DIA'
@@ -641,7 +683,7 @@ const conectarWebSocket = () => {
         esMiTurno.value = payload.nombreJugador === nombre.value
         console.log('[TURNO_JUGADOR] esMiTurno:', esMiTurno.value)
         console.log('[TURNO_JUGADOR] esDia:', esDia.value)
-        
+
         const toastsPorRol = {
           Vidente: { mensaje: 'La Vidente está teniendo una visión...', tipo: 'videncia' },
           Bruja: { mensaje: 'La Bruja prepara sus pociones...', tipo: 'brujeria' },
@@ -883,7 +925,7 @@ onUnmounted(() => {
 
 .boton-rendirse {
   background: #8b0000;
-  border: 3px solid #ff6b6b;
+  border: 3px solid #ffffff;
   color: white;
   padding: 16px 36px;
   border-radius: 10px;
@@ -895,15 +937,122 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: background 0.2s ease, transform 0.15s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease;
 }
 
 .boton-rendirse:hover {
-  background: #ff6b6b;
+  background: #000000;
   border-color: #8b0000;
 }
 
 .boton-rendirse:active {
   transform: scale(0.96);
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+}
+
+.modal-rendirse {
+  background: #111;
+  border: 3px solid #cc0000;
+  border-radius: 15px;
+  padding: 36px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 420px;
+  width: 90%;
+}
+
+.modal-pregunta {
+  font-family: var(--font-raleway);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: white;
+  text-align: center;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.modal-pregunta i {
+  color: #cc0000;
+}
+
+.modal-subtitulo {
+  font-family: var(--font-raleway);
+  font-size: 0.95rem;
+  color: #aaa;
+  text-align: center;
+  margin: 0;
+  font-style: italic;
+}
+
+.modal-botones {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn-modal-rendirse {
+  padding: 12px 28px;
+  border-radius: 10px;
+  border: 2px solid #cc0000;
+  background: #cc0000;
+  color: white;
+  font-family: var(--font-raleway);
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-modal-rendirse:hover {
+  background: transparent;
+  color: #cc0000;
+}
+
+.btn-modal-cancelar {
+  padding: 12px 28px;
+  border-radius: 10px;
+  border: 2px solid #111;
+  background: #000;
+  color: white;
+  font-family: var(--font-raleway);
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-modal-cancelar:hover {
+  background: white;
+  color: #000;
+  border-color: white;
+}
+
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
 }
 </style>

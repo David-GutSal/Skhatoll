@@ -56,7 +56,7 @@ export default {
       state.miBando = bando
       if (nombreJugador) {
         state.jugadoresConRol = state.jugadoresConRol.map((j) =>
-          j.nombre === nombreJugador ? { ...j, nombreRol, bando } : j
+          j.nombre === nombreJugador ? { ...j, nombreRol, bando } : j,
         )
       }
     },
@@ -65,14 +65,10 @@ export default {
     },
     MARCAR_MUERTO(state, nombreJugador) {
       state.jugadores = state.jugadores.map((j) =>
-        j.nombre === nombreJugador
-          ? { ...j, estaVivo: false, muerteConfirmada: true }
-          : j
+        j.nombre === nombreJugador ? { ...j, estaVivo: false, muerteConfirmada: true } : j,
       )
       state.jugadoresConRol = state.jugadoresConRol.map((j) =>
-        j.nombre === nombreJugador
-          ? { ...j, estaVivo: false, muerteConfirmada: true }
-          : j
+        j.nombre === nombreJugador ? { ...j, estaVivo: false, muerteConfirmada: true } : j,
       )
     },
     MARCAR_SEMIMUERTO(state, nombreJugador) {
@@ -80,27 +76,19 @@ export default {
         state.semiMuertos = [...state.semiMuertos, nombreJugador]
       }
       state.jugadores = state.jugadores.map((j) =>
-        j.nombre === nombreJugador
-          ? { ...j, estaVivo: false, muerteConfirmada: false }
-          : j
+        j.nombre === nombreJugador ? { ...j, estaVivo: false, muerteConfirmada: false } : j,
       )
       state.jugadoresConRol = state.jugadoresConRol.map((j) =>
-        j.nombre === nombreJugador
-          ? { ...j, estaVivo: false, muerteConfirmada: false }
-          : j
+        j.nombre === nombreJugador ? { ...j, estaVivo: false, muerteConfirmada: false } : j,
       )
     },
     QUITAR_SEMIMUERTO(state, nombreJugador) {
       state.semiMuertos = state.semiMuertos.filter((n) => n !== nombreJugador)
       state.jugadores = state.jugadores.map((j) =>
-        j.nombre === nombreJugador
-          ? { ...j, estaVivo: true, muerteConfirmada: false }
-          : j
+        j.nombre === nombreJugador ? { ...j, estaVivo: true, muerteConfirmada: false } : j,
       )
       state.jugadoresConRol = state.jugadoresConRol.map((j) =>
-        j.nombre === nombreJugador
-          ? { ...j, estaVivo: true, muerteConfirmada: false }
-          : j
+        j.nombre === nombreJugador ? { ...j, estaVivo: true, muerteConfirmada: false } : j,
       )
     },
     ACTUALIZAR_VOTOS(state, votos) {
@@ -191,11 +179,11 @@ export default {
     },
     SET_MENTOR_NINNO(state, nombreMentor) {
       state.mentorNinno = nombreMentor
-      state.jugadores = state.jugadores.map(j =>
-        j.nombre === nombreMentor ? { ...j, esMentor: true } : j
+      state.jugadores = state.jugadores.map((j) =>
+        j.nombre === nombreMentor ? { ...j, esMentor: true } : j,
       )
-      state.jugadoresConRol = state.jugadoresConRol.map(j =>
-        j.nombre === nombreMentor ? { ...j, esMentor: true } : j
+      state.jugadoresConRol = state.jugadoresConRol.map((j) =>
+        j.nombre === nombreMentor ? { ...j, esMentor: true } : j,
       )
       state.narradorActual = nombreMentor
     },
@@ -208,10 +196,15 @@ export default {
       commit('SET_SALA', { codigoSala, esCreador: true })
     },
     unirse({ commit }, codigoSala) {
-      sessionStorage.setItem('codigoSala', codigoSala)
+      if (codigoSala) {
+        sessionStorage.setItem('codigoSala', codigoSala)
+      } else {
+        sessionStorage.removeItem('codigoSala')
+      }
       sessionStorage.removeItem('esCreador')
       commit('SET_SALA', { codigoSala, esCreador: false })
     },
+
     setSala({ commit }, { codigoSala, esCreador }) {
       sessionStorage.setItem('codigoSala', codigoSala)
       if (esCreador) {

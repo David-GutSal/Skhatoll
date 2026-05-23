@@ -46,7 +46,7 @@
         @verPersonajes="seccionActiva = seccionActiva === 'personajes' ? null : 'personajes'"
         @verReglas="seccionActiva = seccionActiva === 'reglas' ? null : 'reglas'"
         @iniciarVotacionLobos="iniciarVotacionLobos"
-        @cancelarPartida="cancelarPartida"
+        @cancelarPartida="mostrarCancelarModal = true"
       />
 
       <div class="mesa-wrapper-outer">
@@ -76,6 +76,41 @@
 
     <div class="footer-aldea" :class="esDia ? 'footer-dia' : 'footer-noche'"></div>
   </div>
+
+  <div
+  v-if="mostrarCancelarModal"
+  class="modal-overlay"
+  @click.self="mostrarCancelarModal = false"
+>
+  <div class="modal-confirmacion">
+    <h2>
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      Cancelar partida
+    </h2>
+
+    <p>
+      ¿Seguro que quieres cancelar la partida?
+      <br />
+      <strong>La partida terminará en empate.</strong>
+    </p>
+
+    <div class="modal-botones">
+      <button
+        class="btn-modal btn-cancelar"
+        @click="mostrarCancelarModal = false"
+      >
+        Volver
+      </button>
+
+      <button
+        class="btn-modal btn-confirmar"
+        @click="cancelarPartida"
+      >
+        Sí, cancelar
+      </button>
+    </div>
+  </div>
+</div>
 </template>
 
 <script setup>
@@ -108,6 +143,7 @@ const jugadoresYaActuadosEstaNoche = ref([])
 const eventosYaUsadosEstaNoche = ref(false)
 const votacionActiva = ref(false)
 const tipoVotacionLocal = ref(null)
+const mostrarCancelarModal = ref(false)
 
 const nombre = computed(() => store.getters['auth/nombre'])
 const codigoSala = computed(() => store.getters['sala/codigoSala'])
@@ -196,9 +232,10 @@ const cambiarFase = async (fase) => {
 }
 
 const cancelarPartida = async () => {
-  if (!confirm('¿Cancelar la partida? Se proclamará un empate.')) return
   try {
     await axiosInstance.put(`/partida/${codigoSala.value}/cancelar`)
+
+    mostrarCancelarModal.value = false
   } catch (error) {
     store.dispatch('toast/mostrar', {
       mensaje: 'Error al cancelar la partida',
@@ -887,5 +924,72 @@ onUnmounted(() => {
   font-style: italic;
   font-weight: 400;
   color: #ffffff;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+.modal-confirmacion {
+  width: min(90%, 420px);
+  background: #111;
+  border: 4px solid var(--color-rojo);
+  border-radius: 16px;
+  padding: 28px;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(0,0,0,.5);
+}
+
+.modal-confirmacion h2 {
+  color: var(--color-rojo);
+  font-family: var(--font-cinzel);
+  margin-bottom: 14px;
+}
+
+.modal-confirmacion p {
+  color: white;
+  font-family: var(--font-raleway);
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.modal-botones {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btn-modal {
+  border: none;
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.btn-cancelar {
+  background: #444;
+  color: white;
+}
+
+.btn-cancelar:hover {
+  background: #666;
+}
+
+.btn-confirmar {
+  background: var(--color-rojo);
+  color: white;
+}
+
+.btn-confirmar:hover {
+  transform: scale(0.96);
 }
 </style>

@@ -360,7 +360,6 @@ let disparoEnProgreso = false
 const manejarDisparo = async (jugador) => {
   if (disparoEnProgreso) return
   disparoEnProgreso = true
-  console.log('🔫 Cazador disparó a:', jugador.nombre)
 
   try {
     await axiosInstance.post(`/partida/${codigoSala.value}/habilidad`, {
@@ -369,11 +368,12 @@ const manejarDisparo = async (jugador) => {
     })
     store.dispatch('toast/mostrar', {
       mensaje: `¡Has eliminado a ${jugador.nombre}!`,
-      tipo: 'success',
+      tipo: 'exito',
     })
-    await cargarDatos()
+
     finalizarTurno()
   } catch (error) {
+    disparoEnProgreso = false
     store.dispatch('toast/mostrar', {
       mensaje: error.response?.data?.mensaje || 'Error al disparar',
       tipo: 'error',

@@ -7,16 +7,21 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
+
 @Configuration
 public class CorsConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
-                "http://localhost:5173",
-                System.getenv("ALLOWED_ORIGIN")
-        ));
+
+        String allowedOrigin = System.getenv("ALLOWED_ORIGIN");
+        if (allowedOrigin != null && !allowedOrigin.isBlank()) {
+            config.setAllowedOrigins(List.of("http://localhost:5173", allowedOrigin));
+        } else {
+            config.setAllowedOrigins(List.of("http://localhost:5173"));
+        }
+
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

@@ -1,6 +1,7 @@
 package com.skhatoll.backend.config;
 
 import com.skhatoll.backend.security.JwtFilter;
+import com.skhatoll.backend.security.LoginRateLimitingFilter;
 import com.skhatoll.backend.security.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -29,11 +30,17 @@ public class SecurityConfig {
     private final JwtFilter jwtFilter;
     private final UserDetailsServiceImpl userDetailsService;
 
+    @Bean
+    public LoginRateLimitingFilter loginRateLimitingFilter() {
+        return new LoginRateLimitingFilter();
+    }
+
     private static final String[] RUTAS_PUBLICAS = {
             "/auth/registro",
             "/auth/login",
             "/auth/health",
-            "/ws/**"
+            "/ws/**",
+            "/actuator/health/**"
     };
 
     @Bean
@@ -47,6 +54,7 @@ public class SecurityConfig {
                         .requestMatchers(RUTAS_PUBLICAS).permitAll()
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
+                .addFilterBefore(loginRateLimitingFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

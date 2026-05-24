@@ -4,8 +4,13 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
+const API_TARGET = process.env.VITE_API_URL || 'http://localhost:8080'
+
 export default defineConfig({
-  plugins: [vue(), vueDevTools()],
+  plugins: [
+    vue(),
+    ...(process.env.NODE_ENV === 'development' ? [vueDevTools()] : []),
+  ],
   define: {
     global: 'window',
   },
@@ -22,29 +27,29 @@ export default defineConfig({
     allowedHosts: true,
     proxy: {
       '/auth': {
-        target: 'http://localhost:8080',
+        target: API_TARGET,
         changeOrigin: true,
       },
       '/salas': {
-        target: 'http://localhost:8080',
+        target: API_TARGET,
         changeOrigin: true,
       },
       '/partida': {
-        target: 'http://localhost:8080',
+        target: API_TARGET,
         changeOrigin: true,
       },
       '/ws': {
-        target: 'http://localhost:8080',
+        target: API_TARGET,
         ws: true,
         changeOrigin: true,
       },
       '/topic': {
-        target: 'http://localhost:8080',
+        target: API_TARGET,
         ws: true,
         changeOrigin: true,
       },
       '/app': {
-        target: 'http://localhost:8080',
+        target: API_TARGET,
         ws: true,
         changeOrigin: true,
       },

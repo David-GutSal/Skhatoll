@@ -125,6 +125,8 @@ const resetear = () => {
 const resetearNoche = () => {
   resetear()
 }
+
+defineExpose({ resetear, resetearNoche })
 </script>
 
 <style scoped>

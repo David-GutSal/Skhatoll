@@ -259,6 +259,7 @@ const conectarWebSocket = () => {
   const cliente = new Client({
     webSocketFactory: () => new SockJS('/ws'),
     connectHeaders: { Authorization: `Bearer ${token}` },
+    reconnectDelay: 5000,
   })
 
   cliente.onConnect = () => {

@@ -31,6 +31,7 @@ export function useWebSocket() {
       const client = new Client({
         webSocketFactory: () => new SockJS('/ws'),
         connectHeaders: { Authorization: `Bearer ${token}` },
+        reconnectDelay: 5000,
       })
 
       client.onConnect = (frame) => {

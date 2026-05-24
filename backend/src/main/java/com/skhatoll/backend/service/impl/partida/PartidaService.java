@@ -668,7 +668,13 @@ if (sesion.getTipo() == SesionVotacion.TipoVotacion.DIA && !resultado.empate() &
 
     @Override
     public void actualizarRol(String codigoSala, Integer idUsuario, String nombreRol) {
+        Usuario solicitante = getUsuarioAutenticado();
+
         Sala sala = salaRepository.findByCodigoSala(codigoSala).orElseThrow(() -> new IllegalArgumentException(ErrorMessages.SALA_NO_ENCONTRADA));
+
+        if (sala.getNarrador() == null || !sala.getNarrador().getIdUsuario().equals(solicitante.getIdUsuario())) {
+            throw new IllegalStateException("Solo el narrador puede actualizar roles");
+        }
         
         SalaUsuario salaUsuario = salaUsuarioRepository.findBySala_IdSalaAndUsuario_IdUsuario(sala.getIdSala(), idUsuario)
             .orElseThrow(() -> new IllegalArgumentException("Jugador no encontrado en la sala"));

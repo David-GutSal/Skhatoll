@@ -76,6 +76,7 @@ const conectarWebSocket = () => {
   const cliente = new Client({
     webSocketFactory: () => new SockJS('/ws'),
     connectHeaders: { Authorization: `Bearer ${token}` },
+    reconnectDelay: 5000,
   })
 
   cliente.onConnect = () => {
@@ -123,8 +124,10 @@ cliente.subscribe(`/topic/partida/${codigoSala.value}/muerte`, (msg) => {
   stompClient.value = cliente
 }
 
-esDia.value = store.getters['sala/fase'] !== 'NOCHE'
-conectarWebSocket()
+onMounted(() => {
+  esDia.value = store.getters['sala/fase'] !== 'NOCHE'
+  conectarWebSocket()
+})
 
 onUnmounted(() => {
   if (stompClient.value) {

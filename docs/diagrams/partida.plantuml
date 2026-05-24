@@ -1,5 +1,5 @@
 @startuml
-
+set separator none
 title __PARTIDA's Class Diagram__\n
 
   namespace com.skhatoll.backend {

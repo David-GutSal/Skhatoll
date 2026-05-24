@@ -231,6 +231,12 @@ if (sesion.getTipo() == SesionVotacion.TipoVotacion.DIA && !resultado.empate() &
                         su.setMuerteConfirmada(true);
                         salaUsuarioRepository.save(su);
 
+                        if (sala.getAlcalde() != null && sala.getAlcalde().getIdUsuario().equals(su.getUsuario().getIdUsuario())) {
+                            sala.setAlcalde(null);
+                            salaRepository.save(sala);
+                            salaSocketService.notificarAlcalde(codigoSala, null);
+                        }
+
                         String nombreEliminado = su.getUsuario().getNombre();
                         String nombreRol = su.getRol() != null ? su.getRol().getNombre() : " aldeano";
                         String bando = su.getRol() != null ? su.getRol().getBando().name() : "aldea";
@@ -250,6 +256,13 @@ if (sesion.getTipo() == SesionVotacion.TipoVotacion.DIA && !resultado.empate() &
                                             pareja.setEstaVivo(false);
                                             pareja.setMuerteConfirmada(true);
                                             salaUsuarioRepository.save(pareja);
+
+                                            if (sala.getAlcalde() != null && sala.getAlcalde().getIdUsuario().equals(pareja.getUsuario().getIdUsuario())) {
+                                                sala.setAlcalde(null);
+                                                salaRepository.save(sala);
+                                                salaSocketService.notificarAlcalde(codigoSala, null);
+                                            }
+
                                             String nombrePareja = pareja.getUsuario().getNombre();
                                             String rolPareja = pareja.getRol() != null ? pareja.getRol().getNombre() : " aldeano";
                                             String bandoPareja = pareja.getRol() != null ? pareja.getRol().getBando().name() : "aldea";
@@ -271,6 +284,12 @@ if (sesion.getTipo() == SesionVotacion.TipoVotacion.DIA && !resultado.empate() &
                         su.setEstaVivo(false);
                         su.setMuerteConfirmada(false);
                         salaUsuarioRepository.save(su);
+
+                        if (sala.getAlcalde() != null && sala.getAlcalde().getIdUsuario().equals(su.getUsuario().getIdUsuario())) {
+                            sala.setAlcalde(null);
+                            salaRepository.save(sala);
+                            salaSocketService.notificarAlcalde(codigoSala, null);
+                        }
                         
                         String nombreEliminado = su.getUsuario().getNombre();
                         String nombreRol = su.getRol() != null ? su.getRol().getNombre() : " aldeano";
@@ -313,6 +332,14 @@ if (sesion.getTipo() == SesionVotacion.TipoVotacion.DIA && !resultado.empate() &
         if (!objetivoEnSala.getEstaVivo()) {
             log.warn("Usuario {} intentó votar a {} que ya esta eliminado", votante.getNombre(), objetivo.getNombre());
             throw new IllegalStateException("No puedes votar a un jugador eliminado");
+        }
+
+        if (sesion.getTipo() == SesionVotacion.TipoVotacion.LOBOS) {
+            if (salaUsuario.getRol() != null && salaUsuario.getRol().getBando() == Rol.Bando.lobo
+                    && objetivoEnSala.getRol() != null && objetivoEnSala.getRol().getBando() == Rol.Bando.lobo) {
+                log.warn("Lobo {} intentó votar a otro lobo {}", votante.getNombre(), objetivo.getNombre());
+                throw new IllegalStateException("No puedes votar a otro lobo");
+            }
         }
 
         Optional<Voto> votoExistente = votoRepository.findBySesion_IdSesionAndVotante_IdUsuario(sesion.getIdSesion(), votante.getIdUsuario());
@@ -404,7 +431,7 @@ if (sesion.getTipo() == SesionVotacion.TipoVotacion.DIA && !resultado.empate() &
         List<SalaUsuario> ninosConMentor = salaUsuarioRepository.findBySala_IdSalaAndMentor_IdUsuario(sala.getIdSala(), idUsuario);
         for (SalaUsuario nino : ninosConMentor) {
             if (ROL_NINO_SALVAJE.equals(nino.getRol().getNombre())) {
-                rolRepository.findByNombre(ROL_LOBO).ifPresent(rolLobo -> {
+                rolRepository.findByNombre(ROL_NINO_LOBO).ifPresent(rolLobo -> {
                     nino.setRol(rolLobo);
                     salaUsuarioRepository.save(nino);
 
@@ -601,7 +628,7 @@ if (sesion.getTipo() == SesionVotacion.TipoVotacion.DIA && !resultado.empate() &
             List<SalaUsuario> ninosConMentor = salaUsuarioRepository.findBySala_IdSalaAndMentor_IdUsuario(sala.getIdSala(), jugador.getIdUsuario());
             for (SalaUsuario nino : ninosConMentor) {
                 if (ROL_NINO_SALVAJE.equals(nino.getRol().getNombre())) {
-                    rolRepository.findByNombre(ROL_LOBO).ifPresent(rolLobo -> {
+                    rolRepository.findByNombre(ROL_NINO_LOBO).ifPresent(rolLobo -> {
                         nino.setRol(rolLobo);
                         salaUsuarioRepository.save(nino);
                         salaSocketService.enviarRolPrivado(nino.getUsuario().getNombre(), new SalaSocketService.RolAsignadoEvent(WS_EVENTO_ROL_CAMBIADO, rolLobo.getIdRol(), rolLobo.getNombre(), rolLobo.getDescripcion(), rolLobo.getBando().name()));

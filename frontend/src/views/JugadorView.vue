@@ -187,7 +187,7 @@ const soyNarrador = computed(() => {
 })
 
 const jugadoresVisibles = computed(() => {
-  if (!esDia.value && miRol.value && miRol.value.toLowerCase() === 'lobo') {
+  if (!esDia.value && miRol.value && (miRol.value.toLowerCase() === 'lobo' || miRol.value === 'NIÑO LOBO')) {
     return jugadores.value.filter((j) => j.nombre !== nombre.value)
   }
   return jugadores.value
@@ -252,6 +252,14 @@ const seleccionarJugador = (j) => {
       const nombrePareja = jugador1 === miNombre ? jugador2 : jugador1
       if (j.nombre === nombrePareja) return
     }
+  }
+  if (
+    tipoVotacionLocal.value === 'LOBOS' &&
+    miRol.value &&
+    (miRol.value.toLowerCase() === 'lobo' || miRol.value === 'NIÑO LOBO') &&
+    j.bando === 'lobo'
+  ) {
+    return
   }
   if (!votacionActiva.value && !esMiTurno.value && !soyElCazadorMuerto.value) return
   jugadorSeleccionado.value = j
@@ -544,7 +552,7 @@ const conectarWebSocket = () => {
       const payload = JSON.parse(msg.body)
       const tipoVotacionActual = store.getters['sala/tipoVotacion']
       if (tipoVotacionActual === 'LOBOS') {
-        if (miRol.value && miRol.value.toLowerCase() === 'lobo') {
+        if (miRol.value && (miRol.value.toLowerCase() === 'lobo' || miRol.value === 'NIÑO LOBO')) {
           store.dispatch('sala/actualizarVotos', payload.votos)
         }
         return
@@ -558,10 +566,12 @@ const conectarWebSocket = () => {
         store.dispatch('sala/designarAlcalde', payload.nombreAlcalde)
         alcaldeNombre.value = payload.nombreAlcalde
         store.dispatch('sala/reiniciarVotos')
-        store.dispatch('toast/mostrar', {
-          mensaje: `¡${payload.nombreAlcalde} ha sido elegido alcalde!`,
-          tipo: 'alcaldia',
-        })
+        if (payload.nombreAlcalde) {
+          store.dispatch('toast/mostrar', {
+            mensaje: `¡${payload.nombreAlcalde} ha sido elegido alcalde!`,
+            tipo: 'alcaldia',
+          })
+        }
       }
     })
 
@@ -666,7 +676,8 @@ const conectarWebSocket = () => {
       }
 
       if (payload.tipo === 'TURNO_LOBOS') {
-        const soyLobo = payload.nombresLobos?.includes(nombre.value)
+        const esLobo = miRol.value && (miRol.value.toLowerCase() === 'lobo' || miRol.value === 'NIÑO LOBO')
+        const soyLobo = esLobo || payload.nombresLobos?.includes(nombre.value)
         esMiTurno.value = soyLobo
 
         store.dispatch('toast/mostrar', {

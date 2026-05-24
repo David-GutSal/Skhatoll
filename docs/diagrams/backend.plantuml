@@ -26,7 +26,23 @@ title __BACKEND's Class Diagram__\n
 
   namespace com.skhatoll.backend {
     namespace config {
+      class com.skhatoll.backend.config.SpaWebConfig {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace config {
       class com.skhatoll.backend.config.WebSocketConfig {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace controller {
+      class com.skhatoll.backend.controller.ActualizarRolRequest {
       }
     }
   }
@@ -138,6 +154,14 @@ title __BACKEND's Class Diagram__\n
 
   namespace com.skhatoll.backend {
     namespace dto.partida {
+      class com.skhatoll.backend.dto.partida.RolCambiadoDto {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.partida {
       class com.skhatoll.backend.dto.partida.SesionActivaDto {
       }
     }
@@ -187,6 +211,14 @@ title __BACKEND's Class Diagram__\n
   namespace com.skhatoll.backend {
     namespace dto.sala {
       class com.skhatoll.backend.dto.sala.JugadorRolDto {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.sala {
+      class com.skhatoll.backend.dto.sala.MiRolDto {
       }
     }
   }
@@ -362,6 +394,14 @@ title __BACKEND's Class Diagram__\n
 
   namespace com.skhatoll.backend {
     namespace security {
+      class com.skhatoll.backend.security.LoginRateLimitingFilter {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace security {
       class com.skhatoll.backend.security.UserDetailsServiceImpl {
       }
     }
@@ -379,6 +419,14 @@ title __BACKEND's Class Diagram__\n
   namespace com.skhatoll.backend {
     namespace service.impl.jugador {
       class com.skhatoll.backend.service.impl.jugador.JugadorService {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace service.impl.partida {
+      class com.skhatoll.backend.service.impl.partida.HabilidadService {
       }
     }
   }
@@ -434,6 +482,14 @@ title __BACKEND's Class Diagram__\n
 
   namespace com.skhatoll.backend {
     namespace service.interfaces.partida {
+      interface com.skhatoll.backend.service.interfaces.partida.IHabilidadService {
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace service.interfaces.partida {
       interface com.skhatoll.backend.service.interfaces.partida.IPartidaService {
       }
     }
@@ -466,10 +522,15 @@ title __BACKEND's Class Diagram__\n
 
   com.skhatoll.backend.config.SecurityConfig o-- com.skhatoll.backend.security.JwtFilter : jwtFilter
   com.skhatoll.backend.config.SecurityConfig o-- com.skhatoll.backend.security.UserDetailsServiceImpl : userDetailsService
+  com.skhatoll.backend.config.SpaWebConfig .up.|> org.springframework.web.servlet.config.annotation.WebMvcConfigurer
   com.skhatoll.backend.config.WebSocketConfig .up.|> org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer
   com.skhatoll.backend.config.WebSocketConfig o-- com.skhatoll.backend.security.JwtUtil : jwtUtil
+  com.skhatoll.backend.config.WebSocketConfig o-- com.skhatoll.backend.repository.SalaRepository : salaRepository
+  com.skhatoll.backend.config.WebSocketConfig o-- com.skhatoll.backend.repository.SalaUsuarioRepository : salaUsuarioRepository
   com.skhatoll.backend.config.WebSocketConfig o-- com.skhatoll.backend.security.UserDetailsServiceImpl : userDetailsService
+  com.skhatoll.backend.config.WebSocketConfig o-- com.skhatoll.backend.repository.UsuarioRepository : usuarioRepository
   com.skhatoll.backend.controller.AuthController o-- com.skhatoll.backend.service.interfaces.auth.IAuthService : authService
+  com.skhatoll.backend.controller.PartidaController o-- com.skhatoll.backend.service.interfaces.partida.IHabilidadService : habilidadService
   com.skhatoll.backend.controller.PartidaController o-- com.skhatoll.backend.service.interfaces.partida.IPartidaService : partidaService
   com.skhatoll.backend.controller.SalaController o-- com.skhatoll.backend.service.interfaces.jugador.IJugadorService : jugadorService
   com.skhatoll.backend.controller.SalaController o-- com.skhatoll.backend.service.interfaces.sala.ISalaService : salaService
@@ -481,20 +542,24 @@ title __BACKEND's Class Diagram__\n
   com.skhatoll.backend.entities.HabilidadSala o-- com.skhatoll.backend.entities.SalaUsuario : idSalaUsuario
   com.skhatoll.backend.entities.Rol o-- com.skhatoll.backend.entities.Rol.Bando : bando
   com.skhatoll.backend.entities.Sala o-- com.skhatoll.backend.entities.Usuario : alcalde
+  com.skhatoll.backend.entities.Sala o-- com.skhatoll.backend.entities.Usuario : creador
   com.skhatoll.backend.entities.Sala o-- com.skhatoll.backend.entities.Sala.EstadoDia : estadoDia
   com.skhatoll.backend.entities.Sala o-- com.skhatoll.backend.entities.Sala.EstadoSala : estadoSala
   com.skhatoll.backend.entities.Sala o-- com.skhatoll.backend.entities.Usuario : narrador
+  com.skhatoll.backend.entities.SalaUsuario o-- com.skhatoll.backend.entities.Usuario : mentor
   com.skhatoll.backend.entities.SalaUsuario o-- com.skhatoll.backend.entities.Rol : rol
   com.skhatoll.backend.entities.SalaUsuario o-- com.skhatoll.backend.entities.Sala : sala
   com.skhatoll.backend.entities.SalaUsuario o-- com.skhatoll.backend.entities.Usuario : usuario
   com.skhatoll.backend.entities.SesionVotacion o-- com.skhatoll.backend.entities.Sala : sala
   com.skhatoll.backend.entities.SesionVotacion o-- com.skhatoll.backend.entities.SesionVotacion.TipoVotacion : tipo
+  com.skhatoll.backend.entities.Usuario o-- com.skhatoll.backend.entities.Usuario.RolUsuario : rol
   com.skhatoll.backend.entities.Voto o-- com.skhatoll.backend.entities.Usuario : objetivo
   com.skhatoll.backend.entities.Voto o-- com.skhatoll.backend.entities.SesionVotacion : sesion
   com.skhatoll.backend.entities.Voto o-- com.skhatoll.backend.entities.Usuario : votante
   com.skhatoll.backend.security.JwtFilter -up-|> org.springframework.web.filter.OncePerRequestFilter
   com.skhatoll.backend.security.JwtFilter o-- com.skhatoll.backend.security.JwtUtil : jwtUtil
   com.skhatoll.backend.security.JwtFilter o-- com.skhatoll.backend.security.UserDetailsServiceImpl : userDetailsService
+  com.skhatoll.backend.security.LoginRateLimitingFilter -up-|> org.springframework.web.filter.OncePerRequestFilter
   com.skhatoll.backend.security.UserDetailsServiceImpl .up.|> org.springframework.security.core.userdetails.UserDetailsService
   com.skhatoll.backend.security.UserDetailsServiceImpl o-- com.skhatoll.backend.repository.UsuarioRepository : usuarioRepository
   com.skhatoll.backend.service.impl.auth.AuthService .up.|> com.skhatoll.backend.service.interfaces.auth.IAuthService
@@ -503,9 +568,17 @@ title __BACKEND's Class Diagram__\n
   com.skhatoll.backend.service.impl.jugador.JugadorService .up.|> com.skhatoll.backend.service.interfaces.jugador.IJugadorService
   com.skhatoll.backend.service.impl.jugador.JugadorService o-- com.skhatoll.backend.repository.SalaRepository : salaRepository
   com.skhatoll.backend.service.impl.jugador.JugadorService o-- com.skhatoll.backend.repository.SalaUsuarioRepository : salaUsuarioRepository
+  com.skhatoll.backend.service.impl.partida.HabilidadService .up.|> com.skhatoll.backend.service.interfaces.partida.IHabilidadService
+  com.skhatoll.backend.service.impl.partida.HabilidadService o-- com.skhatoll.backend.repository.EnamoradosRepository : enamoradosRepository
+  com.skhatoll.backend.service.impl.partida.HabilidadService o-- com.skhatoll.backend.repository.HabilidadSalaRepository : habilidadSalaRepository
+  com.skhatoll.backend.service.impl.partida.HabilidadService o-- com.skhatoll.backend.service.impl.partida.PartidaSocketService : partidaSocketService
+  com.skhatoll.backend.service.impl.partida.HabilidadService o-- com.skhatoll.backend.repository.SalaRepository : salaRepository
+  com.skhatoll.backend.service.impl.partida.HabilidadService o-- com.skhatoll.backend.repository.SalaUsuarioRepository : salaUsuarioRepository
+  com.skhatoll.backend.service.impl.partida.HabilidadService o-- com.skhatoll.backend.repository.SesionVotacionRepository : sesionVotacionRepository
+  com.skhatoll.backend.service.impl.partida.HabilidadService o-- com.skhatoll.backend.repository.UsuarioRepository : usuarioRepository
   com.skhatoll.backend.service.impl.partida.PartidaService .up.|> com.skhatoll.backend.service.interfaces.partida.IPartidaService
   com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.repository.EnamoradosRepository : enamoradosRepository
-  com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.repository.HabilidadSalaRepository : habilidadSalaRepository
+  com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.service.impl.partida.HabilidadService : habilidadService
   com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.service.interfaces.jugador.IJugadorService : jugadorService
   com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.service.impl.partida.PartidaSocketService : partidaSocketService
   com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.repository.RolRepository : rolRepository
@@ -516,6 +589,7 @@ title __BACKEND's Class Diagram__\n
   com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.repository.UsuarioRepository : usuarioRepository
   com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.repository.VotoRepository : votoRepository
   com.skhatoll.backend.service.impl.sala.SalaService .up.|> com.skhatoll.backend.service.interfaces.sala.ISalaService
+  com.skhatoll.backend.service.impl.sala.SalaService o-- com.skhatoll.backend.repository.HabilidadSalaRepository : habilidadSalaRepository
   com.skhatoll.backend.service.impl.sala.SalaService o-- com.skhatoll.backend.service.interfaces.jugador.IJugadorService : jugadorService
   com.skhatoll.backend.service.impl.sala.SalaService o-- com.skhatoll.backend.repository.RolRepository : rolRepository
   com.skhatoll.backend.service.impl.sala.SalaService o-- com.skhatoll.backend.repository.SalaRepository : salaRepository

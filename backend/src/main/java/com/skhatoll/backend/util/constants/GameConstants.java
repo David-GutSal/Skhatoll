@@ -16,6 +16,7 @@ public final class GameConstants {
     public static final String ROL_CAZADOR       = "Cazador";
     public static final String ROL_BRUJA         = "Bruja";
     public static final String ROL_NINO_SALVAJE  = "Niño salvaje";
+    public static final String ROL_NINO_LOBO     = "NIÑO LOBO";
     public static final String ROL_CUPIDO        = "Cupido";
     public static final String ROL_NINA          = "Niña";
     public static final String ROL_SIN_ROL          = "Sin rol";

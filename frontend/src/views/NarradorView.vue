@@ -295,10 +295,12 @@ const conectarWebSocket = () => {
       if (payload.tipo === 'ALCALDE_ELEGIDO') {
         store.dispatch('sala/designarAlcalde', payload.nombreAlcalde)
         store.dispatch('sala/reiniciarVotos')
-        store.dispatch('toast/mostrar', {
-          mensaje: `¡${payload.nombreAlcalde} ha sido elegido alcalde!`,
-          tipo: 'alcaldia',
-        })
+        if (payload.nombreAlcalde) {
+          store.dispatch('toast/mostrar', {
+            mensaje: `¡${payload.nombreAlcalde} ha sido elegido alcalde!`,
+            tipo: 'alcaldia',
+          })
+        }
       }
     })
 
@@ -570,6 +572,13 @@ const iniciarEventos = () => {
 
 const activarTurnoJugador = async (jugador) => {
   if (!modoEventos.value) return
+
+  const esAldeano = (jugador.nombreRol || '').toLowerCase() === 'aldeano'
+  if (esAldeano) {
+    avisoSesion.value = 'El aldeano no tiene habilidades especiales'
+    setTimeout(() => { avisoSesion.value = null }, 3000)
+    return
+  }
 
   const esCazador = (jugador.nombreRol || '').toLowerCase() === 'cazador'
   const esBrujaSemimuerta = (jugador.nombreRol || '').toLowerCase() === 'bruja' && !jugador.estaVivo && !jugador.muerteConfirmada

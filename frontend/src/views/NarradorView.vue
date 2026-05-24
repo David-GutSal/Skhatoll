@@ -156,7 +156,7 @@ const enamorados = computed(() => store.getters['sala/enamorados'])
 const cupidoUsado = computed(() => store.getters['sala/cupidoUsado'])
 const semiMuertos = computed(() => store.getters['sala/semiMuertos'])
 
-const hayAlcalde = computed(() => jugadoresConRol.value.some((j) => j.alcalde))
+const hayAlcalde = computed(() => jugadoresConRol.value.some((j) => j.alcalde && j.estaVivo))
 
 const jugadoresConRolConEnamorados = computed(() => {
   if (!enamorados.value) return jugadoresConRol.value

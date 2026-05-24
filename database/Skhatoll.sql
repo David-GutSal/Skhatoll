@@ -9,7 +9,8 @@ CREATE TABLE usuarios (
     id_usuario   INT AUTO_INCREMENT PRIMARY KEY,
     nombre       VARCHAR(50)  NOT NULL UNIQUE,
     codigo_uuid  VARCHAR(36)  NOT NULL UNIQUE,
-    password     VARCHAR(255) NOT NULL
+    password     VARCHAR(255) NOT NULL,
+    rol          ENUM('NARRADOR', 'JUGADOR')
 );
 
 -- ============================================================
@@ -28,6 +29,8 @@ CREATE TABLE roles (
 CREATE TABLE salas (
     id_sala        INT AUTO_INCREMENT PRIMARY KEY,
     id_narrador    INT          NOT NULL,
+    id_creador     INT          NOT NULL,
+    id_alcalde     INT,
     codigo_sala    VARCHAR(10)  NOT NULL UNIQUE,
     estado_sala    ENUM('CREADA', 'INICIADA', 'CERRADA') DEFAULT 'CREADA',
     estado_dia     ENUM('DIA', 'NOCHE')                 DEFAULT 'DIA',
@@ -36,7 +39,9 @@ CREATE TABLE salas (
     max_jugadores  INT          DEFAULT 28,
     fecha_creacion TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (id_narrador) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
+    FOREIGN KEY (id_narrador) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+    FOREIGN KEY (id_creador)  REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+    FOREIGN KEY (id_alcalde)  REFERENCES usuarios(id_usuario) ON DELETE SET NULL
 );
 
 -- ============================================================
@@ -47,6 +52,7 @@ CREATE TABLE sala_usuarios (
     id_sala          INT NOT NULL,
     id_usuario       INT NOT NULL,
     id_rol           INT,
+    id_modelo        INT,
     esta_vivo        BOOLEAN DEFAULT TRUE,
     muerte_confirmada BOOLEAN DEFAULT FALSE,
 
@@ -54,7 +60,8 @@ CREATE TABLE sala_usuarios (
 
     FOREIGN KEY (id_sala)    REFERENCES salas(id_sala)       ON DELETE CASCADE,
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
-    FOREIGN KEY (id_rol)     REFERENCES roles(id_rol)        ON DELETE SET NULL
+    FOREIGN KEY (id_rol)     REFERENCES roles(id_rol)        ON DELETE SET NULL,
+    FOREIGN KEY (id_modelo)  REFERENCES usuarios(id_usuario) ON DELETE SET NULL
 );
 
 -- ============================================================
@@ -95,7 +102,7 @@ CREATE TABLE enamorados (
 CREATE TABLE sesiones_votacion (
     id_sesion    INT AUTO_INCREMENT PRIMARY KEY,
     id_sala      INT NOT NULL,
-    tipo         ENUM('DIA', 'LOBOS', 'HABILIDAD') NOT NULL,
+    tipo         ENUM('DIA', 'LOBOS', 'HABILIDAD', 'ALCALDE') NOT NULL,
     ronda        INT NOT NULL,
     abierta      BOOLEAN   DEFAULT TRUE,
     fecha_inicio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

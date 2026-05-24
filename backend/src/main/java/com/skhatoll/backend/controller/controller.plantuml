@@ -4,9 +4,22 @@ title __CONTROLLER's Class Diagram__\n
 
   namespace com.skhatoll.backend {
     namespace controller {
+      class com.skhatoll.backend.controller.ActualizarRolRequest {
+          - nombreRol : String
+          + nombreRol()
+          ~ ActualizarRolRequest()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace controller {
       class com.skhatoll.backend.controller.AuthController {
           + AuthController()
+          + health()
           + login()
+          + loginGet()
           + registro()
       }
     }
@@ -18,12 +31,15 @@ title __CONTROLLER's Class Diagram__\n
       class com.skhatoll.backend.controller.PartidaController {
           + PartidaController()
           + abrirVotacion()
+          + actualizarRol()
           + cambiarFase()
+          + cancelarPartida()
           + cerrarPartida()
           + cerrarVotacion()
-          + confirmarMuerte()
           + getEstadoPartida()
+          + getNombresLobos()
           + getSesionActiva()
+          + rendirse()
           + usarHabilidad()
           + votar()
       }
@@ -39,6 +55,7 @@ title __CONTROLLER's Class Diagram__\n
           + crearSala()
           + getJugadores()
           + getJugadoresConRol()
+          + getMiRol()
           + iniciarPartida()
           + salirDeSala()
           + unirse()
@@ -48,6 +65,7 @@ title __CONTROLLER's Class Diagram__\n
   
 
   com.skhatoll.backend.controller.AuthController o-- com.skhatoll.backend.service.interfaces.auth.IAuthService : authService
+  com.skhatoll.backend.controller.PartidaController o-- com.skhatoll.backend.service.interfaces.partida.IHabilidadService : habilidadService
   com.skhatoll.backend.controller.PartidaController o-- com.skhatoll.backend.service.interfaces.partida.IPartidaService : partidaService
   com.skhatoll.backend.controller.SalaController o-- com.skhatoll.backend.service.interfaces.jugador.IJugadorService : jugadorService
   com.skhatoll.backend.controller.SalaController o-- com.skhatoll.backend.service.interfaces.sala.ISalaService : salaService

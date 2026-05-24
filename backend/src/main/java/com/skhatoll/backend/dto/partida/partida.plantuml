@@ -6,12 +6,7 @@ title __PARTIDA's Class Diagram__\n
     namespace dto.partida {
       class com.skhatoll.backend.dto.partida.AbrirVotacionRequest {
           + AbrirVotacionRequest()
-          + equals()
-          + getTipo()
-          + hashCode()
-          + setTipo()
-          + toString()
-          # canEqual()
+          + tipo()
       }
     }
   }
@@ -50,14 +45,8 @@ title __PARTIDA's Class Diagram__\n
           - bandoGanador : String
           - mensaje : String
           + FinPartidaDto()
-          + equals()
-          + getBandoGanador()
-          + getMensaje()
-          + hashCode()
-          + setBandoGanador()
-          + setMensaje()
-          + toString()
-          # canEqual()
+          + bandoGanador()
+          + mensaje()
       }
     }
   }
@@ -69,14 +58,8 @@ title __PARTIDA's Class Diagram__\n
           - nombreHabilidad : String
           - objetivos : List<Integer>
           + HabilidadRequest()
-          + equals()
-          + getNombreHabilidad()
-          + getObjetivos()
-          + hashCode()
-          + setNombreHabilidad()
-          + setObjetivos()
-          + toString()
-          # canEqual()
+          + nombreHabilidad()
+          + objetivos()
       }
     }
   }
@@ -90,18 +73,10 @@ title __PARTIDA's Class Diagram__\n
           - objetivos : List<String>
           - resultado : String
           + HabilidadResultadoDto()
-          + equals()
-          + getDetalle()
-          + getNombreHabilidad()
-          + getObjetivos()
-          + getResultado()
-          + hashCode()
-          + setDetalle()
-          + setNombreHabilidad()
-          + setObjetivos()
-          + setResultado()
-          + toString()
-          # canEqual()
+          + detalle()
+          + nombreHabilidad()
+          + objetivos()
+          + resultado()
       }
     }
   }
@@ -110,20 +85,22 @@ title __PARTIDA's Class Diagram__\n
   namespace com.skhatoll.backend {
     namespace dto.partida {
       class com.skhatoll.backend.dto.partida.MuerteConfirmadaDto {
+          {static} + TIPO_CONFIRMAR : String
+          {static} + TIPO_LINCHAMIENTO : String
+          {static} + TIPO_MUERTE : String
+          {static} + TIPO_RENDIRSE : String
+          {static} + TIPO_REVIVIR : String
           - bando : String
+          - muerteConfirmada : boolean
           - nombreJugador : String
           - nombreRol : String
+          - tipo : String
           + MuerteConfirmadaDto()
-          + equals()
-          + getBando()
-          + getNombreJugador()
-          + getNombreRol()
-          + hashCode()
-          + setBando()
-          + setNombreJugador()
-          + setNombreRol()
-          + toString()
-          # canEqual()
+          + bando()
+          + muerteConfirmada()
+          + nombreJugador()
+          + nombreRol()
+          + tipo()
       }
     }
   }
@@ -138,20 +115,28 @@ title __PARTIDA's Class Diagram__\n
           - nombreGanador : String
           - tipo : String
           + ResultadoVotacionDto()
-          + equals()
-          + getIdSesion()
-          + getNombreEliminado()
-          + getNombreGanador()
-          + getTipo()
-          + hashCode()
-          + isEmpate()
-          + setEmpate()
-          + setIdSesion()
-          + setNombreEliminado()
-          + setNombreGanador()
-          + setTipo()
-          + toString()
-          # canEqual()
+          + empate()
+          + idSesion()
+          + nombreEliminado()
+          + nombreGanador()
+          + tipo()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.partida {
+      class com.skhatoll.backend.dto.partida.RolCambiadoDto {
+          - bando : String
+          - nombreJugador : String
+          - nombreRol : String
+          - tipo : String
+          + RolCambiadoDto()
+          + bando()
+          + nombreJugador()
+          + nombreRol()
+          + tipo()
       }
     }
   }
@@ -165,18 +150,10 @@ title __PARTIDA's Class Diagram__\n
           - ronda : Integer
           - tipo : String
           + SesionActivaDto()
-          + equals()
-          + getFechaInicio()
-          + getIdSesion()
-          + getRonda()
-          + getTipo()
-          + hashCode()
-          + setFechaInicio()
-          + setIdSesion()
-          + setRonda()
-          + setTipo()
-          + toString()
-          # canEqual()
+          + fechaInicio()
+          + idSesion()
+          + ronda()
+          + tipo()
       }
     }
   }
@@ -187,12 +164,7 @@ title __PARTIDA's Class Diagram__\n
       class com.skhatoll.backend.dto.partida.VotarRequest {
           - idObjetivo : Integer
           + VotarRequest()
-          + equals()
-          + getIdObjetivo()
-          + hashCode()
-          + setIdObjetivo()
-          + toString()
-          # canEqual()
+          + idObjetivo()
       }
     }
   }
@@ -204,14 +176,8 @@ title __PARTIDA's Class Diagram__\n
           - nombreObjetivo : String
           - nombreVotante : String
           + VotoDto()
-          + equals()
-          + getNombreObjetivo()
-          + getNombreVotante()
-          + hashCode()
-          + setNombreObjetivo()
-          + setNombreVotante()
-          + toString()
-          # canEqual()
+          + nombreObjetivo()
+          + nombreVotante()
       }
     }
   }

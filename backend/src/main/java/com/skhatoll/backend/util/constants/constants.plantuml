@@ -25,6 +25,7 @@ title __CONSTANTS's Class Diagram__\n
     namespace util.constants {
       class com.skhatoll.backend.util.constants.GameConstants {
           {static} + BANDO_ALDEA : String
+          {static} + BANDO_ENAMORADOS : String
           {static} + BANDO_LOBO : String
           {static} + HAB_DISPARO : String
           {static} + HAB_ESPIAR : String
@@ -67,6 +68,7 @@ title __CONSTANTS's Class Diagram__\n
           {static} + WS_QUEUE_ROL : String
           {static} + WS_SALA : String
           {static} + WS_SALA_INICIO : String
+          {static} + WS_TURNO : String
           {static} + WS_VOTACION : String
           {static} + WS_VOTOS : String
           - GameConstants()

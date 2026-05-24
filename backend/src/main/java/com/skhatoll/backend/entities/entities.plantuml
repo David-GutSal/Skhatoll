@@ -1,5 +1,4 @@
 @startuml
-set separator none
 
 title __ENTITIES's Class Diagram__\n
 
@@ -37,7 +36,7 @@ title __ENTITIES's Class Diagram__\n
           + toString()
           + usuario1()
           + usuario2()
-          ~ enamoradosBuilder()
+          ~ EnamoradosBuilder()
       }
     }
   }
@@ -159,6 +158,7 @@ title __ENTITIES's Class Diagram__\n
           + equals()
           + getAlcalde()
           + getCodigoSala()
+          + getCreador()
           + getEstadoDia()
           + getEstadoSala()
           + getFechaCreacion()
@@ -170,6 +170,7 @@ title __ENTITIES's Class Diagram__\n
           + hashCode()
           + setAlcalde()
           + setCodigoSala()
+          + setCreador()
           + setEstadoDia()
           + setEstadoSala()
           + setFechaCreacion()
@@ -230,6 +231,7 @@ title __ENTITIES's Class Diagram__\n
           + alcalde()
           + build()
           + codigoSala()
+          + creador()
           + estadoDia()
           + estadoSala()
           + fechaCreacion()
@@ -248,8 +250,8 @@ title __ENTITIES's Class Diagram__\n
   namespace com.skhatoll.backend {
     namespace entities {
       class com.skhatoll.backend.entities.SalaUsuario {
-          - IdModelo : Integer
           - estaVivo : Boolean
+          - idModelo : Integer
           - idSalaUsuario : Integer
           - muerteConfirmada : Boolean
           + SalaUsuario()
@@ -259,6 +261,7 @@ title __ENTITIES's Class Diagram__\n
           + getEstaVivo()
           + getIdModelo()
           + getIdSalaUsuario()
+          + getMentor()
           + getMuerteConfirmada()
           + getRol()
           + getSala()
@@ -267,6 +270,7 @@ title __ENTITIES's Class Diagram__\n
           + setEstaVivo()
           + setIdModelo()
           + setIdSalaUsuario()
+          + setMentor()
           + setMuerteConfirmada()
           + setRol()
           + setSala()
@@ -283,16 +287,17 @@ title __ENTITIES's Class Diagram__\n
   namespace com.skhatoll.backend {
     namespace entities {
       class com.skhatoll.backend.entities.SalaUsuario.SalaUsuarioBuilder {
-          - IdModelo : Integer
           - estaVivo$set : boolean
           - estaVivo$value : Boolean
+          - idModelo : Integer
           - idSalaUsuario : Integer
           - muerteConfirmada$set : boolean
           - muerteConfirmada$value : Boolean
-          + IdModelo()
           + build()
           + estaVivo()
+          + idModelo()
           + idSalaUsuario()
+          + mentor()
           + muerteConfirmada()
           + rol()
           + sala()
@@ -392,13 +397,25 @@ title __ENTITIES's Class Diagram__\n
           + getIdUsuario()
           + getNombre()
           + getPassword()
+          + getRol()
           + hashCode()
           + setCodigoUuid()
           + setIdUsuario()
           + setNombre()
           + setPassword()
+          + setRol()
           + toString()
           # canEqual()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace entities {
+      enum RolUsuario {
+        JUGADOR
+        NARRADOR
       }
     }
   }
@@ -416,6 +433,7 @@ title __ENTITIES's Class Diagram__\n
           + idUsuario()
           + nombre()
           + password()
+          + rol()
           + toString()
           ~ UsuarioBuilder()
       }
@@ -485,6 +503,7 @@ title __ENTITIES's Class Diagram__\n
   com.skhatoll.backend.entities.Rol +-down- com.skhatoll.backend.entities.Rol.RolBuilder
   com.skhatoll.backend.entities.Rol.RolBuilder o-- com.skhatoll.backend.entities.Rol.Bando : bando
   com.skhatoll.backend.entities.Sala o-- com.skhatoll.backend.entities.Usuario : alcalde
+  com.skhatoll.backend.entities.Sala o-- com.skhatoll.backend.entities.Usuario : creador
   com.skhatoll.backend.entities.Sala o-- com.skhatoll.backend.entities.Sala.EstadoDia : estadoDia
   com.skhatoll.backend.entities.Sala o-- com.skhatoll.backend.entities.Sala.EstadoSala : estadoSala
   com.skhatoll.backend.entities.Sala o-- com.skhatoll.backend.entities.Usuario : narrador
@@ -492,13 +511,16 @@ title __ENTITIES's Class Diagram__\n
   com.skhatoll.backend.entities.Sala +-down- com.skhatoll.backend.entities.Sala.EstadoSala
   com.skhatoll.backend.entities.Sala +-down- com.skhatoll.backend.entities.Sala.SalaBuilder
   com.skhatoll.backend.entities.Sala.SalaBuilder o-- com.skhatoll.backend.entities.Usuario : alcalde
+  com.skhatoll.backend.entities.Sala.SalaBuilder o-- com.skhatoll.backend.entities.Usuario : creador
   com.skhatoll.backend.entities.Sala.SalaBuilder o-- com.skhatoll.backend.entities.Sala.EstadoDia : estadoDia$value
   com.skhatoll.backend.entities.Sala.SalaBuilder o-- com.skhatoll.backend.entities.Sala.EstadoSala : estadoSala$value
   com.skhatoll.backend.entities.Sala.SalaBuilder o-- com.skhatoll.backend.entities.Usuario : narrador
+  com.skhatoll.backend.entities.SalaUsuario o-- com.skhatoll.backend.entities.Usuario : mentor
   com.skhatoll.backend.entities.SalaUsuario o-- com.skhatoll.backend.entities.Rol : rol
   com.skhatoll.backend.entities.SalaUsuario o-- com.skhatoll.backend.entities.Sala : sala
   com.skhatoll.backend.entities.SalaUsuario o-- com.skhatoll.backend.entities.Usuario : usuario
   com.skhatoll.backend.entities.SalaUsuario +-down- com.skhatoll.backend.entities.SalaUsuario.SalaUsuarioBuilder
+  com.skhatoll.backend.entities.SalaUsuario.SalaUsuarioBuilder o-- com.skhatoll.backend.entities.Usuario : mentor
   com.skhatoll.backend.entities.SalaUsuario.SalaUsuarioBuilder o-- com.skhatoll.backend.entities.Rol : rol
   com.skhatoll.backend.entities.SalaUsuario.SalaUsuarioBuilder o-- com.skhatoll.backend.entities.Sala : sala
   com.skhatoll.backend.entities.SalaUsuario.SalaUsuarioBuilder o-- com.skhatoll.backend.entities.Usuario : usuario
@@ -508,7 +530,10 @@ title __ENTITIES's Class Diagram__\n
   com.skhatoll.backend.entities.SesionVotacion +-down- com.skhatoll.backend.entities.SesionVotacion.TipoVotacion
   com.skhatoll.backend.entities.SesionVotacion.SesionVotacionBuilder o-- com.skhatoll.backend.entities.Sala : sala
   com.skhatoll.backend.entities.SesionVotacion.SesionVotacionBuilder o-- com.skhatoll.backend.entities.SesionVotacion.TipoVotacion : tipo
+  com.skhatoll.backend.entities.Usuario o-- com.skhatoll.backend.entities.Usuario.RolUsuario : rol
+  com.skhatoll.backend.entities.Usuario +-down- com.skhatoll.backend.entities.Usuario.RolUsuario
   com.skhatoll.backend.entities.Usuario +-down- com.skhatoll.backend.entities.Usuario.UsuarioBuilder
+  com.skhatoll.backend.entities.Usuario.UsuarioBuilder o-- com.skhatoll.backend.entities.Usuario.RolUsuario : rol
   com.skhatoll.backend.entities.Voto o-- com.skhatoll.backend.entities.Usuario : objetivo
   com.skhatoll.backend.entities.Voto o-- com.skhatoll.backend.entities.SesionVotacion : sesion
   com.skhatoll.backend.entities.Voto o-- com.skhatoll.backend.entities.Usuario : votante

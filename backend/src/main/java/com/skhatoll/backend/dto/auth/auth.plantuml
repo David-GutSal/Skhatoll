@@ -30,14 +30,8 @@ title __AUTH's Class Diagram__\n
           - nombre : String
           - password : String
           + LoginRequest()
-          + equals()
-          + getNombre()
-          + getPassword()
-          + hashCode()
-          + setNombre()
-          + setPassword()
-          + toString()
-          # canEqual()
+          + nombre()
+          + password()
       }
     }
   }
@@ -49,14 +43,8 @@ title __AUTH's Class Diagram__\n
           - nombre : String
           - password : String
           + RegistroRequest()
-          + equals()
-          + getNombre()
-          + getPassword()
-          + hashCode()
-          + setNombre()
-          + setPassword()
-          + toString()
-          # canEqual()
+          + nombre()
+          + password()
       }
     }
   }

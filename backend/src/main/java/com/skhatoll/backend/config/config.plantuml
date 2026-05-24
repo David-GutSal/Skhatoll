@@ -18,6 +18,7 @@ title __CONFIG's Class Diagram__\n
           + SecurityConfig()
           + authenticationManager()
           + authenticationProvider()
+          + loginRateLimitingFilter()
           + passwordEncoder()
           + securityFilterChain()
       }
@@ -27,7 +28,18 @@ title __CONFIG's Class Diagram__\n
 
   namespace com.skhatoll.backend {
     namespace config {
+      class com.skhatoll.backend.config.SpaWebConfig {
+          + addViewControllers()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace config {
       class com.skhatoll.backend.config.WebSocketConfig {
+          {static} - SALA_CODE_PATTERN : Pattern
+          {static} - log : Logger
           + WebSocketConfig()
           + configureClientInboundChannel()
           + configureMessageBroker()
@@ -39,9 +51,13 @@ title __CONFIG's Class Diagram__\n
 
   com.skhatoll.backend.config.SecurityConfig o-- com.skhatoll.backend.security.JwtFilter : jwtFilter
   com.skhatoll.backend.config.SecurityConfig o-- com.skhatoll.backend.security.UserDetailsServiceImpl : userDetailsService
+  com.skhatoll.backend.config.SpaWebConfig .up.|> org.springframework.web.servlet.config.annotation.WebMvcConfigurer
   com.skhatoll.backend.config.WebSocketConfig .up.|> org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer
   com.skhatoll.backend.config.WebSocketConfig o-- com.skhatoll.backend.security.JwtUtil : jwtUtil
+  com.skhatoll.backend.config.WebSocketConfig o-- com.skhatoll.backend.repository.SalaRepository : salaRepository
+  com.skhatoll.backend.config.WebSocketConfig o-- com.skhatoll.backend.repository.SalaUsuarioRepository : salaUsuarioRepository
   com.skhatoll.backend.config.WebSocketConfig o-- com.skhatoll.backend.security.UserDetailsServiceImpl : userDetailsService
+  com.skhatoll.backend.config.WebSocketConfig o-- com.skhatoll.backend.repository.UsuarioRepository : usuarioRepository
 
 
 right footer

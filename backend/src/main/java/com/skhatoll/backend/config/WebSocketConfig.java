@@ -43,12 +43,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         String allowedOrigin = System.getenv("ALLOWED_ORIGIN");
-        if (allowedOrigin == null || allowedOrigin.isBlank()) {
-            allowedOrigin = "http://localhost:5173";
+        if (allowedOrigin != null && !allowedOrigin.isBlank()) {
+            registry.addEndpoint("/ws")
+                    .setAllowedOriginPatterns("http://localhost:5173", allowedOrigin)
+                    .withSockJS();
+        } else {
+            registry.addEndpoint("/ws")
+                    .setAllowedOriginPatterns("http://localhost:5173")
+                    .withSockJS();
         }
-        registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns(allowedOrigin)
-                .withSockJS();
     }
 
     @Override

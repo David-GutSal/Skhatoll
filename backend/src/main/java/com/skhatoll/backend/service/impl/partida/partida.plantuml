@@ -1,32 +1,49 @@
 @startuml
-set separator none
 
 title __PARTIDA's Class Diagram__\n
 
   namespace com.skhatoll.backend {
     namespace service.impl.partida {
+      class com.skhatoll.backend.service.impl.partida.HabilidadService {
+          {static} - log : Logger
+          + HabilidadService()
+          + usarHabilidad()
+          ~ comprobarFinPartida()
+          ~ usarDisparo()
+          ~ usarEspiar()
+          ~ usarFlechazo()
+          ~ usarModelo()
+          ~ usarPocionMuerte()
+          ~ usarPocionVida()
+          ~ usarVision()
+          - getSalaIniciada()
+          - getUsuarioAutenticado()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace service.impl.partida {
       class com.skhatoll.backend.service.impl.partida.PartidaService {
+          {static} - log : Logger
           + PartidaService()
           + abrirVotacion()
+          + actualizarRol()
           + cambiarFase()
+          + cancelarPartida()
           + cerrarPartida()
           + cerrarVotacion()
           + confirmarMuerte()
           + getEstadoPartida()
+          + getNombresLobos()
           + getSesionActiva()
-          + usarHabilidad()
+          + rendirse()
           + votar()
           - calcularResultado()
           - comprobarFinPartida()
           - getSalaIniciada()
           - getUsuarioAutenticado()
-          - usarDisparo()
-          - usarEspiar()
-          - usarFlechazo()
-          - usarModelo()
-          - usarPocionMuerte()
-          - usarPocionVida()
-          - usarVision()
       }
     }
   }
@@ -35,14 +52,36 @@ title __PARTIDA's Class Diagram__\n
   namespace com.skhatoll.backend {
     namespace service.impl.partida {
       class com.skhatoll.backend.service.impl.partida.PartidaSocketService {
+          {static} - log : Logger
           - messagingTemplate : SimpMessagingTemplate
           + PartidaSocketService()
           + notificarCambioFase()
+          + notificarEventoEspecial()
           + notificarFinPartida()
           + notificarMuerte()
           + notificarResultadoVotacion()
+          + notificarRolCambiado()
           + notificarVotacion()
           + notificarVotos()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace service.impl.partida {
+      class com.skhatoll.backend.service.impl.partida.PartidaSocketService.EventoEspecialEvent {
+          - nombreJugador : String
+          - tipo : String
+          + EventoEspecialEvent()
+          + equals()
+          + getNombreJugador()
+          + getTipo()
+          + hashCode()
+          + setNombreJugador()
+          + setTipo()
+          + toString()
+          # canEqual()
       }
     }
   }
@@ -111,9 +150,17 @@ title __PARTIDA's Class Diagram__\n
   }
   
 
+  com.skhatoll.backend.service.impl.partida.HabilidadService .up.|> com.skhatoll.backend.service.interfaces.partida.IHabilidadService
+  com.skhatoll.backend.service.impl.partida.HabilidadService o-- com.skhatoll.backend.repository.EnamoradosRepository : enamoradosRepository
+  com.skhatoll.backend.service.impl.partida.HabilidadService o-- com.skhatoll.backend.repository.HabilidadSalaRepository : habilidadSalaRepository
+  com.skhatoll.backend.service.impl.partida.HabilidadService o-- com.skhatoll.backend.service.impl.partida.PartidaSocketService : partidaSocketService
+  com.skhatoll.backend.service.impl.partida.HabilidadService o-- com.skhatoll.backend.repository.SalaRepository : salaRepository
+  com.skhatoll.backend.service.impl.partida.HabilidadService o-- com.skhatoll.backend.repository.SalaUsuarioRepository : salaUsuarioRepository
+  com.skhatoll.backend.service.impl.partida.HabilidadService o-- com.skhatoll.backend.repository.SesionVotacionRepository : sesionVotacionRepository
+  com.skhatoll.backend.service.impl.partida.HabilidadService o-- com.skhatoll.backend.repository.UsuarioRepository : usuarioRepository
   com.skhatoll.backend.service.impl.partida.PartidaService .up.|> com.skhatoll.backend.service.interfaces.partida.IPartidaService
   com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.repository.EnamoradosRepository : enamoradosRepository
-  com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.repository.HabilidadSalaRepository : habilidadSalaRepository
+  com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.service.impl.partida.HabilidadService : habilidadService
   com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.service.interfaces.jugador.IJugadorService : jugadorService
   com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.service.impl.partida.PartidaSocketService : partidaSocketService
   com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.repository.RolRepository : rolRepository
@@ -123,6 +170,7 @@ title __PARTIDA's Class Diagram__\n
   com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.repository.SesionVotacionRepository : sesionVotacionRepository
   com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.repository.UsuarioRepository : usuarioRepository
   com.skhatoll.backend.service.impl.partida.PartidaService o-- com.skhatoll.backend.repository.VotoRepository : votoRepository
+  com.skhatoll.backend.service.impl.partida.PartidaSocketService +-down- com.skhatoll.backend.service.impl.partida.PartidaSocketService.EventoEspecialEvent
   com.skhatoll.backend.service.impl.partida.PartidaSocketService +-down- com.skhatoll.backend.service.impl.partida.PartidaSocketService.FaseEvent
   com.skhatoll.backend.service.impl.partida.PartidaSocketService +-down- com.skhatoll.backend.service.impl.partida.PartidaSocketService.VotacionEvent
   com.skhatoll.backend.service.impl.partida.PartidaSocketService +-down- com.skhatoll.backend.service.impl.partida.PartidaSocketService.VotosEvent

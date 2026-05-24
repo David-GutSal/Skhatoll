@@ -40,7 +40,8 @@ public class SecurityConfig {
             "/auth/login",
             "/auth/health",
             "/ws/**",
-            "/actuator/health/**"
+            "/actuator/health/**",
+            "/error"
     };
 
     @Bean

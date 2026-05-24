@@ -8,6 +8,7 @@ title __SALA's Class Diagram__\n
           {abstract} + asignarNarrador()
           {abstract} + crearSala()
           {abstract} + getJugadoresConRol()
+          {abstract} + getMiRol()
           {abstract} + iniciarPartida()
           {abstract} + salirDeSala()
           {abstract} + unirse()

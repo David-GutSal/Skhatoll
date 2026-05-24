@@ -4,15 +4,27 @@ title __PARTIDA's Class Diagram__\n
 
   namespace com.skhatoll.backend {
     namespace service.interfaces.partida {
+      interface com.skhatoll.backend.service.interfaces.partida.IHabilidadService {
+          {abstract} + usarHabilidad()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace service.interfaces.partida {
       interface com.skhatoll.backend.service.interfaces.partida.IPartidaService {
           {abstract} + abrirVotacion()
+          {abstract} + actualizarRol()
           {abstract} + cambiarFase()
+          {abstract} + cancelarPartida()
           {abstract} + cerrarPartida()
           {abstract} + cerrarVotacion()
           {abstract} + confirmarMuerte()
           {abstract} + getEstadoPartida()
+          {abstract} + getNombresLobos()
           {abstract} + getSesionActiva()
-          {abstract} + usarHabilidad()
+          {abstract} + rendirse()
           {abstract} + votar()
       }
     }

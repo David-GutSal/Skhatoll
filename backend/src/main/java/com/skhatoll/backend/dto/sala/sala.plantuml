@@ -39,27 +39,21 @@ title __SALA's Class Diagram__\n
       class com.skhatoll.backend.dto.sala.JugadorDto {
           - codigoUuid : String
           - esAlcalde : Boolean
+          - esMentor : Boolean
           - esNarrador : boolean
           - estaVivo : Boolean
           - idUsuario : Integer
+          - muerteConfirmada : Boolean
           - nombre : String
           + JugadorDto()
-          + equals()
-          + getCodigoUuid()
-          + getEsAlcalde()
-          + getEstaVivo()
-          + getIdUsuario()
-          + getNombre()
-          + hashCode()
-          + isEsNarrador()
-          + setCodigoUuid()
-          + setEsAlcalde()
-          + setEsNarrador()
-          + setEstaVivo()
-          + setIdUsuario()
-          + setNombre()
-          + toString()
-          # canEqual()
+          + codigoUuid()
+          + esAlcalde()
+          + esMentor()
+          + esNarrador()
+          + estaVivo()
+          + idUsuario()
+          + muerteConfirmada()
+          + nombre()
       }
     }
   }
@@ -70,6 +64,8 @@ title __SALA's Class Diagram__\n
       class com.skhatoll.backend.dto.sala.JugadorRolDto {
           - bando : String
           - codigoUuid : String
+          - esMentor : Boolean
+          - esNarrador : Boolean
           - estaVivo : Boolean
           - idUsuario : Integer
           - nombre : String
@@ -78,6 +74,8 @@ title __SALA's Class Diagram__\n
           + equals()
           + getBando()
           + getCodigoUuid()
+          + getEsMentor()
+          + getEsNarrador()
           + getEstaVivo()
           + getIdUsuario()
           + getNombre()
@@ -85,6 +83,8 @@ title __SALA's Class Diagram__\n
           + hashCode()
           + setBando()
           + setCodigoUuid()
+          + setEsMentor()
+          + setEsNarrador()
           + setEstaVivo()
           + setIdUsuario()
           + setNombre()
@@ -98,15 +98,35 @@ title __SALA's Class Diagram__\n
 
   namespace com.skhatoll.backend {
     namespace dto.sala {
+      class com.skhatoll.backend.dto.sala.MiRolDto {
+          - bando : String
+          - descripcionRol : String
+          - idUsuario : Integer
+          - nombreRol : String
+          + MiRolDto()
+          + equals()
+          + getBando()
+          + getDescripcionRol()
+          + getIdUsuario()
+          + getNombreRol()
+          + hashCode()
+          + setBando()
+          + setDescripcionRol()
+          + setIdUsuario()
+          + setNombreRol()
+          + toString()
+          # canEqual()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace dto.sala {
       class com.skhatoll.backend.dto.sala.UnirseRequest {
           - codigoSala : String
           + UnirseRequest()
-          + equals()
-          + getCodigoSala()
-          + hashCode()
-          + setCodigoSala()
-          + toString()
-          # canEqual()
+          + codigoSala()
       }
     }
   }

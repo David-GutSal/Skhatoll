@@ -47,8 +47,12 @@ title __REPOSITORY's Class Diagram__\n
           {abstract} + countBySala_IdSala()
           {abstract} + existsBySala_IdSalaAndUsuario_IdUsuario()
           {abstract} + findBySala_IdSala()
+          {abstract} + findBySala_IdSalaAndEstaVivoFalse()
+          {abstract} + findBySala_IdSalaAndEstaVivoTrue()
           {abstract} + findBySala_IdSalaAndIdModelo()
+          {abstract} + findBySala_IdSalaAndMentor_IdUsuario()
           {abstract} + findBySala_IdSalaAndUsuario_IdUsuario()
+          {abstract} + findBySala_IdSalaAndUsuario_IdUsuarioWithLock()
       }
     }
   }

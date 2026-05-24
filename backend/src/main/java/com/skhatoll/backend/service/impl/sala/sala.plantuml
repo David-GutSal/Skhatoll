@@ -1,5 +1,4 @@
 @startuml
-set separator none
 
 title __SALA's Class Diagram__\n
 
@@ -10,9 +9,11 @@ title __SALA's Class Diagram__\n
           + asignarNarrador()
           + crearSala()
           + getJugadoresConRol()
+          + getMiRol()
           + iniciarPartida()
           + salirDeSala()
           + unirse()
+          - asignarHabilidades()
           - generarCodigoUnico()
           - getUsuarioAutenticado()
       }
@@ -30,7 +31,9 @@ title __SALA's Class Diagram__\n
           + notificarAlcalde()
           + notificarInicio()
           + notificarJugadorSalio()
+          + notificarNarradorAsignado()
           + notificarNuevoJugador()
+          + notificarSalaCerrada()
       }
     }
   }
@@ -95,6 +98,25 @@ title __SALA's Class Diagram__\n
 
   namespace com.skhatoll.backend {
     namespace service.impl.sala {
+      class com.skhatoll.backend.service.impl.sala.SalaSocketService.NarradorAsignadoEvent {
+          - jugadores : List<JugadorDto>
+          - tipo : String
+          + NarradorAsignadoEvent()
+          + equals()
+          + getJugadores()
+          + getTipo()
+          + hashCode()
+          + setJugadores()
+          + setTipo()
+          + toString()
+          # canEqual()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace service.impl.sala {
       class com.skhatoll.backend.service.impl.sala.SalaSocketService.PartidaIniciadaEvent {
           - tipo : String
           + PartidaIniciadaEvent()
@@ -138,6 +160,7 @@ title __SALA's Class Diagram__\n
   
 
   com.skhatoll.backend.service.impl.sala.SalaService .up.|> com.skhatoll.backend.service.interfaces.sala.ISalaService
+  com.skhatoll.backend.service.impl.sala.SalaService o-- com.skhatoll.backend.repository.HabilidadSalaRepository : habilidadSalaRepository
   com.skhatoll.backend.service.impl.sala.SalaService o-- com.skhatoll.backend.service.interfaces.jugador.IJugadorService : jugadorService
   com.skhatoll.backend.service.impl.sala.SalaService o-- com.skhatoll.backend.repository.RolRepository : rolRepository
   com.skhatoll.backend.service.impl.sala.SalaService o-- com.skhatoll.backend.repository.SalaRepository : salaRepository
@@ -147,6 +170,7 @@ title __SALA's Class Diagram__\n
   com.skhatoll.backend.service.impl.sala.SalaSocketService +-down- com.skhatoll.backend.service.impl.sala.SalaSocketService.AlcaldeEvent
   com.skhatoll.backend.service.impl.sala.SalaSocketService +-down- com.skhatoll.backend.service.impl.sala.SalaSocketService.CompañerosLobosEvent
   com.skhatoll.backend.service.impl.sala.SalaSocketService +-down- com.skhatoll.backend.service.impl.sala.SalaSocketService.JugadoresActualizadosEvent
+  com.skhatoll.backend.service.impl.sala.SalaSocketService +-down- com.skhatoll.backend.service.impl.sala.SalaSocketService.NarradorAsignadoEvent
   com.skhatoll.backend.service.impl.sala.SalaSocketService +-down- com.skhatoll.backend.service.impl.sala.SalaSocketService.PartidaIniciadaEvent
   com.skhatoll.backend.service.impl.sala.SalaSocketService +-down- com.skhatoll.backend.service.impl.sala.SalaSocketService.RolAsignadoEvent
 

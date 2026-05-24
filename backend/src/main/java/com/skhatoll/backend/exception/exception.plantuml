@@ -7,12 +7,7 @@ title __EXCEPTION's Class Diagram__\n
       class com.skhatoll.backend.exception.ErrorResponse {
           - mensaje : String
           + ErrorResponse()
-          + equals()
-          + getMensaje()
-          + hashCode()
-          + setMensaje()
-          + toString()
-          # canEqual()
+          + mensaje()
       }
     }
   }
@@ -21,6 +16,9 @@ title __EXCEPTION's Class Diagram__\n
   namespace com.skhatoll.backend {
     namespace exception {
       class com.skhatoll.backend.exception.GlobalExceptionHandler {
+          {static} - log : Logger
+          + handleAccessDenied()
+          + handleAuthentication()
           + handleConflict()
           + handleGeneric()
           + handleNotFound()

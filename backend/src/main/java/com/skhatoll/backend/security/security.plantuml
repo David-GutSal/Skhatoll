@@ -5,6 +5,7 @@ title __SECURITY's Class Diagram__\n
   namespace com.skhatoll.backend {
     namespace security {
       class com.skhatoll.backend.security.JwtFilter {
+          {static} - log : Logger
           + JwtFilter()
           # doFilterInternal()
       }
@@ -30,6 +31,35 @@ title __SECURITY's Class Diagram__\n
 
   namespace com.skhatoll.backend {
     namespace security {
+      class com.skhatoll.backend.security.LoginRateLimitingFilter {
+          {static} ~ BLOCK_DURATION : Duration
+          {static} ~ MAX_ATTEMPTS : int
+          {static} ~ WINDOW : Duration
+          - attempts : Map<String, AttemptTracker>
+          {static} - log : Logger
+          # doFilterInternal()
+          - getClientIp()
+          - isLoginRequest()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace security {
+      class com.skhatoll.backend.security.LoginRateLimitingFilter.AttemptTracker {
+          - blockUntil : long
+          - timestamps : ArrayList<Long>
+          ~ cleanup()
+          ~ isBlocked()
+          ~ record()
+      }
+    }
+  }
+  
+
+  namespace com.skhatoll.backend {
+    namespace security {
       class com.skhatoll.backend.security.UserDetailsServiceImpl {
           + UserDetailsServiceImpl()
           + loadUserByUsername()
@@ -41,6 +71,8 @@ title __SECURITY's Class Diagram__\n
   com.skhatoll.backend.security.JwtFilter -up-|> org.springframework.web.filter.OncePerRequestFilter
   com.skhatoll.backend.security.JwtFilter o-- com.skhatoll.backend.security.JwtUtil : jwtUtil
   com.skhatoll.backend.security.JwtFilter o-- com.skhatoll.backend.security.UserDetailsServiceImpl : userDetailsService
+  com.skhatoll.backend.security.LoginRateLimitingFilter -up-|> org.springframework.web.filter.OncePerRequestFilter
+  com.skhatoll.backend.security.LoginRateLimitingFilter +-down- com.skhatoll.backend.security.LoginRateLimitingFilter.AttemptTracker
   com.skhatoll.backend.security.UserDetailsServiceImpl .up.|> org.springframework.security.core.userdetails.UserDetailsService
   com.skhatoll.backend.security.UserDetailsServiceImpl o-- com.skhatoll.backend.repository.UsuarioRepository : usuarioRepository
 

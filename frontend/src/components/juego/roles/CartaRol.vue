@@ -56,7 +56,7 @@
         <i class="fa-solid fa-medal"></i>
       </span>
       <span
-        v-else-if="jugador.votos > 0 && jugador.estaVivo"
+        v-if="jugador.votos > 0 && jugador.estaVivo"
         :class="esVotacionLobos ? 'badge-votos-lobo' : 'badge-votos'"
       >
         <i :class="esVotacionLobos ? 'fa-solid fa-bone' : 'fa-solid fa-check'"></i>

@@ -53,7 +53,7 @@
 
       <div class="mesa-wrapper-outer">
         <MesaJugadores
-          :jugadores="jugadoresConRolConEnamorados"
+          :jugadores="jugadoresParaMesa"
           :esDia="esDia"
           :modoNarrador="true"
           :modoEventos="modoEventos"
@@ -165,6 +165,20 @@ const jugadoresConRolConEnamorados = computed(() => {
       ...j,
       esEnamorado: j.nombre === enamorados.value.jugador1 || j.nombre === enamorados.value.jugador2,
     }
+  })
+})
+
+const jugadoresParaMesa = computed(() => {
+  const mentorActual = store.getters['sala/mentorNinno']
+
+  return jugadoresConRolConEnamorados.value.map((j) => {
+    if (j.nombreRol?.toLowerCase() === 'niño salvaje' && mentorActual) {
+      const mentor = jugadoresConRol.value.find((m) => m.nombre === mentorActual)
+      if (mentor && !mentor.estaVivo) {
+        return { ...j, nombreRol: 'NIÑO LOBO', rol: 'NIÑO LOBO', bando: 'lobo' }
+      }
+    }
+    return j
   })
 })
 

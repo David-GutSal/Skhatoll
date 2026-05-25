@@ -291,6 +291,11 @@ const esVotacionLobos = computed(() => tipoVotacion.value === 'LOBOS')
   animation: pulsoVeneno 1.5s ease-in-out infinite;
 }
 
+.fa-skull {
+  color: white;
+  font-size: 4rem;
+}
+
 @keyframes pulsoVeneno {
   0%,
   100% {

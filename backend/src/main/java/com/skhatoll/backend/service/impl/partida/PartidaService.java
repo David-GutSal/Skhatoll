@@ -37,7 +37,6 @@ public class PartidaService implements IPartidaService {
     private final PartidaSocketService partidaSocketService;
     private final SalaSocketService salaSocketService;
     private final IJugadorService jugadorService;
-    private final HabilidadService habilidadService;
 
     // -------------------------------------------------------
     // Obtener el usuario autenticado desde el contexto de Security

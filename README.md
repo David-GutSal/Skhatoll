@@ -25,6 +25,12 @@ y el backend, facilitando la escalabilidad, el mantenimiento y el trabajo en equ
 
 ---
 
+## 🎲 Funcionalidad y objetivo de Skhatoll
+
+Skhatoll es una plataforma digital que busca ayudar a los jugadores del juego de mesa de **Los Hombres Lobo de Castronegro** a gestionar sus partidas de una manera más cómoda, intuitiva y segura. Incluye guías y material de apoyo para orientar a los jugadores durante las partidas.
+
+---
+
 ## 🛠️ Tecnologías
 
 <p align="center">
@@ -49,7 +55,7 @@ Skhatoll/
 
 # 🐺 Guía de instalación
 
-## Via Docker
+## Vía Docker
 1. Descargar el archivo docker-compose.yml
 ```
 mkdir skhatoll
@@ -61,7 +67,7 @@ curl -O https://raw.githubusercontent.com/David-GutSal/Skhatoll/develop/docker-c
 ```
 docker compose up -d
 ```
-4. Aplicacion disponible en: http://localhost
+4. Aplicación disponible en: http://localhost
 
 ---
 
@@ -184,13 +190,13 @@ O puedes registrar una cuenta nueva desde la pantalla de inicio.
 4. **Iniciar partida** — el creador de la sala pulsa *Comenzar partida* y a cada jugador se le asigna un rol en secreto.
 5. **Durante la partida:**
    - Los jugadores disponen de un botón **Mi Rol** para consultar su personaje en cualquier momento
-   - El **sol** y la **luna** en la pantalla del narrador son el botón para cambiar entre el día y la noche
+   - El **Sol** y la **Luna** en la pantalla del narrador son el botón para cambiar entre el día y la noche
    - El narrador gestiona las votaciones e inicia los eventos desde su panel de control.
 
 #### Variables
 ```
-Estaran en la memoria en la seccion de "Manual de despliegue".
+Estarán en la memoria en la sección de "Manual de despliegue".
 ```
 
 _Posibles errores:_
-- El back ha sido desarrollado con IntelliJ IDEA el cual incorpora soporte / plugin para la dependencia de lombok, en el caso de que se use Eclipse es necesario que ejecute el .jar de lombok para instalarse como agente del IDE, sin esta dependencia no cargaran los constructores, getters, setter y propiedades del proyecto. Está posiblemente ubicado en:  _C:\Users\{tuUsuario}\.m2\repository\org\projectlombok\lombok\{version}\lombok-{version}.jar_
+- El back ha sido desarrollado con IntelliJ IDEA el cual incorpora soporte / plugin para la dependencia de lombok, en el caso de que se use Eclipse es necesario ejecutar el .jar de lombok para instalarse como agente del IDE, sin esta dependencia no cargarán los constructores, getters, setters y propiedades del proyecto. Está posiblemente ubicado en:  _C:\Users\{tuUsuario}\.m2\repository\org\projectlombok\lombok\{version}\lombok-{version}.jar_

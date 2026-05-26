@@ -54,7 +54,6 @@ const consejos = ref([
 ])
 
 onMounted(() => {
-  console.log('[EsperaNarrador] mounted')
   intervaloFrases.value = setInterval(() => {
     fraseActual.value = (fraseActual.value + 1) % FRASES.length
   }, 8000)

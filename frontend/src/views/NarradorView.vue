@@ -200,11 +200,9 @@ const cargarDatos = async () => {
   }
 
   try {
-    console.log('Cargando datos para sala:', codigoSala.value)
     const res = await axiosInstance.get(`/salas/${codigoSala.value}/roles`)
     store.dispatch('sala/setJugadoresConRol', res.data)
   } catch (error) {
-    console.error('Error al cargar jugadores:', error.response?.data || error.message)
     store.dispatch('toast/mostrar', { mensaje: 'Error al cargar jugadores', tipo: 'error' })
   }
 
@@ -336,8 +334,6 @@ const conectarWebSocket = () => {
 
     cliente.subscribe(`/topic/partida/${codigoSala.value}/votacion`, (msg) => {
       const payload = JSON.parse(msg.body)
-      console.log('📩 VOTACION PAYLOAD COMPLETO:', JSON.stringify(payload))
-
       if (payload.tipo === 'VOTACION_ABIERTA') {
         votacionActiva.value = true
         tipoVotacionLocal.value = payload.tipoVotacion

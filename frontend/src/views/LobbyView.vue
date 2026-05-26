@@ -191,10 +191,9 @@ const cargarJugadores = async () => {
   if (!codigo || codigo === 'null') return
   try {
     const res = await axiosInstance.get(`/salas/${codigo}/jugadores`)
-    console.log('[cargarJugadores] response:', JSON.stringify(res.data))
     store.dispatch('sala/setJugadores', res.data)
   } catch (error) {
-    console.error('Error al cargar jugadores:', error)
+    store.dispatch('toast/mostrar', { mensaje: 'Error al cargar jugadores', tipo: 'error' })
   }
 }
 
@@ -218,15 +217,12 @@ const conectarWebSocket = () => {
 
   cliente.onConnect = (frame) => {
     const codigoActual = sessionStorage.getItem('codigoSala') || codigoSala.value
-    console.log('WebSocket conectado, codigo:', codigoActual)
-
     if (codigoActual) {
       cargarJugadores()
     }
 
     cliente.subscribe(`/topic/sala/${codigoActual}/inicio`, (msg) => {
       const payload = JSON.parse(msg.body)
-      console.log('[LOBBY /inicio] payload:', JSON.stringify(payload))
 
       cargarJugadores()
 
@@ -235,16 +231,11 @@ const conectarWebSocket = () => {
       setTimeout(() => {
         const nombreActual = store.getters['auth/nombre']
         const listaJugadores = store.getters['sala/jugadores'] || []
-        console.log('[LOBBY /inicio] nombre:', nombreActual)
-        console.log('[LOBBY /inicio] jugadores:', JSON.stringify(listaJugadores))
         const esNarrador = listaJugadores.some((j) => j.esNarrador && j.nombre === nombreActual)
-        console.log('[LOBBY /inicio] esNarrador?:', esNarrador)
 
         if (esNarrador) {
-          console.log('[LOBBY /inicio] navigate -> esperaNarrador')
           router.push({ name: 'esperaNarrador' })
         } else {
-          console.log('[LOBBY /inicio] navigate -> cargaRol')
           store.dispatch('sala/setRol', {
             nombreRol: payload.nombreRol,
             descripcionRol: payload.descripcionRol,
@@ -289,7 +280,7 @@ const conectarWebSocket = () => {
   }
 
   cliente.onStompError = (frame) => {
-    console.error('STOMP error:', frame)
+    /* STOMP error */
   }
 
   cliente.activate()

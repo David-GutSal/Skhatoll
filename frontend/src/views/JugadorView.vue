@@ -390,12 +390,9 @@ const manejarDisparo = async (jugador) => {
 }
 
 const cargarDatos = async () => {
-  console.log('[cargarDatos] Iniciando carga de datos...')
-
   try {
     const res = await axiosInstance.get(`/salas/${codigoSala.value}/jugadores`)
     store.dispatch('sala/setJugadores', res.data)
-    console.log('[cargarDatos] Jugadores cargados:', res.data.length)
   } catch (error) {
     store.dispatch('toast/mostrar', { mensaje: 'Error al cargar jugadores', tipo: 'error' })
   }
@@ -408,12 +405,9 @@ const cargarDatos = async () => {
         descripcionRol: miRolRes.data.descripcionRol || '',
         bando: miRolRes.data.bando || 'aldea',
       })
-      console.log('[cargarDatos] Rol cargado:', miRolRes.data.nombreRol)
-    } else {
-      console.log('[cargarDatos] No tiene rol asignado aún')
     }
   } catch (error) {
-    console.log('[cargarDatos] Error al cargar rol:', error.message)
+    /* rol no disponible aún */
   }
 
   try {
@@ -422,16 +416,14 @@ const cargarDatos = async () => {
       const esNoche = estado.data.estadoDia === 'NOCHE'
       esDia.value = !esNoche
       store.dispatch('sala/setFase', estado.data.estadoDia)
-      console.log('[cargarDatos] Fase cargada:', estado.data.estadoDia)
 
       if (estado.data.nombreAlcalde) {
         store.dispatch('sala/designarAlcalde', estado.data.nombreAlcalde)
         alcaldeNombre.value = estado.data.nombreAlcalde
-        console.log('[cargarDatos] Alcalde cargado:', estado.data.nombreAlcalde)
       }
     }
   } catch (error) {
-    console.log('[cargarDatos] Error al cargar estado:', error.message)
+    /* error al cargar estado */
   }
 
   try {
@@ -440,10 +432,9 @@ const cargarDatos = async () => {
       votacionActiva.value = true
       tipoVotacionLocal.value = sesion.data.tipo
       store.dispatch('sala/setTipoVotacion', sesion.data.tipo)
-      console.log('[cargarDatos] Sesión activa cargada:', sesion.data.tipo)
     }
   } catch {
-    console.log('[cargarDatos] No hay sesión activa')
+    /* sin sesión activa */
   }
 
   conectarWebSocket()
@@ -511,12 +502,8 @@ const conectarWebSocket = () => {
               },
             )
           })
-          .then(() => {
-            console.log('[Niño Lobo] Rol actualizado en backend')
-          })
-          .catch((error) => {
-            console.error('[Niño Lobo] Error al actualizar rol en backend:', error)
-          })
+          .then(() => {})
+          .catch(() => {})
 
         mensajeEvento.value = '¡Tu mentor ha muerto! ¡Te has convertido en un Hombre Lobo!'
         setTimeout(() => {
@@ -695,15 +682,10 @@ const conectarWebSocket = () => {
       }
 
       if (payload.tipo === 'TURNO_JUGADOR') {
-        console.log('[TURNO_JUGADOR] Payload:', payload)
-        console.log('[TURNO_JUGADOR] miRol store:', miRol.value)
-        console.log('[TURNO_JUGADOR] nombre.value:', nombre.value)
-
         const faseDelPayload = payload.fase
         if (faseDelPayload) {
           esDia.value = faseDelPayload === 'DIA'
           store.dispatch('sala/setFase', faseDelPayload)
-          console.log('[TURNO_JUGADOR] Fase actualizada a:', faseDelPayload)
         } else {
           const faseStore = store.getters['sala/fase']
           if (faseStore) {
@@ -711,8 +693,6 @@ const conectarWebSocket = () => {
           }
         }
         esMiTurno.value = payload.nombreJugador === nombre.value
-        console.log('[TURNO_JUGADOR] esMiTurno:', esMiTurno.value)
-        console.log('[TURNO_JUGADOR] esDia:', esDia.value)
 
         const toastsPorRol = {
           Vidente: { mensaje: 'La Vidente está teniendo una visión...', tipo: 'videncia' },

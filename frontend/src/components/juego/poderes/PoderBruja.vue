@@ -186,7 +186,6 @@ export default {
           return
         }
       } catch (err) {
-        console.error('Error pocion_vida:', err.response?.status, err.response?.data)
         if (!err.response) {
           return
         }
@@ -225,7 +224,6 @@ export default {
         // El backend ya emite WS /muerte → todos los clientes lo reciben
         this.$emit('envenenar', this.jugadorSeleccionado)
       } catch (err) {
-        console.error('Error pocion_muerte:', err.response?.status, err.response?.data)
         this.$store.dispatch('toast/mostrar', {
           mensaje:
             'Error al usar la poción de muerte. Asegúrate de que el Narrador ha activado tu turno.',

@@ -162,7 +162,6 @@ export default {
         this.loginNombre = ''
         this.loginPassword = ''
       } catch (error) {
-        console.error('Error login:', error)
         this.$store.dispatch('toast/mostrar', {
           mensaje:
             error.response?.status === 401 ? 'Credenciales incorrectas' : 'Error al iniciar sesión',
@@ -186,7 +185,6 @@ export default {
           tipo: 'exito',
         })
       } catch (error) {
-        console.error('Error registro:', error)
         this.$store.dispatch('toast/mostrar', {
           mensaje:
             error.response?.status === 409 ? 'Ese nombre ya está en uso' : 'Error al registrarse',

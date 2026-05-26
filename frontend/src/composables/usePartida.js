@@ -37,7 +37,7 @@ export function usePartida() {
       players.value = res.data
       store.dispatch('sala/setJugadores', res.data)
     } catch (error) {
-      console.error('[usePartida] Error loading players:', error)
+      /* error loading players */
     }
   }
 
@@ -52,7 +52,7 @@ export function usePartida() {
       voteType.value = res.data.tipoVotacion
       currentTurn.value = res.data.turnoActual
     } catch (error) {
-      console.error('[usePartida] Error loading state:', error)
+      /* error loading state */
     }
   }
 

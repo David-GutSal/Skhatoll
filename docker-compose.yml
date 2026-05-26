@@ -1,0 +1,14 @@
+services:
+  backend:
+    image: dgs0/skhatoll-backend:latest
+    ports:
+      - "8080:8080"
+    env_file: .env
+
+  frontend:
+    image: dgs0/skhatoll-frontend:latest
+    ports:
+      - "80:80"
+    env_file: .env
+    depends_on:
+      - backend

@@ -272,6 +272,7 @@ O puedes registrar una cuenta nueva desde la pantalla de inicio.
     - Se abre debate sobre quién ha podido ser el asesino o quién puede ser un hombre lobo.
     - Se inician las votaciones para el linchamiento.
     - El jugador más votado muere.
+      
   - **Fase Noche:** El narrador despierta a los jugadores en este orden para que utilicen sus poderes:
       1. Vidente (si sigue viva)
       2. Niña (si sigue viva)
@@ -322,7 +323,7 @@ La partida termina cuando gana uno de los bandos o se cumplen ciertas condicione
   - El Narrador avisa a Cupido de que abra los ojos y pulsa sobre su personaje en el tablero de juego
 
 - 🕹️**Jugador/es: Cupido**
-- Tras Despertar Cupido ve una notificación de que es su turno para usar sus poderes además de que aparecerá el botón de **Ver mis poderes** en el Panel de Control. Cupido lo pulsará y le llevará abajo del tablero donde saldrá un desplegable con sus poderes
+    - Tras Despertar Cupido ve una notificación de que es su turno para usar sus poderes además de que aparecerá el botón de **Ver mis poderes** en el Panel de Control. Cupido lo pulsará y le llevará abajo del tablero donde saldrá un desplegable con sus poderes
     - En ese tablero se le indicará que tocando sobre 2 personajes del tablero puede hacer que se enamoren.
     - Si quiere quitar un personaje y poner otro sólo tiene que quitarlo pulsando en la X que sale en la casilla del personaje. (Cupido enamorará al Cazador y a La Niña).
     - Cupido pulsa sobre Confirmar Flechazo para acabar su turno y enamorar a los jugadores.
@@ -369,13 +370,18 @@ La partida termina cuando gana uno de los bandos o se cumplen ciertas condicione
 ☀️ ***Durante el día:***
 
 - 📖 **Narrador:**
+  
   - El Narrador notifica a los jugadores sobre las defunciones de La Niña y Cupido sin dar mucho detalle del origen de las muertes y dice que hay una tercera muerte que es la del Cazador que murió de amor.
-  - El Narrador avisa al Cazador de que ya puede usar su poder
+  - El Narrador avisa al Cazador de que ya puede usar su poder.
+    
 - 🕹️**Jugador/es: El Cazador**
+  
   - El Cazador va a la parte de abajo del tablero y ve que tiene una opción para disparar a alguien.
   - El Cazador selecciona a un personaje en el tablero y pulsa en disparar.
   - El Cazador dispara a uno de los Lobos y lo mata.
+    
 - 📖 **Narrador:**
+  
   - El Narrador avisa a los jugadores de que hay más lobos y pulsa en **Provocar Linchamiento**
   - Este botón funciona igual que el de las elecciones pero el jugador más votado es asesinado
   - Hay un empate entre el aldeano y el niño, pero muere el aldeano porque fue votado por La Vidente y su voto desempata.
@@ -385,15 +391,21 @@ La partida termina cuando gana uno de los bandos o se cumplen ciertas condicione
 🌒***Durante la noche:***
 
 - 📖 **Narrador:**
+  
   - El Narrador irá despertando a los jugadores que quedan para activar a la vidente
   - Despierta a la vidente
   - Despierta a los hombres lobo. Ahora el Niño Salvaje se despierta como un Lobo más con los mismos poderes que los Lobos. 
 
 - 🕹️**Jugador/es: Los Lobos**
+  
   -  Los Lobos deciden devorar a La Bruja.
+    
 - 📖 **Narrador:**
-  - El Narrador despierta a La Bruja 
+  
+  - El Narrador despierta a La Bruja.
+    
 - 🕹️**Jugador/es: La Bruja**
+  
   - La bruja ve que está moribunda y usa la poción de la vida con ella misma.
 
 **TURNO 3**
@@ -413,7 +425,8 @@ La partida termina cuando gana uno de los bandos o se cumplen ciertas condicione
 🌒***Durante la noche:***
 
 - 📖 **Narrador:**
-Como en turno anteriores, en Narrador va llamando a los jugadores para que usen sus poderes
+  
+  - Como en turno anteriores, en Narrador va llamando a los jugadores para que usen sus poderes
   - Narrador llama a La Vidente.
   - Narrador llama al Lobo. (Devora a La Bruja)
   - Narrador llama a La Bruja. (No tiene pociones y está moribunda)
@@ -424,6 +437,7 @@ Como en turno anteriores, en Narrador va llamando a los jugadores para que usen 
 ☀️ ***Durante el día:***
 
 - 📖 **Narrador:**
+  
   - El Narrador avisa de la muerte de La Bruja.
   - Solo quedan La Vidente y el Lobo.
   - El Narrador abre las votaciones de Linchamiento.

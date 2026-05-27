@@ -118,6 +118,14 @@ Antes de arrancar el backend es necesario configurar las variables de entorno co
 | `JWT_SECRET` | Clave secreta para firmar los tokens |
 | `JWT_EXPIRATION` | Duración del token en segundos |
 
+#### Valores de las variables
+```
+Estarán en la memoria en la sección de "Manual de despliegue".
+```
+
+_Posibles errores:_
+- El backend ha sido desarrollado con **IntelliJ IDEA** el cual incorpora soporte / plugin para la dependencia de lombok, por lo que en el caso de que se use **Eclipse** es necesario ejecutar el .jar de lombok para instalarse como agente del IDE, sin esta dependencia no cargarán los constructores, getters, setters y propiedades del proyecto. Está posiblemente ubicado en:  _C:\Users\{tuUsuario}\.m2\repository\org\projectlombok\lombok\{version}\lombok-{version}.jar_
+#
 ---
 
 ### IntelliJ IDEA
@@ -193,10 +201,3 @@ O puedes registrar una cuenta nueva desde la pantalla de inicio.
    - El **Sol** y la **Luna** en la pantalla del narrador son el botón para cambiar entre el día y la noche
    - El narrador gestiona las votaciones e inicia los eventos desde su panel de control.
 
-#### Variables
-```
-Estarán en la memoria en la sección de "Manual de despliegue".
-```
-
-_Posibles errores:_
-- El back ha sido desarrollado con IntelliJ IDEA el cual incorpora soporte / plugin para la dependencia de lombok, en el caso de que se use Eclipse es necesario ejecutar el .jar de lombok para instalarse como agente del IDE, sin esta dependencia no cargarán los constructores, getters, setters y propiedades del proyecto. Está posiblemente ubicado en:  _C:\Users\{tuUsuario}\.m2\repository\org\projectlombok\lombok\{version}\lombok-{version}.jar_

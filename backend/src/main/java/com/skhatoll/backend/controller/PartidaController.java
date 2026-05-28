@@ -97,4 +97,13 @@ public class PartidaController {
         partidaService.actualizarRol(codigo, idUsuario, request.nombreRol());
         return ResponseEntity.ok("Rol actualizado");
     }
+
+    @GetMapping("/{codigo}/resultado")
+    public ResponseEntity<FinPartidaDto> getResultadoPartida(@PathVariable String codigo) {
+        FinPartidaDto resultado = partidaService.getResultadoPartida(codigo);
+        if (resultado == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(resultado);
+    }
 }

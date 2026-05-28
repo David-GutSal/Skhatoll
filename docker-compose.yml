@@ -4,6 +4,9 @@ services:
     ports:
       - "8080:8080"
     env_file: .env
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
 
   frontend:
     image: dgs0/skhatoll-frontend:latest

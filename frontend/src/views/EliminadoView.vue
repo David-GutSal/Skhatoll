@@ -49,6 +49,7 @@ const verPartida = ref(false)
 const esDia = ref(true)
 const stompClient = ref(null)
 const jugadoresConRol = ref([])
+let resultadoInterval = null
 
 const codigoSala = computed(() => store.getters['sala/codigoSala'])
 const jugadores = computed(() => store.getters['sala/jugadores'])
@@ -72,6 +73,8 @@ const irInicio = () => {
 }
 
 const conectarWebSocket = () => {
+  if (!codigoSala.value) return
+
   const token = store.getters['auth/token']
   const cliente = new Client({
     webSocketFactory: () => new SockJS('/ws'),
@@ -124,12 +127,38 @@ cliente.subscribe(`/topic/partida/${codigoSala.value}/muerte`, (msg) => {
   stompClient.value = cliente
 }
 
+const verificarResultado = async () => {
+  try {
+    const res = await axiosInstance.get(`/partida/${codigoSala.value}/resultado`)
+    if (res.data && res.data.bandoGanador) {
+      store.dispatch('sala/setResultado', {
+        bandoGanador: res.data.bandoGanador,
+        mensaje: res.data.mensaje,
+      })
+      if (router.currentRoute.value.name !== 'resultados') {
+        router.push({ name: 'resultados' })
+      }
+    }
+  } catch {
+    // ignore
+  }
+}
+
 onMounted(() => {
   esDia.value = store.getters['sala/fase'] !== 'NOCHE'
+  if (store.getters['sala/bandoGanador']) {
+    router.push({ name: 'resultados' })
+    return
+  }
   conectarWebSocket()
+  resultadoInterval = setInterval(verificarResultado, 3000)
 })
 
 onUnmounted(() => {
+  if (resultadoInterval) {
+    clearInterval(resultadoInterval)
+    resultadoInterval = null
+  }
   if (stompClient.value) {
     stompClient.value.deactivate()
     stompClient.value = null

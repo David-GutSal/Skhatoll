@@ -253,14 +253,7 @@ const seleccionarJugador = (j) => {
       if (j.nombre === nombrePareja) return
     }
   }
-  if (
-    tipoVotacionLocal.value === 'LOBOS' &&
-    miRol.value &&
-    (miRol.value.toLowerCase() === 'lobo' || miRol.value === 'NIÑO LOBO') &&
-    j.bando === 'lobo'
-  ) {
-    return
-  }
+
   if (!votacionActiva.value && !esMiTurno.value && !soyElCazadorMuerto.value) return
   jugadorSeleccionado.value = j
 }
@@ -441,6 +434,8 @@ const cargarDatos = async () => {
 }
 
 const conectarWebSocket = () => {
+  if (!codigoSala.value) return
+
   const token = store.getters['auth/token']
   const cliente = new Client({
     webSocketFactory: () => new SockJS('/ws'),
@@ -474,41 +469,41 @@ const conectarWebSocket = () => {
         payload.tipo === 'RENDIRSE'
       ) {
         store.dispatch('sala/marcarMuerto', payload.nombreJugador)
+
+        if (
+          miRol.value &&
+          miRol.value.toLowerCase() === 'niño salvaje' &&
+          store.getters['sala/mentorNinno'] === payload.nombreJugador
+        ) {
+          store.commit('sala/SET_ROL', {
+            nombreRol: 'NIÑO LOBO',
+            descripcionRol: 'Te has transformado en un Hombre Lobo',
+            bando: 'lobo',
+            nombreJugador: nombre.value,
+          })
+
+          axiosInstance
+            .get(`/salas/${codigoSala.value}/mi-rol`)
+            .then((miIdRes) => {
+              return axiosInstance.put(
+                `/partida/${codigoSala.value}/jugador/${miIdRes.data.idUsuario}/rol`,
+                {
+                  nombreRol: 'NIÑO LOBO',
+                },
+              )
+            })
+            .then(() => {})
+            .catch(() => {})
+
+          mensajeEvento.value = '¡Tu mentor ha muerto! ¡Te has convertido en un Hombre Lobo!'
+          setTimeout(() => {
+            mensajeEvento.value = null
+          }, 8000)
+        }
       } else if (payload.tipo === 'REVIVIR') {
         store.dispatch('sala/quitarSemimuerto', payload.nombreJugador)
       } else {
         store.dispatch('sala/marcarSemimuerto', payload.nombreJugador)
-      }
-
-      if (
-        miRol.value &&
-        miRol.value.toLowerCase() === 'niño salvaje' &&
-        store.getters['sala/mentorNinno'] === payload.nombreJugador
-      ) {
-        store.commit('sala/SET_ROL', {
-          nombreRol: 'NIÑO LOBO',
-          descripcionRol: 'Te has transformado en un Hombre Lobo',
-          bando: 'lobo',
-          nombreJugador: nombre.value,
-        })
-
-        axiosInstance
-          .get(`/salas/${codigoSala.value}/mi-rol`)
-          .then((miIdRes) => {
-            return axiosInstance.put(
-              `/partida/${codigoSala.value}/jugador/${miIdRes.data.idUsuario}/rol`,
-              {
-                nombreRol: 'NIÑO LOBO',
-              },
-            )
-          })
-          .then(() => {})
-          .catch(() => {})
-
-        mensajeEvento.value = '¡Tu mentor ha muerto! ¡Te has convertido en un Hombre Lobo!'
-        setTimeout(() => {
-          mensajeEvento.value = null
-        }, 8000)
       }
 
       if (payload.nombreJugador === nombre.value && payload.muerteConfirmada) {
@@ -527,7 +522,7 @@ const conectarWebSocket = () => {
           return
         }
         setTimeout(() => {
-          if (router.currentRoute.value.name !== 'resultados') {
+          if (router.currentRoute.value.name !== 'resultados' && !store.getters['sala/bandoGanador']) {
             router.push({ name: 'eliminado' })
           }
         }, 500)

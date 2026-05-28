@@ -29,4 +29,6 @@ public interface IPartidaService {
     List<String> getNombresLobos(String codigo);
 
     void actualizarRol(String codigo, Integer idUsuario, String nombreRol);
+
+    FinPartidaDto getResultadoPartida(String codigo);
 }

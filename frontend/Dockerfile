@@ -1,10 +1,9 @@
 FROM node:22-alpine AS build
 WORKDIR /app
-RUN corepack enable && corepack prepare pnpm@latest --activate
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --no-frozen-lockfile --ignore-scripts && pnpm rebuild esbuild
+COPY package.json ./
+RUN npm install
 COPY . .
-RUN pnpm run build
+RUN npm run build
 
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html

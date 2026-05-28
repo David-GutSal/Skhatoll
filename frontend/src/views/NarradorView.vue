@@ -174,7 +174,7 @@ const jugadoresParaMesa = computed(() => {
   return jugadoresConRolConEnamorados.value.map((j) => {
     if (j.nombreRol?.toLowerCase() === 'niño salvaje' && mentorActual) {
       const mentor = jugadoresConRol.value.find((m) => m.nombre === mentorActual)
-      if (mentor && !mentor.estaVivo) {
+      if (mentor && mentor.estaVivo === false && mentor.muerteConfirmada) {
         return { ...j, nombreRol: 'NIÑO LOBO', rol: 'NIÑO LOBO', bando: 'lobo' }
       }
     }
@@ -267,6 +267,8 @@ const cancelarPartida = async () => {
 }
 
 const conectarWebSocket = () => {
+  if (!codigoSala.value) return
+
   const token = store.getters['auth/token']
   const cliente = new Client({
     webSocketFactory: () => new SockJS('/ws'),

@@ -160,6 +160,7 @@ const handleUnirse = async () => {
     store.dispatch('sala/setSala', { codigoSala: inputCodigo.value, esCreador: false })
     store.dispatch('toast/mostrar', { mensaje: 'Te has unido a la sala', tipo: 'success' })
     mensajeUnion.value = true
+    conectarWebSocket()
   } catch (error) {
     store.dispatch('toast/mostrar', { mensaje: 'Error al unirse a la sala', tipo: 'error' })
   }
@@ -197,17 +198,53 @@ const cargarJugadores = async () => {
   }
 }
 
+let suscripcionesSalaHechas = false
+
+const suscribirSala = (cliente, codigo) => {
+  if (suscripcionesSalaHechas) return
+  suscripcionesSalaHechas = true
+
+  cliente.subscribe(`/topic/sala/${codigo}/inicio`, (msg) => {
+    const payload = JSON.parse(msg.body)
+
+    cargarJugadores()
+
+    store.dispatch('toast/mostrar', { mensaje: 'Partida iniciándose...', tipo: 'info' })
+
+    setTimeout(() => {
+      const nombreActual = store.getters['auth/nombre']
+      const listaJugadores = store.getters['sala/jugadores'] || []
+      const esNarrador = listaJugadores.some((j) => j.esNarrador && j.nombre === nombreActual)
+
+      if (esNarrador) {
+        router.push({ name: 'esperaNarrador' })
+      } else {
+        store.dispatch('sala/setRol', {
+          nombreRol: payload.nombreRol,
+          descripcionRol: payload.descripcionRol,
+          bando: payload.bando,
+        })
+        router.push({ name: 'cargaRol' })
+      }
+    }, 500)
+  })
+
+  cliente.subscribe(`/topic/sala/${codigo}`, (msg) => {
+    const payload = JSON.parse(msg.body)
+    if (payload.tipo === 'JUGADOR_UNIDO') {
+      store.dispatch('sala/setJugadores', payload.jugadores)
+    }
+    if (payload.tipo === 'JUGADOR_SALIO') {
+      store.dispatch('sala/setJugadores', payload.jugadores)
+    }
+  })
+}
+
 const conectarWebSocket = () => {
+  if (stompClient.value) return
+
   const token = store.getters['auth/token']
-  const codigo = codigoSala.value || sessionStorage.getItem('codigoSala')
-
-  if (!codigo || codigo === 'null') {
-    return
-  }
-
-  if (stompClient.value) {
-    return
-  }
+  if (!token) return
 
   const cliente = new Client({
     webSocketFactory: () => new SockJS('/ws'),
@@ -215,36 +252,12 @@ const conectarWebSocket = () => {
     reconnectDelay: 5000,
   })
 
-  cliente.onConnect = (frame) => {
-    const codigoActual = sessionStorage.getItem('codigoSala') || codigoSala.value
+  cliente.onConnect = () => {
+    const codigoActual = codigoSala.value || sessionStorage.getItem('codigoSala')
     if (codigoActual) {
       cargarJugadores()
+      suscribirSala(cliente, codigoActual)
     }
-
-    cliente.subscribe(`/topic/sala/${codigoActual}/inicio`, (msg) => {
-      const payload = JSON.parse(msg.body)
-
-      cargarJugadores()
-
-      store.dispatch('toast/mostrar', { mensaje: 'Partida iniciándose...', tipo: 'info' })
-
-      setTimeout(() => {
-        const nombreActual = store.getters['auth/nombre']
-        const listaJugadores = store.getters['sala/jugadores'] || []
-        const esNarrador = listaJugadores.some((j) => j.esNarrador && j.nombre === nombreActual)
-
-        if (esNarrador) {
-          router.push({ name: 'esperaNarrador' })
-        } else {
-          store.dispatch('sala/setRol', {
-            nombreRol: payload.nombreRol,
-            descripcionRol: payload.descripcionRol,
-            bando: payload.bando,
-          })
-          router.push({ name: 'cargaRol' })
-        }
-      }, 500)
-    })
 
     cliente.subscribe(`/user/queue/rol`, (msg) => {
       const payload = JSON.parse(msg.body)
@@ -264,19 +277,6 @@ const conectarWebSocket = () => {
         router.push({ name: 'cargaRol' })
       }
     })
-
-    cliente.subscribe(`/topic/sala/${codigoActual}`, (msg) => {
-      const payload = JSON.parse(msg.body)
-      if (payload.tipo === 'JUGADOR_UNIDO') {
-        store.dispatch('sala/setJugadores', payload.jugadores)
-      }
-      if (payload.tipo === 'JUGADOR_SALIO') {
-        store.dispatch('sala/setJugadores', payload.jugadores)
-      }
-      if (payload.tipo === 'NARRADOR_ASIGNADO') {
-        store.dispatch('sala/setJugadores', payload.jugadores)
-      }
-    })
   }
 
   cliente.onStompError = (frame) => {
@@ -288,12 +288,12 @@ const conectarWebSocket = () => {
 }
 
 watch(codigoSala, (nuevo) => {
-  if (nuevo && stompClient.value) {
-    stompClient.value.deactivate()
-    stompClient.value = null
-  }
-  if (nuevo && !stompClient.value) {
+  if (!nuevo) return
+  if (!stompClient.value) {
     conectarWebSocket()
+  } else if (!suscripcionesSalaHechas) {
+    cargarJugadores()
+    suscribirSala(stompClient.value, nuevo)
   }
 })
 
@@ -340,10 +340,10 @@ const salirSala = async () => {
 
 onMounted(async () => {
   await store.dispatch('sala/restaurarEstado')
-  if (codigoSala.value && !stompClient.value) {
+  if (codigoSala.value) {
     cargarJugadores()
-    conectarWebSocket()
   }
+  conectarWebSocket()
 })
 </script>
 

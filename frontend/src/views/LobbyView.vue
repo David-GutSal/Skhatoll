@@ -198,12 +198,7 @@ const cargarJugadores = async () => {
   }
 }
 
-let suscripcionesSalaHechas = false
-
 const suscribirSala = (cliente, codigo) => {
-  if (suscripcionesSalaHechas) return
-  suscripcionesSalaHechas = true
-
   cliente.subscribe(`/topic/sala/${codigo}/inicio`, (msg) => {
     const payload = JSON.parse(msg.body)
 
@@ -235,6 +230,9 @@ const suscribirSala = (cliente, codigo) => {
       store.dispatch('sala/setJugadores', payload.jugadores)
     }
     if (payload.tipo === 'JUGADOR_SALIO') {
+      store.dispatch('sala/setJugadores', payload.jugadores)
+    }
+    if (payload.tipo === 'NARRADOR_ASIGNADO') {
       store.dispatch('sala/setJugadores', payload.jugadores)
     }
   })
@@ -289,12 +287,11 @@ const conectarWebSocket = () => {
 
 watch(codigoSala, (nuevo) => {
   if (!nuevo) return
-  if (!stompClient.value) {
-    conectarWebSocket()
-  } else if (!suscripcionesSalaHechas) {
-    cargarJugadores()
-    suscribirSala(stompClient.value, nuevo)
+  if (stompClient.value) {
+    stompClient.value.deactivate()
+    stompClient.value = null
   }
+  conectarWebSocket()
 })
 
 const copiarCodigo = () => {
